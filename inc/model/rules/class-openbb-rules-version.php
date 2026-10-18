@@ -20,13 +20,20 @@ class OPENBB_Rules_Version extends OPENBB_Entity {
 
 	protected function cast(): void {
 		$this->id                    = (int) $this->id;
-		$this->content               = openbb_normalize_localized( self::decode_json( $this->content ) );
+		$this->content               = OPENBB_Rules::normalize_content( self::decode_json( $this->content ) );
 		$this->content_hash          = (string) $this->content_hash;
 		$this->requires_reacceptance = (bool) $this->requires_reacceptance;
 		$this->published_by          = (int) $this->published_by;
 	}
 
 	public function get_content( ?string $language = null ): string {
-		return openbb_localized( $this->content, $language );
+		$items = array_map(
+			static function ( array $item ) use ( $language ): string {
+				return '<li>' . openbb_localized( $item, $language ) . '</li>';
+			},
+			$this->content
+		);
+
+		return $items ? '<ol>' . implode( '', $items ) . '</ol>' : '';
 	}
 }

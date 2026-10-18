@@ -5,8 +5,15 @@ import { can, config } from '../../utils/config';
 import MaintenanceTab from './maintenance';
 import ProfileFieldsTab from './profile-fields';
 import SettingsPage from './settings-page';
+import RulesTab from './rules';
 
 const tabs = [
+	{
+		name: 'rules',
+		title: __( 'Co-op Rules', 'open-bulk-buying' ),
+		cap: 'openbb_manage_rules',
+		Component: RulesTab,
+	},
 	{
 		name: 'profile-fields',
 		title: __( 'Profile Fields', 'open-bulk-buying' ),

@@ -332,6 +332,9 @@ class OPENBB_Access {
 		}
 
 		switch ( $cap ) {
+			case 'openbb_access_settings':
+				return user_can( $user_id, 'openbb_manage_rules' ) ? array( 'openbb_manage_rules' ) : array( 'openbb_manage_settings' );
+
 			case 'openbb_view_order':
 			case 'openbb_edit_own_order':
 			case 'openbb_edit_order':

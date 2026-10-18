@@ -36,19 +36,29 @@ class OPENBB_Rules {
 	}
 
 	/**
-	 * Sanitizes a localized HTML map and drops empty translations so equivalent content hashes identically.
+	 * An ordered array of localized HTML items. Legacy HTML maps become one item.
 	 */
 	public static function normalize_content( $content ): array {
-		$content = array_filter(
-			openbb_sanitize_localized_html( $content ),
-			static function ( string $text, string $language ): bool {
-				return 'default' === $language || '' !== trim( $text );
-			},
-			ARRAY_FILTER_USE_BOTH
-		);
-		ksort( $content );
+		if ( is_string( $content ) || ( is_array( $content ) && isset( $content['default'] ) ) ) {
+			$content = array( $content );
+		}
 
-		return $content;
+		return array_values(
+			array_map(
+				static function ( $item ): array {
+					$item = array_filter(
+						openbb_sanitize_localized_html( $item ),
+						static function ( string $text, string $language ): bool {
+							return 'default' === $language || '' !== trim( $text );
+						},
+						ARRAY_FILTER_USE_BOTH
+					);
+					ksort( $item );
+					return $item;
+				},
+				(array) $content
+			)
+		);
 	}
 
 	public static function hash_content( $content ): string {
@@ -130,7 +140,7 @@ class OPENBB_Rules {
 		$latest = self::get_latest();
 		$draft  = self::get_draft();
 
-		return $latest ? self::hash_content( $draft ) !== $latest->content_hash : '' !== trim( $draft['default'] );
+		return $latest ? self::hash_content( $draft ) !== self::hash_content( $latest->content ) : ! empty( $draft );
 	}
 
 	/**
@@ -146,8 +156,10 @@ class OPENBB_Rules {
 		global $wpdb;
 
 		$content = self::get_draft();
-		if ( '' === trim( $content['default'] ) ) {
-			return new WP_Error( 'openbb_rules_empty', __( 'The rules need default text before they can be published.', 'open-bulk-buying' ) );
+		if ( ! $content || array_filter( $content, static function ( array $item ): bool {
+			return '' === trim( str_replace( "\xc2\xa0", ' ', html_entity_decode( wp_strip_all_tags( $item['default'] ), ENT_QUOTES, 'UTF-8' ) ) );
+		} ) ) {
+			return new WP_Error( 'openbb_rules_empty', __( 'Every rule needs default text before the rules can be published.', 'open-bulk-buying' ) );
 		}
 
 		$hash   = self::hash_content( $content );
@@ -155,11 +167,11 @@ class OPENBB_Rules {
 
 		if ( ! $latest ) {
 			$requires_reacceptance = true;
-		} elseif ( $hash === $latest->content_hash ) {
+		} elseif ( $hash === self::hash_content( $latest->content ) ) {
 			if ( ! $requires_reacceptance || $latest->requires_reacceptance ) {
 				return $latest;
 			}
-		} elseif ( $content['default'] === $latest->content['default'] ) {
+		} elseif ( array_column( $content, 'default' ) === array_column( $latest->content, 'default' ) ) {
 			$requires_reacceptance = false;
 		}
 

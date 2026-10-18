@@ -98,7 +98,7 @@ class Test_OPENBB_Model_Persistence extends OPENBB_TestCase {
 
 		$this->assertTrue( OPENBB_Rules::save_draft( array( 'default' => '<p>Unpublished edit</p>' ) ) );
 		$this->assertTrue( OPENBB_Rules::discard_draft() );
-		$this->assertSame( '<p>Initial rules</p>', OPENBB_Rules::get_draft()['default'] );
+		$this->assertSame( '<p>Initial rules</p>', OPENBB_Rules::get_draft()[0]['default'] );
 		$this->assertSame( $version->id, OPENBB_Rules::get_latest()->id );
 	}
 

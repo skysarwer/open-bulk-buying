@@ -52,6 +52,55 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 			return self::authorize( 'openbb_manage_profile_fields' );
 		};
 
+		$can_manage_rules = static function () {
+			return self::authorize( 'openbb_manage_rules' );
+		};
+		$rule_content = array(
+			'type'     => 'array',
+			'required' => true,
+			'items'    => array(
+				'type'                 => 'object',
+				'required'             => array( 'default' ),
+				'properties'           => array( 'default' => array( 'type' => 'string' ) ),
+				'additionalProperties' => array( 'type' => 'string' ),
+			),
+		);
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/settings/rules',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_rules' ),
+					'permission_callback' => $can_manage_rules,
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'save_rules' ),
+					'permission_callback' => $can_manage_rules,
+					'args'                => array(
+						'content'  => $rule_content,
+						'revision' => array( 'type' => 'string', 'required' => true ),
+					),
+				),
+			)
+		);
+		foreach ( array( 'publish', 'discard' ) as $action ) {
+			register_rest_route(
+				self::API_NAMESPACE,
+				'/settings/rules/' . $action,
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'publish' === $action ? 'publish_rules' : 'discard_rules' ),
+					'permission_callback' => $can_manage_rules,
+					'args'                => array_merge(
+						array( 'revision' => array( 'type' => 'string', 'required' => true ) ),
+						'publish' === $action ? array( 'requires_reacceptance' => array( 'type' => 'boolean', 'required' => true ) ) : array()
+					),
+				)
+			);
+		}
+
 		register_rest_route(
 			self::API_NAMESPACE,
 			'/settings/profile-fields',
@@ -118,6 +167,74 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 
 	public function get_settings(): WP_REST_Response {
 		return rest_ensure_response( self::prepare_settings() );
+	}
+
+	public function get_rules(): WP_REST_Response {
+		$versions = array_map(
+			static function ( OPENBB_Rules_Version $version ): array {
+				$author = get_userdata( $version->published_by );
+				return array(
+					'id'                    => $version->id,
+					'content'               => $version->content,
+					'published_at'          => mysql_to_rfc3339( $version->published_at ),
+					'published_by'          => $author ? $author->display_name : __( 'Deleted user', 'open-bulk-buying' ),
+					'requires_reacceptance' => $version->requires_reacceptance,
+				);
+			},
+			OPENBB_Rules::get_versions()
+		);
+
+		return rest_ensure_response(
+			array(
+				'draft'       => OPENBB_Rules::get_draft(),
+				'revision'    => self::rules_revision(),
+				'unpublished' => OPENBB_Rules::has_unpublished_changes(),
+				'versions'    => $versions,
+			)
+		);
+	}
+
+	private static function rules_revision(): string {
+		$latest = OPENBB_Rules::get_latest();
+		return md5( OPENBB_Rules::hash_content( OPENBB_Rules::get_draft() ) . ':' . ( $latest ? $latest->id : 0 ) );
+	}
+
+	private static function check_rules_revision( WP_REST_Request $request ): ?WP_Error {
+		if ( self::rules_revision() !== $request['revision'] ) {
+			return new WP_Error( 'openbb_rules_stale', __( 'The rules changed since you loaded them. Reload the rules before saving.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+		}
+		return null;
+	}
+
+	public function save_rules( WP_REST_Request $request ) {
+		$error = self::check_rules_revision( $request );
+		if ( $error ) {
+			return $error;
+		}
+		if ( ! OPENBB_Rules::save_draft( $request['content'] ) ) {
+			return new WP_Error( 'openbb_rules_save_failed', __( 'The draft could not be saved.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+		}
+		return $this->get_rules();
+	}
+
+	public function publish_rules( WP_REST_Request $request ) {
+		$error = self::check_rules_revision( $request );
+		if ( $error ) {
+			return $error;
+		}
+		$result = OPENBB_Rules::publish( $request['requires_reacceptance'], get_current_user_id() );
+		return is_wp_error( $result ) ? self::with_status( $result, 'openbb_rules_empty' === $result->get_error_code() ? 400 : 500 ) : $this->get_rules();
+	}
+
+	public function discard_rules( WP_REST_Request $request ) {
+		$error = self::check_rules_revision( $request );
+		if ( $error ) {
+			return $error;
+		}
+		if ( ! OPENBB_Rules::discard_draft() ) {
+			return new WP_Error( 'openbb_rules_discard_failed', __( 'The draft could not be discarded.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+		}
+		return $this->get_rules();
 	}
 
 	/**

@@ -180,6 +180,52 @@ $openbb-wide-sidebar-width: 640px;
 	}
 }
 
+.openbb-rules {
+
+	&__card {
+		padding: 16px;
+		border: 1px solid $openbb-border;
+		background: #fff;
+
+		p {
+			white-space: pre-wrap;
+			overflow-wrap: anywhere;
+		}
+	}
+
+	&__history {
+		margin: 0;
+
+		li {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 12px;
+			padding: 12px 0;
+			border-bottom: 1px solid $openbb-border;
+		}
+	}
+}
+
+.openbb-rules__editor {
+
+	label {
+		display: block;
+		margin-bottom: 8px;
+		font-weight: 600;
+	}
+}
+
+.openbb-rules__published {
+	margin-left: 24px;
+	list-style: decimal;
+
+	> li {
+		margin-bottom: 16px;
+		overflow-wrap: anywhere;
+	}
+}
+
 .openbb-field-editor__label {
 	margin-bottom: 8px;
 	font-size: 11px;

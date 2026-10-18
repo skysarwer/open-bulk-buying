@@ -28,7 +28,7 @@ class OPENBB_Admin {
 		'cycles'   => array( 'openbb-cycles', 'openbb_manage_cycles' ),
 		'orders'   => array( 'openbb-orders', 'openbb_view_orders' ),
 		'members'  => array( 'openbb-members', 'openbb_view_members' ),
-		'settings' => array( 'open-bulk-buying', 'openbb_manage_settings' ),
+		'settings' => array( 'open-bulk-buying', 'openbb_access_settings' ),
 	);
 
 	/** @var array<string, string> Hook suffix => screen. */
@@ -123,6 +123,10 @@ class OPENBB_Admin {
 		$screen = self::$hooks[ $hook_suffix ];
 
 		// Any screen can switch to Products without a reload, so load media up front.
+		if ( current_user_can( 'openbb_manage_rules' ) ) {
+			wp_enqueue_editor();
+		}
+
 		if ( current_user_can( 'openbb_manage_products' ) && current_user_can( 'upload_files' ) ) {
 			wp_enqueue_media();
 		}
@@ -157,6 +161,7 @@ class OPENBB_Admin {
 				'openbb_manage_access',
 				'openbb_manage_settings',
 				'openbb_manage_profile_fields',
+				'openbb_manage_rules',
 				'manage_options',
 				'upload_files',
 			) as $cap
