@@ -425,14 +425,14 @@ export function profileEdits( data, edits ) {
  * @param {Array}  defs
  * @return {Object} Error.
  */
-export function withFieldErrors( error, defs ) {
+export function withFieldErrors( error, defs, labels = {} ) {
 	const errors = error?.data?.errors;
 	if ( ! errors || typeof errors !== 'object' ) {
 		return error;
 	}
 	const details = Object.entries( errors ).map( ( [ key, message ] ) => {
 		const def = ( defs || [] ).find( ( d ) => d.key === key );
-		return `${ def ? fieldLabel( def ) : key }: ${ message }`;
+		return `${ def ? fieldLabel( def ) : labels[ key ] || key }: ${ message }`;
 	} );
 	return { ...error, message: [ error.message, ...details ].join( ' ' ) };
 }

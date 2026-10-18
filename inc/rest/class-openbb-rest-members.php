@@ -58,17 +58,26 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 					'callback'            => array( $this, 'create_item' ),
 					'permission_callback' => $can_edit,
 					'args'                => array(
-						'user_id'   => array(
-							'type'     => 'integer',
-							'minimum'  => 1,
-							'required' => true,
+						'user_id'    => array(
+							'description' => __( 'An existing user to make a member. Leave out to create a new user from `account`.', 'open-bulk-buying' ),
+							'type'        => 'integer',
+							'minimum'     => 1,
 						),
-						'coop_role' => array(
+						'account'    => array(
+							'description' => __( 'New user: email, first_name, last_name, phone, language.', 'open-bulk-buying' ),
+							'type'        => 'object',
+						),
+						'send_email' => array(
+							'description' => __( 'New user: send WordPress\'s set-your-password email.', 'open-bulk-buying' ),
+							'type'        => 'boolean',
+							'default'     => true,
+						),
+						'coop_role'  => array(
 							'type'    => 'string',
 							'default' => OPENBB_Access::ROLE_MEMBER,
 							'enum'    => array_keys( OPENBB_Access::coop_roles() ),
 						),
-						'profile'   => array(
+						'profile'    => array(
 							'type'    => 'object',
 							'default' => array(),
 						),
@@ -239,9 +248,16 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 	}
 
 	/**
-	 * Gives an existing user who isn't a member a co-op role.
+	 * Gives an existing user who isn't a member a co-op role, or creates a new user (`account`).
 	 */
 	public function create_item( WP_REST_Request $request ) {
+		if ( $request->has_param( 'account' ) && ! $request->has_param( 'user_id' ) ) {
+			return $this->create_user( $request );
+		}
+		if ( ! $request->has_param( 'user_id' ) ) {
+			return new WP_Error( 'rest_missing_callback_param', __( 'Send either user_id (existing user) or account (new user).', 'open-bulk-buying' ), array( 'status' => 400 ) );
+		}
+
 		$user_id = (int) $request['user_id'];
 		if ( ! get_userdata( $user_id ) || ! $this->is_site_user( $user_id ) ) {
 			return self::not_found( __( 'User not found.', 'open-bulk-buying' ) );
@@ -269,6 +285,28 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 		}
 
 		$response = rest_ensure_response( $this->prepare_member( OPENBB_Member::get( $user_id ) ) );
+		$response->set_status( 201 );
+
+		return $response;
+	}
+
+	private function create_user( WP_REST_Request $request ) {
+		$created = OPENBB_Signup::create_member(
+			(array) $request['account'],
+			(array) $request['profile'],
+			OPENBB_Profile_Fields::CONTEXT_STAFF_CREATE,
+			array(
+				'coop_role'  => (string) $request['coop_role'],
+				'send_email' => (bool) $request['send_email'],
+			)
+		);
+		if ( is_wp_error( $created ) ) {
+			return $created;
+		}
+
+		$item               = $this->prepare_member( OPENBB_Member::get( $created['user_id'] ) );
+		$item['email_sent'] = $created['email_sent'];
+		$response           = rest_ensure_response( $item );
 		$response->set_status( 201 );
 
 		return $response;

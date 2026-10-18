@@ -87,6 +87,29 @@ function openbb_update_member_field( int $user_id, string $field, $value ): bool
 		|| false !== update_user_meta( $user_id, $key, $value );
 }
 
+/**
+ * Whether $email is a placeholder for a member without an email address. Placeholders use
+ * the reserved `.invalid` TLD (RFC 2606), which can never be delivered.
+ */
+function openbb_is_placeholder_email( string $email ): bool {
+	return (bool) preg_match( '/\.invalid$/i', trim( $email ) );
+}
+
+/**
+ * Whether plugin email may be sent to a user. All member email should check this rather
+ * than assume every address works.
+ */
+function openbb_can_email_member( int $user_id ): bool {
+	$user = get_userdata( $user_id );
+	$can  = $user && is_email( $user->user_email ) && ! openbb_is_placeholder_email( $user->user_email );
+
+	/**
+	 * @param bool $can
+	 * @param int  $user_id
+	 */
+	return (bool) apply_filters( 'openbb_can_email_member', $can, $user_id );
+}
+
 function openbb_register_member_meta(): void {
 	foreach ( openbb_member_meta_fields() as $field => $args ) {
 		register_meta(

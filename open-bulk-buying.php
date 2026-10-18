@@ -35,6 +35,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/model/class-openbb-entity.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/user-meta.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-member.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-profile-fields.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-signup.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/product/units.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/product/post-type.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/product/class-openbb-product.php';

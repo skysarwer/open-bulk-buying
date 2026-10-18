@@ -316,6 +316,7 @@ class OPENBB_Access {
 	 */
 	const NAMED_CAPS = array(
 		'openbb_manage_profile_fields' => 'openbb_manage_settings',
+		'openbb_create_members'        => 'openbb_edit_members',
 	);
 
 	/**
@@ -344,6 +345,10 @@ class OPENBB_Access {
 			case 'openbb_set_coop_role':
 			case 'openbb_set_grants':
 				$target_id = isset( $args[0] ) ? (int) $args[0] : 0;
+				// An explicit 0 is a user about to be created (OPENBB_Signup).
+				if ( array_key_exists( 0, $args ) && 0 === $args[0] && in_array( $cap, array( 'openbb_set_coop_role', 'openbb_set_grants' ), true ) ) {
+					return self::map_new_user_cap( $cap, $args[1] ?? null );
+				}
 				if ( ! $target_id || ! get_userdata( $target_id ) ) {
 					return array( 'do_not_allow' );
 				}
@@ -429,6 +434,22 @@ class OPENBB_Access {
 		}
 
 		return array( 'do_not_allow' );
+	}
+
+	/**
+	 * Setting the access of an account that is about to be created (target 0): never self,
+	 * never protected, so it's judged only on the requested role.
+	 */
+	private static function map_new_user_cap( string $cap, $new_role ): array {
+		if ( 'openbb_set_grants' === $cap ) {
+			return array( 'openbb_manage_access' );
+		}
+		$new_role = self::sanitize_role( $new_role );
+		if ( '' === $new_role ) {
+			return array( 'do_not_allow' );
+		}
+
+		return array( in_array( $new_role, self::STAFF_ROLES, true ) ? 'openbb_manage_access' : 'openbb_edit_members' );
 	}
 
 	/**

@@ -1,8 +1,11 @@
 import {
 	Button,
+	CheckboxControl,
 	ComboboxControl,
 	SelectControl,
 	__experimentalHStack as HStack,
+	__experimentalToggleGroupControl as ToggleGroupControl,
+	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 	__experimentalVStack as VStack,
 } from '@wordpress/components';
 import { useCallback, useEffect, useMemo, useState } from '@wordpress/element';
@@ -62,25 +65,56 @@ const addableRoles = () =>
 			can( 'openbb_manage_access' ) || ! config.staffRoles.includes( role.value )
 	);
 
+const ACCOUNT_KEYS = [ 'email', 'first_name', 'last_name', 'phone', 'language' ];
+const REQUIRED_ACCOUNT_KEYS = [ 'email', 'first_name' ];
+
+const accountFields = memberFields
+	.filter( ( field ) => ACCOUNT_KEYS.includes( field.id ) )
+	.map( ( field ) =>
+		REQUIRED_ACCOUNT_KEYS.includes( field.id ) ? { ...field, isValid: { required: true } } : field
+	);
+
+const accountLabels = Object.fromEntries( accountFields.map( ( field ) => [ field.id, field.label ] ) );
+
+const accountForm = {
+	layout: { type: 'regular', labelPosition: 'top' },
+	fields: [
+		'email',
+		{
+			id: 'names',
+			label: __( 'Name', 'open-bulk-buying' ),
+			layout: { type: 'row' },
+			children: [ 'first_name', 'last_name' ],
+		},
+		'phone',
+		'language',
+	],
+};
+
+// Reserved TLD (RFC 2606) for members without an email address; mail is never sent there.
+const isPlaceholderEmail = ( email ) => /\.invalid$/i.test( ( email || '' ).trim() );
+
 function AddMemberPanel( { onClose, onAdded } ) {
+	const [ mode, setMode ] = useState( 'existing' );
 	const [ search, setSearch ] = useState( '' );
 	const [ options, setOptions ] = useState( [] );
 	const [ userId, setUserId ] = useState( null );
+	const [ account, setAccount ] = useState( {} );
+	const [ sendEmail, setSendEmail ] = useState( true );
 	const [ role, setRole ] = useState( 'member' );
 	const [ profile, setProfile ] = useState( {} );
 	const [ isBusy, setIsBusy ] = useState( false );
 	const [ error, setError ] = useState( null );
 	const debounced = useDebouncedValue( search );
 	const { fields: defs, error: defsError } = useProfileFields();
-	useUnsavedChanges( !! userId || Object.keys( profile ).length > 0 );
+	const isNew = 'new' === mode;
+	const placeholder = isPlaceholderEmail( account.email );
+	useUnsavedChanges(
+		( isNew ? Object.values( account ).some( Boolean ) : !! userId ) || Object.keys( profile ).length > 0
+	);
 
-	// Only the required fields; the rest can be filled in afterwards.
 	const profileFields = useMemo(
-		() =>
-			profileFormFields(
-				( defs || [] ).filter( ( def ) => def.required && ! def.archived ),
-				'staff_create'
-			),
+		() => profileFormFields( ( defs || [] ).filter( ( def ) => ! def.archived ), 'staff_create' ),
 		[ defs ]
 	);
 	const profileForm = useMemo(
@@ -91,6 +125,7 @@ function AddMemberPanel( { onClose, onAdded } ) {
 		[ profileFields ]
 	);
 	const { validity, isValid } = useFormValidity( profile, profileFields, profileForm );
+	const { validity: accountValidity, isValid: isAccountValid } = useFormValidity( account, accountFields, accountForm );
 
 	useEffect( () => {
 		let current = true;
@@ -122,14 +157,16 @@ function AddMemberPanel( { onClose, onAdded } ) {
 		setIsBusy( true );
 		setError( null );
 		try {
-			onAdded(
-				await request( '/members', {
-					method: 'POST',
-					data: { user_id: userId, coop_role: role, profile: profileEdits( profile, profile ) },
-				} )
-			);
+			const data = { coop_role: role, profile: profileEdits( profile, profile ) };
+			if ( isNew ) {
+				data.account = Object.fromEntries( ACCOUNT_KEYS.map( ( key ) => [ key, ( account[ key ] || '' ).trim() ] ) );
+				data.send_email = sendEmail && ! placeholder;
+			} else {
+				data.user_id = userId;
+			}
+			onAdded( await request( '/members', { method: 'POST', data } ) );
 		} catch ( err ) {
-			setError( withFieldErrors( err, defs ) );
+			setError( withFieldErrors( err, defs, accountLabels ) );
 			setIsBusy( false );
 		}
 	};
@@ -139,19 +176,65 @@ function AddMemberPanel( { onClose, onAdded } ) {
 			<form onSubmit={ submit } className="openbb-edit-form">
 				<VStack spacing={ 4 }>
 					<ErrorNotice error={ error } onDismiss={ () => setError( null ) } />
-					<ComboboxControl
+					<ToggleGroupControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-						label={ __( 'User', 'open-bulk-buying' ) }
-						help={ __(
-							'Search the site’s users who are not members yet, by name or email.',
-							'open-bulk-buying'
-						) }
-						value={ userId }
-						options={ options }
-						onChange={ setUserId }
-						onFilterValueChange={ setSearch }
-					/>
+						isBlock
+						label={ __( 'Who', 'open-bulk-buying' ) }
+						hideLabelFromVision
+						value={ mode }
+						onChange={ ( value ) => value && setMode( value ) }
+					>
+						<ToggleGroupControlOption value="existing" label={ __( 'Existing user', 'open-bulk-buying' ) } />
+						<ToggleGroupControlOption value="new" label={ __( 'New user', 'open-bulk-buying' ) } />
+					</ToggleGroupControl>
+					{ isNew ? (
+						<>
+							<DataForm
+								data={ account }
+								fields={ accountFields }
+								form={ accountForm }
+								validity={ accountValidity }
+								onChange={ ( changes ) => setAccount( ( prev ) => ( { ...prev, ...changes } ) ) }
+							/>
+							<p className="description">
+								{ __(
+									'No email address? Use a made-up one ending in .invalid, such as jane.doe.4821@noemail.invalid. It can be replaced later.',
+									'open-bulk-buying'
+								) }
+							</p>
+							<CheckboxControl
+								__nextHasNoMarginBottom
+								id="openbb-add-member-send-email"
+								label={ __( 'Send account email', 'open-bulk-buying' ) }
+								help={
+									placeholder
+										? __( 'Placeholder addresses can’t receive email.', 'open-bulk-buying' )
+										: __(
+												'Emails them a link to set their password. Without it, they can use “Lost your password?” on the login page later.',
+												'open-bulk-buying'
+										  )
+								}
+								checked={ sendEmail && ! placeholder }
+								disabled={ placeholder }
+								onChange={ setSendEmail }
+							/>
+						</>
+					) : (
+						<ComboboxControl
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+							label={ __( 'User', 'open-bulk-buying' ) }
+							help={ __(
+								'Search the site’s users who are not members yet, by name or email.',
+								'open-bulk-buying'
+							) }
+							value={ userId }
+							options={ options }
+							onChange={ setUserId }
+							onFilterValueChange={ setSearch }
+						/>
+					) }
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
@@ -187,7 +270,7 @@ function AddMemberPanel( { onClose, onAdded } ) {
 							variant="primary"
 							type="submit"
 							isBusy={ isBusy }
-							disabled={ isBusy || ! userId || ! isValid || ! defs }
+							disabled={ isBusy || ! ( isNew ? isAccountValid : userId ) || ! isValid || ! defs }
 							accessibleWhenDisabled
 						>
 							{ __( 'Add member', 'open-bulk-buying' ) }
@@ -269,8 +352,11 @@ export default function MembersScreen() {
 					setPanel( item.id );
 					list.reload();
 					notify.success(
-						/* translators: %s: member name. */
-						sprintf( __( '%s is now a member.', 'open-bulk-buying' ), item.display_name )
+						item.email_sent
+							? /* translators: %s: member name. */
+							  sprintf( __( '%s is now a member. They’ve been emailed a link to set their password.', 'open-bulk-buying' ), item.display_name )
+							: /* translators: %s: member name. */
+							  sprintf( __( '%s is now a member.', 'open-bulk-buying' ), item.display_name )
 					);
 				} }
 			/>
