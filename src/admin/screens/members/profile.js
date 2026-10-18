@@ -119,6 +119,59 @@ export function profileValueText( def, value ) {
 }
 
 /**
+ * Members list columns for profile fields; hidden until picked in the view
+ * options. True/false and options fields can be filtered on.
+ *
+ * @param {Array} defs Field definitions.
+ * @return {Array} DataViews fields.
+ */
+export function profileListFields( defs ) {
+	return ( defs || [] ).map( ( def ) => {
+		const field = {
+			id: PROFILE_PREFIX + def.key,
+			label: fieldLabel( def ),
+			type: 'text',
+			getValue: ( { item } ) => item.profile?.[ def.key ] ?? emptyValue( def ),
+			render: ( { item } ) =>
+				profileValueText( def, item.profile?.[ def.key ] ?? emptyValue( def ) ),
+			enableSorting: false,
+			filterBy: false,
+		};
+		if ( def.type === 'boolean' ) {
+			field.elements = [
+				{ value: 'true', label: __( 'Yes', 'open-bulk-buying' ) },
+				{ value: 'false', label: __( 'No', 'open-bulk-buying' ) },
+			];
+			field.filterBy = { operators: [ 'is' ] };
+		} else if ( def.type === 'options' ) {
+			field.elements = allOptions( def ).map( ( option ) => ( {
+				value: option.key,
+				label: optionLabel( def, option.key ),
+			} ) );
+			field.filterBy = { operators: [ 'isAny' ] };
+		}
+		return field;
+	} );
+}
+
+/**
+ * Maps profile filters to `profile[key]` query args.
+ *
+ * @param {Array} defs Field definitions.
+ * @return {Object} Field id => function( filter ) returning query args.
+ */
+export function profileListFilters( defs ) {
+	return Object.fromEntries(
+		( defs || [] )
+			.filter( ( def ) => def.type === 'boolean' || def.type === 'options' )
+			.map( ( def ) => [
+				PROFILE_PREFIX + def.key,
+				( filter ) => ( { [ `profile[${ def.key }]` ]: [].concat( filter.value ) } ),
+			] )
+	);
+}
+
+/**
  * Groups of the options to offer: active ones, plus archived or unknown keys
  * the member already holds, so they can be kept or removed.
  *

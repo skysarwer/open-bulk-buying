@@ -239,4 +239,43 @@ class Test_OPENBB_Profile_Fields extends OPENBB_TestCase {
 		$this->assertSame( 400, $unconfirmed->get_status() );
 		$this->assertSame( 200, $purged->get_status() );
 	}
+
+	public function test_members_list_filters_by_profile_values(): void {
+		$this->save( array( $this->diet_field(), $this->boolean_field( 'newsletter' ) ) );
+		$both    = $this->make_user( 'member' );
+		$vegan   = $this->make_user( 'member' );
+		$neither = $this->make_user( 'member' );
+		OPENBB_Profile_Fields::set_values( $both, array( 'diet' => array( 'vegan', 'nuts' ), 'newsletter' => true ), 'staff' );
+		OPENBB_Profile_Fields::set_values( $vegan, array( 'diet' => array( 'vegan' ) ), 'staff' );
+		wp_set_current_user( $this->make_user( 'manager' ) );
+
+		$ids = function ( array $profile ): array {
+			$response = $this->api( 'GET', '/members', array( 'profile' => $profile ) );
+			$this->assertSame( 200, $response->get_status() );
+			$ids = wp_list_pluck( $response->get_data(), 'id' );
+			sort( $ids );
+
+			return $ids;
+		};
+
+		// Any of a field's values, without duplicates.
+		$this->assertSame( array( $both, $vegan ), $ids( array( 'diet' => array( 'vegan', 'nuts' ) ) ) );
+		// All fields.
+		$this->assertSame( array( $both ), $ids( array( 'diet' => array( 'vegan' ), 'newsletter' => array( 'true' ) ) ) );
+		$this->assertNotContains( $both, $ids( array( 'newsletter' => array( 'false' ) ) ) );
+		$this->assertContains( $neither, $ids( array( 'newsletter' => array( 'false' ) ) ) );
+		// Unknown keys are ignored.
+		$this->assertContains( $neither, $ids( array( 'gone' => array( 'x' ) ) ) );
+	}
+
+	public function test_members_list_includes_profile_values(): void {
+		$this->save( array( $this->boolean_field( 'newsletter' ) ) );
+		$member = $this->make_user( 'member' );
+		OPENBB_Profile_Fields::set_values( $member, array( 'newsletter' => true ), 'staff' );
+		wp_set_current_user( $this->make_user( 'manager' ) );
+
+		$items = wp_list_pluck( $this->api( 'GET', '/members' )->get_data(), 'profile', 'id' );
+
+		$this->assertTrue( ( (array) $items[ $member ] )['newsletter'] );
+	}
 }

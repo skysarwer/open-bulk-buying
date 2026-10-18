@@ -41,6 +41,15 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 								),
 								'default' => array(),
 							),
+							'profile'   => array(
+								'description'          => __( 'Profile field key => values. Matches any of a field\'s values, and all fields.', 'open-bulk-buying' ),
+								'type'                 => 'object',
+								'additionalProperties' => array(
+									'type'  => 'array',
+									'items' => array( 'type' => 'string' ),
+								),
+								'default'              => array(),
+							),
 						)
 					),
 				),
@@ -159,6 +168,7 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 			$args['search']         = '*' . $request['search'] . '*';
 			$args['search_columns'] = array( 'user_login', 'user_email', 'display_name', 'user_nicename' );
 		}
+		$args['meta_query'] = array_merge( $args['meta_query'], self::profile_clauses( (array) $request['profile'] ) );
 
 		$query   = new WP_User_Query( $args );
 		$members = array_filter(
@@ -171,6 +181,41 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 		);
 
 		return self::paginated( $this->prepare_members( $members ), (int) $query->get_total(), $per_page );
+	}
+
+	/**
+	 * meta_query clauses for the `profile` filter. Unknown (e.g. purged) keys are ignored
+	 * so saved views keep working.
+	 *
+	 * @param array $filters Field key => values.
+	 * @return array[]
+	 */
+	private static function profile_clauses( array $filters ): array {
+		$fields  = OPENBB_Profile_Fields::get_fields_for_context( OPENBB_Profile_Fields::CONTEXT_STAFF );
+		$clauses = array();
+		foreach ( $filters as $key => $values ) {
+			$field  = $fields[ $key ] ?? null;
+			$values = array_values( array_unique( array_map( 'strval', (array) $values ) ) );
+			if ( ! $field || ! $values ) {
+				continue;
+			}
+			if ( OPENBB_Profile_Fields::TYPE_BOOLEAN === $field['type'] ) {
+				$values = array_values( array_unique( array_map( 'rest_sanitize_boolean', $values ) ) );
+				if ( count( $values ) > 1 ) {
+					continue;
+				}
+			}
+
+			// An explicit OR group also makes WP_User_Query select DISTINCT users, so
+			// members with several matching options aren't listed twice.
+			$group = array( 'relation' => 'OR' );
+			foreach ( $values as $value ) {
+				$group[] = OPENBB_Profile_Fields::meta_query_clause( $field, $value );
+			}
+			$clauses[] = $group;
+		}
+
+		return $clauses;
 	}
 
 	public function get_item( WP_REST_Request $request ) {
@@ -355,17 +400,15 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 	}
 
 	/**
-	 * One member with their profile field values (options as arrays of keys). Lists leave
-	 * the values out.
+	 * One member, as in lists.
 	 */
 	private function prepare_member( OPENBB_Member $member ): array {
-		$item            = $this->prepare_members( array( $member ) )[0];
-		$item['profile'] = (object) OPENBB_Profile_Fields::get_values( $member->user_id, OPENBB_Profile_Fields::CONTEXT_STAFF );
-
-		return $item;
+		return $this->prepare_members( array( $member ) )[0];
 	}
 
 	/**
+	 * Members with their profile field values (options as arrays of keys).
+	 *
 	 * @param OPENBB_Member[] $members
 	 */
 	private function prepare_members( array $members ): array {
@@ -420,6 +463,7 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 				'can_edit'         => current_user_can( 'openbb_edit_member', $member->user_id ),
 				'assignable_roles' => $assignable,
 				'profile_url'      => current_user_can( 'edit_user', $member->user_id ) ? get_edit_user_link( $member->user_id ) : '',
+				'profile'          => (object) OPENBB_Profile_Fields::get_values( $member->user_id, OPENBB_Profile_Fields::CONTEXT_STAFF ),
 			);
 		}
 

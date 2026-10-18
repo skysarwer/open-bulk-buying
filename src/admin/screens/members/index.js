@@ -24,7 +24,14 @@ import { can, config, queryArg, toElements } from '../../utils/config';
 import relatedPanels from '../related-panels';
 import { memberFields } from './fields';
 import MemberPanel from './panel';
-import { profileEdits, profileFormFields, useProfileFields, withFieldErrors } from './profile';
+import {
+	profileEdits,
+	profileFormFields,
+	profileListFields,
+	profileListFilters,
+	useProfileFields,
+	withFieldErrors,
+} from './profile';
 
 const LIST_MAPPING = {
 	orderby: { display_name: 'name', email: 'email', joined_at: 'registered' },
@@ -199,7 +206,18 @@ export default function MembersScreen() {
 		const id = Number( queryArg( 'member' ) );
 		return id || null;
 	} );
-	const list = useList( '/members', view, LIST_MAPPING );
+	const { fields: profileDefs } = useProfileFields();
+	const [ fields, mapping ] = useMemo(
+		() => [
+			[ ...memberFields, ...profileListFields( profileDefs ) ],
+			{
+				...LIST_MAPPING,
+				filters: { ...LIST_MAPPING.filters, ...profileListFilters( profileDefs ) },
+			},
+		],
+		[ profileDefs ]
+	);
+	const list = useList( '/members', view, mapping );
 	const notify = useNotify();
 	const canEdit = can( 'openbb_edit_members' );
 	const [ guard, discardDialog ] = useDiscardGuard();
@@ -293,7 +311,7 @@ export default function MembersScreen() {
 			{ discardDialog }
 			<DataViews
 				data={ list.items }
-				fields={ memberFields }
+				fields={ fields }
 				view={ view }
 				onChangeView={ setView }
 				actions={ actions }

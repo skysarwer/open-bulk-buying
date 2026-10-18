@@ -36,7 +36,18 @@ export const TYPE_LABELS = {
 	options: __( 'Options', 'open-bulk-buying' ),
 };
 
-function requiredHelp( type ) {
+function requiredHelp( type, visibility ) {
+	if ( visibility === 'staff' ) {
+		return type === 'boolean'
+			? __(
+					'Staff must check the box when adding a member. Later edits are never blocked.',
+					'open-bulk-buying'
+			  )
+			: __(
+					'Staff must fill this in when adding a member. Later edits are never blocked.',
+					'open-bulk-buying'
+			  );
+	}
 	if ( type === 'boolean' ) {
 		return __(
 			'Members must check the box (for example, to give consent).',
@@ -430,7 +441,7 @@ export default function FieldPanel( {
 						}
 						checked={ draft.required }
 						onChange={ ( required ) => change( { required } ) }
-						help={ requiredHelp( draft.type ) }
+						help={ requiredHelp( draft.type, draft.visibility ) }
 					/>
 
 					<Heading>{ __( 'Preview', 'open-bulk-buying' ) }</Heading>
