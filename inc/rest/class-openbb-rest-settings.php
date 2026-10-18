@@ -33,6 +33,28 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 					'permission_callback' => $can_manage,
 					'args'                => array(
 						'test_mode' => array( 'type' => 'boolean' ),
+						'general'   => array(
+							'type'                 => 'object',
+							'additionalProperties' => false,
+							'required'             => array( 'require_member_approval', 'membership_fee_type', 'membership_fee_amount', 'membership_fee_order_interval' ),
+							'properties'           => array(
+								'require_member_approval'       => array( 'type' => 'boolean' ),
+								'membership_fee_type'           => array(
+									'type' => 'string',
+									'enum' => array( 'one_time', 'recurring' ),
+								),
+								'membership_fee_amount'         => array(
+									'type'    => 'integer',
+									'minimum' => 0,
+									'maximum' => 9007199254740991,
+								),
+								'membership_fee_order_interval' => array(
+									'type'    => 'integer',
+									'minimum' => 1,
+									'maximum' => 9007199254740991,
+								),
+							),
+						),
 					),
 				),
 			)
@@ -241,6 +263,14 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function update_settings( WP_REST_Request $request ) {
+		if ( $request->has_param( 'general' ) ) {
+			$general = array_merge( OPENBB_Settings::get_general(), $request->get_param( 'general' ) );
+			if ( OPENBB_Settings::get_general() !== $general
+				&& ! update_option( OPENBB_Settings::GENERAL_OPTION, $general, false ) ) {
+				return new WP_Error( 'openbb_settings_save_failed', __( 'The settings could not be saved.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+			}
+		}
+
 		if ( $request->has_param( 'test_mode' ) ) {
 			$enabled = (bool) $request->get_param( 'test_mode' );
 			$saved   = OPENBB_Maintenance::is_test_mode() === $enabled
@@ -332,6 +362,7 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 	private static function prepare_settings(): array {
 		return array(
 			'test_mode' => OPENBB_Maintenance::is_test_mode(),
+			'general'   => OPENBB_Settings::get_general(),
 		);
 	}
 

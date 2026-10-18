@@ -13,6 +13,8 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 function openbb_uninstall_site(): void {
 	global $wpdb;
 
+	delete_option( 'openbb_general_settings' );
+
 	// Per-site keys only: the main site's "wp_openbb_" prefix doesn't match a subsite's "wp_2_openbb_".
 	$keys = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT meta_key FROM {$wpdb->usermeta} WHERE meta_key LIKE %s", $wpdb->esc_like( $wpdb->get_blog_prefix() . 'openbb_' ) . '%' ) );
 	foreach ( $keys as $key ) {

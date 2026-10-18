@@ -6,8 +6,15 @@ import MaintenanceTab from './maintenance';
 import ProfileFieldsTab from './profile-fields';
 import SettingsPage from './settings-page';
 import RulesTab from './rules';
+import GeneralTab from './general';
 
 const tabs = [
+	{
+		name: 'general',
+		title: __( 'General', 'open-bulk-buying' ),
+		cap: 'openbb_manage_settings',
+		Component: GeneralTab,
+	},
 	{
 		name: 'rules',
 		title: __( 'Co-op Rules', 'open-bulk-buying' ),

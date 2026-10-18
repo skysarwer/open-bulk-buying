@@ -1,6 +1,6 @@
 <?php
 /**
- * Member profile fields defined by the co-op (ref/profile-fields-spec.md).
+ * Member profile fields defined by the co-op.
  *
  * The definitions live in one site option. Values are per-site user meta under
  * "{prefix}openbb_field_{key}", a namespace the built-in member fields never use, so a
