@@ -156,6 +156,7 @@ class OPENBB_Admin {
 				'openbb_view_aid',
 				'openbb_manage_access',
 				'openbb_manage_settings',
+				'openbb_manage_profile_fields',
 				'manage_options',
 				'upload_files',
 			) as $cap

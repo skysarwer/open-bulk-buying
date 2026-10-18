@@ -8,7 +8,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { pencil, plus, seen } from '@wordpress/icons';
-import { DataViews } from '@wordpress/dataviews/wp';
+import { DataForm, DataViews, useFormValidity } from '@wordpress/dataviews/wp';
 
 import { ErrorNotice, Page, SidePanel, usePanelStack } from '../../components';
 import {
@@ -24,6 +24,7 @@ import { can, config, queryArg, toElements } from '../../utils/config';
 import relatedPanels from '../related-panels';
 import { memberFields } from './fields';
 import MemberPanel from './panel';
+import { profileEdits, profileFormFields, useProfileFields, withFieldErrors } from './profile';
 
 const LIST_MAPPING = {
 	orderby: { display_name: 'name', email: 'email', joined_at: 'registered' },
@@ -59,10 +60,30 @@ function AddMemberPanel( { onClose, onAdded } ) {
 	const [ options, setOptions ] = useState( [] );
 	const [ userId, setUserId ] = useState( null );
 	const [ role, setRole ] = useState( 'member' );
+	const [ profile, setProfile ] = useState( {} );
 	const [ isBusy, setIsBusy ] = useState( false );
 	const [ error, setError ] = useState( null );
 	const debounced = useDebouncedValue( search );
-	useUnsavedChanges( !! userId );
+	const { fields: defs, error: defsError } = useProfileFields();
+	useUnsavedChanges( !! userId || Object.keys( profile ).length > 0 );
+
+	// Only the required fields; the rest can be filled in afterwards.
+	const profileFields = useMemo(
+		() =>
+			profileFormFields(
+				( defs || [] ).filter( ( def ) => def.required && ! def.archived ),
+				'staff_create'
+			),
+		[ defs ]
+	);
+	const profileForm = useMemo(
+		() => ( {
+			layout: { type: 'regular', labelPosition: 'top' },
+			fields: profileFields.map( ( field ) => field.id ),
+		} ),
+		[ profileFields ]
+	);
+	const { validity, isValid } = useFormValidity( profile, profileFields, profileForm );
 
 	useEffect( () => {
 		let current = true;
@@ -97,11 +118,11 @@ function AddMemberPanel( { onClose, onAdded } ) {
 			onAdded(
 				await request( '/members', {
 					method: 'POST',
-					data: { user_id: userId, coop_role: role },
+					data: { user_id: userId, coop_role: role, profile: profileEdits( profile, profile ) },
 				} )
 			);
 		} catch ( err ) {
-			setError( err );
+			setError( withFieldErrors( err, defs ) );
 			setIsBusy( false );
 		}
 	};
@@ -132,6 +153,16 @@ function AddMemberPanel( { onClose, onAdded } ) {
 						options={ addableRoles() }
 						onChange={ setRole }
 					/>
+					<ErrorNotice error={ defsError } />
+					{ profileFields.length > 0 && (
+						<DataForm
+							data={ profile }
+							fields={ profileFields }
+							form={ profileForm }
+							validity={ validity }
+							onChange={ ( changes ) => setProfile( ( prev ) => ( { ...prev, ...changes } ) ) }
+						/>
+					) }
 					<HStack justify="flex-end" className="openbb-form-actions">
 						<Button
 							__next40pxDefaultSize
@@ -149,7 +180,7 @@ function AddMemberPanel( { onClose, onAdded } ) {
 							variant="primary"
 							type="submit"
 							isBusy={ isBusy }
-							disabled={ isBusy || ! userId }
+							disabled={ isBusy || ! userId || ! isValid || ! defs }
 							accessibleWhenDisabled
 						>
 							{ __( 'Add member', 'open-bulk-buying' ) }

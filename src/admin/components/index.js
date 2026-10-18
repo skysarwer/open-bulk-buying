@@ -6,4 +6,5 @@ export { default as Loading } from './loading';
 export { default as Page } from './page';
 export { RecordLink, usePanelStack } from './panel-stack';
 export { default as SidePanel } from './side-panel';
+export { default as SortableList, moveItem } from './sortable-list';
 export { default as Snackbars } from './snackbars';

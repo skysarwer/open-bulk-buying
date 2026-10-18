@@ -59,8 +59,22 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 							'default' => OPENBB_Access::ROLE_MEMBER,
 							'enum'    => array_keys( OPENBB_Access::coop_roles() ),
 						),
+						'profile'   => array(
+							'type'    => 'object',
+							'default' => array(),
+						),
 					),
 				),
+			)
+		);
+
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/profile-fields',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_profile_fields' ),
+				'permission_callback' => $can_view,
 			)
 		);
 
@@ -104,6 +118,7 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 							'type' => 'string',
 							'enum' => array_keys( OPENBB_Access::coop_roles() ),
 						),
+						'profile'    => array( 'type' => 'object' ),
 					),
 				),
 			)
@@ -164,10 +179,18 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 			return self::not_found( __( 'Member not found.', 'open-bulk-buying' ) );
 		}
 
-		$item           = $this->prepare_members( array( $member ) )[0];
+		$item           = $this->prepare_member( $member );
 		$item['orders'] = current_user_can( 'openbb_view_orders' ) ? $this->member_orders( $member->user_id ) : array();
 
 		return rest_ensure_response( $item );
+	}
+
+	/**
+	 * Profile field definitions for the Members screen. Archived fields are included,
+	 * flagged, so members' existing values can be shown read-only.
+	 */
+	public function get_profile_fields(): WP_REST_Response {
+		return rest_ensure_response( array_values( OPENBB_Profile_Fields::get_fields_for_context( OPENBB_Profile_Fields::CONTEXT_STAFF ) ) );
 	}
 
 	/**
@@ -182,13 +205,25 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 			return new WP_Error( 'openbb_already_member', __( 'This person already has a co-op role.', 'open-bulk-buying' ), array( 'status' => 409 ) );
 		}
 
+		// Check the profile first so an invalid one doesn't leave a half-added member.
+		$profile = (array) $request['profile'];
+		$valid   = OPENBB_Profile_Fields::validate_values( $user_id, $profile, OPENBB_Profile_Fields::CONTEXT_STAFF_CREATE );
+		if ( is_wp_error( $valid ) ) {
+			return $valid;
+		}
+
 		$result = OPENBB_Access::set_coop_role( $user_id, (string) $request['coop_role'] );
 		if ( is_wp_error( $result ) ) {
 			$result->add_data( array( 'status' => 'openbb_forbidden' === $result->get_error_code() ? 403 : 400 ) );
 			return $result;
 		}
 
-		$response = rest_ensure_response( $this->prepare_members( array( OPENBB_Member::get( $user_id ) ) )[0] );
+		$saved = OPENBB_Profile_Fields::set_values( $user_id, $profile, OPENBB_Profile_Fields::CONTEXT_STAFF_CREATE );
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		$response = rest_ensure_response( $this->prepare_member( OPENBB_Member::get( $user_id ) ) );
 		$response->set_status( 201 );
 
 		return $response;
@@ -200,25 +235,35 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 			return self::not_found( __( 'Member not found.', 'open-bulk-buying' ) );
 		}
 
-		$profile = array_intersect_key( $request->get_params(), array_flip( array( 'first_name', 'last_name', 'phone', 'language' ) ) );
-		if ( $profile ) {
+		$details = array_intersect_key( $request->get_params(), array_flip( array( 'first_name', 'last_name', 'phone', 'language' ) ) );
+		$profile = $request->has_param( 'profile' ) ? (array) $request['profile'] : array();
+		if ( $details || $profile ) {
 			$allowed = self::authorize( 'openbb_edit_member', $member->user_id );
 			if ( true !== $allowed ) {
 				return $allowed;
 			}
+		}
 
-			if ( isset( $profile['language'] ) ) {
-				$profile['language'] = sanitize_key( (string) $profile['language'] );
-				$languages           = openbb_languages();
-				if ( '' !== $profile['language'] && $languages && ! in_array( $profile['language'], $languages, true ) ) {
-					return self::invalid( __( 'Choose one of the site\'s languages.', 'open-bulk-buying' ) );
-				}
+		// Validate everything before writing anything, so a 400 doesn't leave a partial save.
+		if ( isset( $details['language'] ) ) {
+			$details['language'] = sanitize_key( (string) $details['language'] );
+			$languages           = openbb_languages();
+			if ( '' !== $details['language'] && $languages && ! in_array( $details['language'], $languages, true ) ) {
+				return self::invalid( __( 'Choose one of the site\'s languages.', 'open-bulk-buying' ) );
 			}
+		}
+		if ( $profile ) {
+			$valid = OPENBB_Profile_Fields::validate_values( $member->user_id, $profile, OPENBB_Profile_Fields::CONTEXT_STAFF );
+			if ( is_wp_error( $valid ) ) {
+				return $valid;
+			}
+		}
 
+		if ( $details ) {
 			$user = array( 'ID' => $member->user_id );
 			foreach ( array( 'first_name', 'last_name' ) as $field ) {
-				if ( isset( $profile[ $field ] ) ) {
-					$user[ $field ] = sanitize_text_field( (string) $profile[ $field ] );
+				if ( isset( $details[ $field ] ) ) {
+					$user[ $field ] = sanitize_text_field( (string) $details[ $field ] );
 				}
 			}
 			if ( count( $user ) > 1 ) {
@@ -229,9 +274,16 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 				}
 			}
 			foreach ( array( 'phone', 'language' ) as $field ) {
-				if ( isset( $profile[ $field ] ) && ! openbb_update_member_field( $member->user_id, $field, sanitize_text_field( (string) $profile[ $field ] ) ) ) {
+				if ( isset( $details[ $field ] ) && ! openbb_update_member_field( $member->user_id, $field, sanitize_text_field( (string) $details[ $field ] ) ) ) {
 					return new WP_Error( 'openbb_member_save_failed', __( 'The member could not be saved.', 'open-bulk-buying' ), array( 'status' => 500 ) );
 				}
+			}
+		}
+
+		if ( $profile ) {
+			$saved = OPENBB_Profile_Fields::set_values( $member->user_id, $profile, OPENBB_Profile_Fields::CONTEXT_STAFF );
+			if ( is_wp_error( $saved ) ) {
+				return $saved;
 			}
 		}
 
@@ -253,7 +305,7 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 			);
 		}
 
-		return rest_ensure_response( $this->prepare_members( array( $saved ) )[0] );
+		return rest_ensure_response( $this->prepare_member( $saved ) );
 	}
 
 	/**
@@ -300,6 +352,17 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 
 	private function is_site_user( int $user_id ): bool {
 		return ! is_multisite() || is_user_member_of_blog( $user_id );
+	}
+
+	/**
+	 * One member with their profile field values (options as arrays of keys). Lists leave
+	 * the values out.
+	 */
+	private function prepare_member( OPENBB_Member $member ): array {
+		$item            = $this->prepare_members( array( $member ) )[0];
+		$item['profile'] = (object) OPENBB_Profile_Fields::get_values( $member->user_id, OPENBB_Profile_Fields::CONTEXT_STAFF );
+
+		return $item;
 	}
 
 	/**

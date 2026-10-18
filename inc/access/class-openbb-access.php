@@ -311,12 +311,24 @@ class OPENBB_Access {
 	}
 
 	/**
-	 * Resolves the object-level co-op capabilities (spec §4.2) into primitive ones.
+	 * Narrow capabilities that code checks by name but that resolve to a broader primitive
+	 * capability, so a future per-role matrix can split them without changing any checks.
+	 */
+	const NAMED_CAPS = array(
+		'openbb_manage_profile_fields' => 'openbb_manage_settings',
+	);
+
+	/**
+	 * Resolves the object-level co-op capabilities (spec §4.2) and NAMED_CAPS into primitive ones.
 	 *
 	 * Hooked to 'map_meta_cap'.
 	 */
 	public static function filter_map_meta_cap( $caps, $cap, $user_id, $args ) {
 		$user_id = (int) $user_id;
+
+		if ( isset( self::NAMED_CAPS[ $cap ] ) ) {
+			return array( self::NAMED_CAPS[ $cap ] );
+		}
 
 		switch ( $cap ) {
 			case 'openbb_view_order':

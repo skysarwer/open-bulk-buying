@@ -1,18 +1,31 @@
-import { useMemo } from '@wordpress/element';
+import { Fragment, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
-import { EditForm, RecordLink, SidePanel } from '../../components';
+import { EditForm, ErrorNotice, RecordLink, SidePanel } from '../../components';
 import { useRecord } from '../../hooks';
 import { request } from '../../utils/api';
 import { can, config } from '../../utils/config';
 import { formatMoney } from '../../utils/format';
 import { formatDate, memberFields, memberForm } from './fields';
+import {
+	PROFILE_PREFIX,
+	fieldLabel,
+	profileEdits,
+	profileFormFields,
+	profileValueText,
+	useProfileFields,
+	withFieldErrors,
+} from './profile';
+
+const GROUP_LAYOUT = { type: 'regular', labelPosition: 'top' };
 
 function MemberDetailsForm( { member, onSaved, onCancel } ) {
+	const { fields: defs, error: defsError } = useProfileFields();
+
 	// Only offer roles this user may assign to this member.
 	const fields = useMemo(
-		() =>
-			memberFields.map( ( field ) =>
+		() => [
+			...memberFields.map( ( field ) =>
 				field.id === 'coop_role'
 					? {
 							...field,
@@ -22,13 +35,31 @@ function MemberDetailsForm( { member, onSaved, onCancel } ) {
 					  }
 					: field
 			),
-		[ member ]
+			...profileFormFields( defs || [], 'staff' ),
+		],
+		[ member, defs ]
 	);
+
+	const form = useMemo( () => {
+		const ids = ( list ) => list.map( ( def ) => PROFILE_PREFIX + def.key );
+		const active = ( defs || [] ).filter( ( def ) => ! def.archived );
+		const archived = ( defs || [] ).filter( ( def ) => def.archived );
+		const group = ( id, label, list ) =>
+			list.length ? [ { id, label, layout: GROUP_LAYOUT, children: ids( list ) } ] : [];
+		return {
+			...memberForm,
+			fields: [
+				...memberForm.fields,
+				...group( 'profile', __( 'Profile fields', 'open-bulk-buying' ), active ),
+				...group( 'profile-archived', __( 'Archived fields', 'open-bulk-buying' ), archived ),
+			],
+		};
+	}, [ defs ] );
 
 	return (
 		<EditForm
 			fields={ fields }
-			form={ memberForm }
+			form={ form }
 			initial={ member }
 			requireChanges
 			onCancel={ onCancel }
@@ -37,11 +68,20 @@ function MemberDetailsForm( { member, onSaved, onCancel } ) {
 				const payload = Object.fromEntries(
 					keys.filter( ( key ) => key in edits ).map( ( key ) => [ key, data[ key ] ?? '' ] )
 				);
-				onSaved(
-					await request( `/members/${ member.id }`, { method: 'PUT', data: payload } )
-				);
+				const profile = profileEdits( data, edits );
+				if ( Object.keys( profile ).length ) {
+					payload.profile = profile;
+				}
+				try {
+					onSaved(
+						await request( `/members/${ member.id }`, { method: 'PUT', data: payload } )
+					);
+				} catch ( err ) {
+					throw withFieldErrors( err, defs );
+				}
 			} }
 		>
+			<ErrorNotice error={ defsError } />
 			<MemberFacts member={ member } />
 		</EditForm>
 	);
@@ -83,14 +123,36 @@ function MemberFacts( { member } ) {
 }
 
 function MemberReadOnly( { member } ) {
+	const { fields: defs, error } = useProfileFields();
+	// Archived fields only when the member has a value for them.
+	const shown = ( defs || [] ).filter( ( def ) => {
+		if ( ! def.archived ) {
+			return true;
+		}
+		const value = member.profile?.[ def.key ];
+		return Array.isArray( value ) ? value.length > 0 : !! value;
+	} );
+
 	return (
 		<>
+			<ErrorNotice error={ error } />
 			<MemberFacts member={ member } />
 			<dl className="openbb-details">
 				<dt>{ __( 'Phone', 'open-bulk-buying' ) }</dt>
 				<dd>{ member.phone || '—' }</dd>
 				<dt>{ __( 'Role', 'open-bulk-buying' ) }</dt>
 				<dd>{ member.coop_role_label }</dd>
+				{ shown.map( ( def ) => (
+					<Fragment key={ def.key }>
+						<dt>
+							{ fieldLabel( def ) }
+							{ def.archived && (
+								<span className="openbb-muted"> { __( '(archived)', 'open-bulk-buying' ) }</span>
+							) }
+						</dt>
+						<dd>{ profileValueText( def, member.profile?.[ def.key ] ) }</dd>
+					</Fragment>
+				) ) }
 			</dl>
 		</>
 	);

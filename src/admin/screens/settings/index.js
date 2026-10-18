@@ -1,205 +1,69 @@
-import {
-	Button,
-	Card,
-	CardBody,
-	CardHeader,
-	TextControl,
-	ToggleControl,
-	__experimentalText as Text,
-	__experimentalVStack as VStack,
-} from '@wordpress/components';
-import { useState } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
-import { ErrorNotice, Loading, Page } from '../../components';
-import { useNotify, useRecord } from '../../hooks';
-import { request } from '../../utils/api';
-import { can } from '../../utils/config';
+import { Link, useSearch } from '../../router';
+import { can, config } from '../../utils/config';
+import MaintenanceTab from './maintenance';
+import ProfileFieldsTab from './profile-fields';
+import SettingsPage from './settings-page';
 
-// OPENBB_REST_Settings::DELETE_CONFIRMATION.
-const DELETE_CONFIRMATION = 'DELETE ALL DATA';
+const tabs = [
+	{
+		name: 'profile-fields',
+		title: __( 'Profile Fields', 'open-bulk-buying' ),
+		cap: 'openbb_manage_profile_fields',
+		Component: ProfileFieldsTab,
+	},
+	{
+		name: 'maintenance',
+		title: __( 'Data & Maintenance', 'open-bulk-buying' ),
+		cap: 'openbb_manage_settings',
+		Component: MaintenanceTab,
+	},
+];
 
-function Section( { title, isDanger, children } ) {
-	return (
-		<Card
-			className={
-				'openbb-settings__section' + ( isDanger ? ' is-danger' : '' )
-			}
-		>
-			<CardHeader>
-				<h3 className="openbb-settings__title">{ title }</h3>
-			</CardHeader>
-			<CardBody>
-				<VStack spacing={ 4 }>{ children }</VStack>
-			</CardBody>
-		</Card>
-	);
-}
+const tabUrl = ( name ) =>
+	`${ config.urls.settings }&tab=${ encodeURIComponent( name ) }`;
 
-function DangerZone( { onDeleted } ) {
-	const [ confirmation, setConfirmation ] = useState( '' );
-	const [ isBusy, setIsBusy ] = useState( false );
-	const notify = useNotify();
-
-	const deleteAll = async ( event ) => {
-		event.preventDefault();
-		setIsBusy( true );
-		try {
-			await request( '/settings/delete-all-data', {
-				method: 'POST',
-				data: { confirmation },
-			} );
-			setConfirmation( '' );
-			notify.success(
-				__( "This site's Open Bulk Buying data has been deleted.", 'open-bulk-buying' )
-			);
-			onDeleted();
-		} catch ( error ) {
-			notify.error( error.message );
-		} finally {
-			setIsBusy( false );
-		}
-	};
-
-	return (
-		<Section title={ __( 'Danger zone', 'open-bulk-buying' ) } isDanger>
-			<Text as="p">
-				{ __(
-					"Permanently deletes this site's Open Bulk Buying records, products and terms, co-op user metadata, and plugin settings. WordPress users and roles, other plugins' data, and other sites on this network are not changed. The database schema is retained.",
-					'open-bulk-buying'
-				) }
-			</Text>
-			<form onSubmit={ deleteAll }>
-				<VStack spacing={ 3 } alignment="flex-start">
-					<TextControl
-						__next40pxDefaultSize
-						__nextHasNoMarginBottom
-						label={ sprintf(
-							/* translators: %s: the confirmation phrase. */
-							__( 'Type %s to confirm', 'open-bulk-buying' ),
-							DELETE_CONFIRMATION
-						) }
-						value={ confirmation }
-						onChange={ setConfirmation }
-						autoComplete="off"
-					/>
-					<Button
-						__next40pxDefaultSize
-						variant="primary"
-						isDestructive
-						type="submit"
-						isBusy={ isBusy }
-						disabled={ isBusy || confirmation !== DELETE_CONFIRMATION }
-						accessibleWhenDisabled
-					>
-						{ __( 'Delete all Open Bulk Buying data', 'open-bulk-buying' ) }
-					</Button>
-				</VStack>
-			</form>
-		</Section>
-	);
-}
-
+/**
+ * Settings, split into tabs. Tabs are links, so switching tabs goes through the
+ * router: the URL stays bookmarkable and unsaved edits are guarded as when leaving a screen.
+ */
 export default function SettingsScreen() {
-	const { record: settings, setRecord, error } = useRecord( '/settings' );
-	const [ busy, setBusy ] = useState( null );
-	const notify = useNotify();
+	const search = useSearch();
+	const visible = tabs.filter( ( tab ) => can( tab.cap ) );
+	const current =
+		visible.find( ( tab ) => tab.name === search.tab ) || visible[ 0 ];
 
-	const run = async ( name, action, message ) => {
-		setBusy( name );
-		try {
-			await action();
-			notify.success( message );
-		} catch ( err ) {
-			notify.error( err.message );
-		} finally {
-			setBusy( null );
-		}
-	};
-
-	const setTestMode = ( testMode ) =>
-		run(
-			'test_mode',
-			async () =>
-				setRecord(
-					await request( '/settings', {
-						method: 'POST',
-						data: { test_mode: testMode },
-					} )
-				),
-			testMode
-				? __( 'Test mode enabled.', 'open-bulk-buying' )
-				: __( 'Test mode disabled.', 'open-bulk-buying' )
-		);
-
-	const populateDemoData = () =>
-		run(
-			'demo',
-			() => request( '/settings/demo-data', { method: 'POST' } ),
-			__(
-				'Demo data is ready. Populating again will not duplicate the demo records.',
-				'open-bulk-buying'
-			)
-		);
-
-	let content;
-	if ( error ) {
-		content = <ErrorNotice error={ error } />;
-	} else if ( ! settings ) {
-		content = <Loading />;
-	} else {
-		content = (
-			<VStack spacing={ 6 } className="openbb-settings">
-				<Section title={ __( 'Test mode', 'open-bulk-buying' ) }>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Enable test mode', 'open-bulk-buying' ) }
-						help={ __(
-							'Test mode enables a repeatable demo-data action. Demo records are marked and use the current site only.',
-							'open-bulk-buying'
-						) }
-						checked={ !! settings.test_mode }
-						disabled={ busy === 'test_mode' }
-						onChange={ setTestMode }
-					/>
-				</Section>
-
-				{ settings.test_mode && (
-					<Section title={ __( 'Demo data', 'open-bulk-buying' ) }>
-						<Text as="p">
-							{ __(
-								'Adds one clearly marked demo product, setup cycle, draft order and stock receipt. It does not create WordPress users or publish demo rules.',
-								'open-bulk-buying'
-							) }
-						</Text>
-						<div>
-							<Button
-								__next40pxDefaultSize
-								variant="secondary"
-								isBusy={ busy === 'demo' }
-								disabled={ !! busy }
-								accessibleWhenDisabled
-								onClick={ populateDemoData }
+	const nav = visible.length > 1 && (
+		<nav
+			className="openbb-tabs"
+			aria-label={ __( 'Settings sections', 'open-bulk-buying' ) }
+		>
+			<ul className="openbb-tabs__list">
+				{ visible.map( ( tab ) => {
+					const isCurrent = tab === current;
+					return (
+						<li key={ tab.name }>
+							<Link
+								href={ tabUrl( tab.name ) }
+								className={
+									'openbb-tabs__item' +
+									( isCurrent ? ' is-active' : '' )
+								}
+								aria-current={ isCurrent ? 'page' : undefined }
 							>
-								{ __( 'Populate demo data', 'open-bulk-buying' ) }
-							</Button>
-						</div>
-					</Section>
-				) }
+								{ tab.title }
+							</Link>
+						</li>
+					);
+				} ) }
+			</ul>
+		</nav>
+	);
 
-				{ can( 'manage_options' ) && (
-					<DangerZone
-						// Deleting resets the plugin settings too.
-						onDeleted={ () =>
-							request( '/settings' ).then( setRecord, () => {} )
-						}
-					/>
-				) }
-			</VStack>
-		);
+	if ( ! current ) {
+		return <SettingsPage />;
 	}
 
-	return (
-		<Page title={ __( 'Settings', 'open-bulk-buying' ) }>{ content }</Page>
-	);
+	return <current.Component nav={ nav } />;
 }
