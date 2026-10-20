@@ -17,8 +17,12 @@ class OPENBB_Cycle extends OPENBB_Entity {
 	const STATUS_DISTRIBUTION = 'distribution';
 	const STATUS_COMPLETE     = 'complete';
 
-	/** Statuses whose submitted orders still reserve stock. Several cycles (e.g. per location) may be active at once. */
-	const ACTIVE_STATUSES = array( self::STATUS_ORDERING, self::STATUS_PROCESSING, self::STATUS_DISTRIBUTION );
+	/**
+	 * Statuses whose submitted orders still reserve stock: every status but complete, since
+	 * staff can submit orders while a cycle is in setup. Several cycles (e.g. per location)
+	 * may be active at once.
+	 */
+	const ACTIVE_STATUSES = array( self::STATUS_SETUP, self::STATUS_ORDERING, self::STATUS_PROCESSING, self::STATUS_DISTRIBUTION );
 
 	public $id                  = 0;
 	public $name                = '';

@@ -125,6 +125,25 @@ class Test_OPENBB_REST_Admin extends OPENBB_TestCase {
 		$this->assertEquals( 3, wp_list_pluck( $products, 'max_qty', 'id' )[ $product_id ] );
 	}
 
+	public function test_orders_in_a_setup_cycle_reserve_stock(): void {
+		$product_id = $this->make_stocked_product( 5 );
+		$cycle      = new OPENBB_Cycle(
+			array(
+				'name'   => 'Setup cycle',
+				'status' => OPENBB_Cycle::STATUS_SETUP,
+			)
+		);
+		$this->assertTrue( $cycle->save() );
+
+		$order = $this->new_order( $cycle->id );
+		$this->assertSame( 200, $this->submit( $order, $product_id, 3 )->get_status() );
+
+		$this->assertEquals( 3, OPENBB_Inventory::get_reserved( $product_id ) );
+		$this->assertEquals( 3, OPENBB_Inventory::get_reserved_for( array( $product_id ) )[ $product_id ] );
+		$product = $this->api( 'GET', "/products/{$product_id}" )->get_data();
+		$this->assertEquals( 3, $product['reserved_units'] );
+	}
+
 	public function test_duplicate_orders_point_to_the_existing_order(): void {
 		$cycle_id = $this->make_open_cycle();
 		$member   = $this->make_user( 'member' );

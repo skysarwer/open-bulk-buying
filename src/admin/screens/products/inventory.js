@@ -96,6 +96,27 @@ export function AdjustStockModal( { product, onClose, onDone } ) {
 		[ product ]
 	);
 
+	// One stable fields array per reason: a new array makes DataForm rebuild the
+	// note's configured textarea control, which remounts it and drops focus.
+	const fieldsByReason = useMemo(
+		() =>
+			Object.fromEntries(
+				[ ...config.manualStockReasons, '' ].map( ( reason ) => [
+					reason,
+					fields.map( ( field ) => {
+						if ( field.id === 'quantity' ) {
+							return { ...field, label: quantityLabel( reason ) };
+						}
+						if ( field.id === 'note' && reason === REASON_ADJUSTMENT ) {
+							return { ...field, label: __( 'Note (required)', 'open-bulk-buying' ) };
+						}
+						return field;
+					} ),
+				] )
+			),
+		[ fields ]
+	);
+
 	const validate = ( data ) => {
 		const value = Number( data.quantity );
 		if ( ! value ) {
@@ -138,17 +159,7 @@ export function AdjustStockModal( { product, onClose, onDone } ) {
 		<FormModal
 			/* translators: %s: product name. */
 			title={ sprintf( __( 'Update stock: %s', 'open-bulk-buying' ), product.name ) }
-			fields={ ( data ) =>
-				fields.map( ( field ) => {
-					if ( field.id === 'quantity' ) {
-						return { ...field, label: quantityLabel( data.reason ) };
-					}
-					if ( field.id === 'note' && data.reason === REASON_ADJUSTMENT ) {
-						return { ...field, label: __( 'Note (required)', 'open-bulk-buying' ) };
-					}
-					return field;
-				} )
-			}
+			fields={ ( data ) => fieldsByReason[ data.reason ] || fieldsByReason[ '' ] }
 			form={ form }
 			validate={ validate }
 			initial={ { reason: REASON_RECEIPT, quantity: '', unit: 'selling', note: '' } }

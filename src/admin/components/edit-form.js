@@ -16,7 +16,9 @@ import useUnsavedChanges, { discardUnsavedChanges } from '../hooks/use-unsaved-c
  * The edits are cleared after a successful save, so pass the saved item back
  * in as `initial` to keep showing it.
  *
- * `fields` may be a function of the current data. DataForm only re-validates a
+ * `fields` may be a function of the current data; it must return the same array
+ * while nothing it depends on changes, or controls configured with an object
+ * `Edit` (e.g. a textarea) remount and lose focus on each keystroke. DataForm only re-validates a
  * field when its own value changes, so rules that span fields go in
  * `validate( data )`, which returns an error message or null.
  *
