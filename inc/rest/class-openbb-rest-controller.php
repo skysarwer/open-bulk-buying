@@ -1,10 +1,12 @@
 <?php
 /**
- * Shared helpers for the openbb/v1 REST controllers used by the admin screens.
+ * Shared helpers for the openbb/v1 REST controllers. Controllers for the admin
+ * screens live in admin/, those for member-facing (Interactivity API) views in frontend/.
  *
- * Every route checks a co-op capability in its permission_callback and handlers
- * re-check object capabilities. Cookie-authenticated requests need the wp_rest
- * nonce (sent by @wordpress/api-fetch), so writes are CSRF-protected.
+ * Every admin route checks a co-op capability in its permission_callback and handlers
+ * re-check object capabilities. Frontend routes open to visitors (signup) check that
+ * the feature is open instead, and rate-limit. Cookie-authenticated requests need the
+ * wp_rest nonce (sent by @wordpress/api-fetch and the frontend stores), so writes are CSRF-protected.
  * Responses are built field by field; entity to_array() is never sent as-is.
  *
  * Datetimes are UTC in storage and ISO 8601 with the site's offset over the API.
@@ -35,6 +37,7 @@ abstract class OPENBB_REST_Controller {
 					new OPENBB_REST_Members(),
 					new OPENBB_REST_Orders(),
 					new OPENBB_REST_Settings(),
+					new OPENBB_REST_Signup(),
 				);
 				foreach ( $controllers as $controller ) {
 					$controller->register_routes();

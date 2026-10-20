@@ -1,6 +1,6 @@
 <?php
 /**
- * Staff order management (roadmap 003/004): list, view, create and correct orders.
+ * Staff order management: list, view, create and correct orders.
  *
  * The editing rules (stock limits, locking, reasons) live in OPENBB_Order_Editor;
  * this controller checks permissions, maps the request and shapes responses.

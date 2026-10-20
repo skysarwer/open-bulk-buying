@@ -1,6 +1,6 @@
 <?php
 /**
- * Object-level capabilities for orders and members (spec §4.2).
+ * Object-level capabilities for orders and members.
  *
  * @package Open_Bulk_Buying
  */

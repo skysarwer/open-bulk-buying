@@ -94,6 +94,28 @@ class OPENBB_Rules {
 	}
 
 	/**
+	 * Records that $user_id accepted published version $version_id, now. A persistence
+	 * primitive: callers check that the person themselves is accepting (signup, order form).
+	 */
+	public static function record_acceptance( int $user_id, int $version_id ): bool {
+		if ( $version_id <= 0 || ! self::get( $version_id ) ) {
+			return false;
+		}
+
+		$ok = openbb_update_member_field( $user_id, 'rules_version', $version_id )
+			&& openbb_update_member_field( $user_id, 'rules_accepted_at', current_time( 'mysql', true ) );
+		if ( $ok ) {
+			/**
+			 * @param int $user_id
+			 * @param int $version_id
+			 */
+			do_action( 'openbb_rules_accepted', $user_id, $version_id );
+		}
+
+		return $ok;
+	}
+
+	/**
 	 * @return OPENBB_Rules_Version[] Newest first.
 	 */
 	public static function get_versions(): array {

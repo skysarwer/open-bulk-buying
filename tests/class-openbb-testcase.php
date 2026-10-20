@@ -7,6 +7,37 @@
 
 abstract class OPENBB_TestCase extends WP_UnitTestCase {
 
+	/** @var int Open plugin transactions, run as nested savepoints. */
+	private $transaction_depth = 0;
+
+	public function set_up(): void {
+		parent::set_up();
+		$this->transaction_depth = 0;
+		add_filter( 'query', array( $this, 'nest_transaction' ) );
+	}
+
+	public function tear_down(): void {
+		remove_filter( 'query', array( $this, 'nest_transaction' ) );
+		parent::tear_down();
+	}
+
+	/**
+	 * The plugin's own transactions would commit the per-test transaction (MySQL commits
+	 * implicitly on START TRANSACTION), leaking data into later tests; run them as savepoints.
+	 */
+	public function nest_transaction( $query ) {
+		switch ( strtoupper( trim( (string) $query, " \t\n\r;" ) ) ) {
+			case 'START TRANSACTION':
+				return 'SAVEPOINT openbb_test_' . ( ++$this->transaction_depth );
+			case 'COMMIT':
+				return $this->transaction_depth > 0 ? 'RELEASE SAVEPOINT openbb_test_' . ( $this->transaction_depth-- ) : 'DO 0';
+			case 'ROLLBACK':
+				return $this->transaction_depth > 0 ? 'ROLLBACK TO SAVEPOINT openbb_test_' . ( $this->transaction_depth-- ) : 'DO 0';
+		}
+
+		return $query;
+	}
+
 	/**
 	 * Creates a user with a WordPress role and, written directly as the signup flow
 	 * would, a co-op role and grants.

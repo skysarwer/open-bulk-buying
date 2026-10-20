@@ -1,6 +1,6 @@
 <?php
 /**
- * Co-op members: WordPress users with a co-op role on this site (roadmap 001).
+ * Co-op members: WordPress users with a co-op role on this site.
  *
  * Email, login and password stay with WordPress's own user screens.
  *

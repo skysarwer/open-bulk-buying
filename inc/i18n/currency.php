@@ -20,3 +20,25 @@ function openbb_currency(): string {
 
 	return preg_match( '/^[A-Z]{3}$/', $currency ) ? $currency : 'CAD';
 }
+
+/**
+ * Formats an amount in minor units for display, e.g. 2500 => "$25.00" (in the current locale).
+ */
+function openbb_format_money( int $minor, ?string $currency = null ): string {
+	$currency = $currency ?? openbb_currency();
+
+	if ( class_exists( 'NumberFormatter' ) ) {
+		$formatter = new NumberFormatter( determine_locale(), NumberFormatter::CURRENCY );
+		$formatter->setTextAttribute( NumberFormatter::CURRENCY_CODE, $currency );
+		$digits    = (int) $formatter->getAttribute( NumberFormatter::FRACTION_DIGITS );
+		$formatted = $formatter->formatCurrency( $minor / ( 10 ** $digits ), $currency );
+		if ( false !== $formatted ) {
+			return $formatted;
+		}
+	}
+
+	$zero_decimal = array( 'BIF', 'CLP', 'DJF', 'GNF', 'ISK', 'JPY', 'KMF', 'KRW', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF' );
+	$digits       = in_array( $currency, $zero_decimal, true ) ? 0 : 2;
+
+	return number_format_i18n( $minor / ( 10 ** $digits ), $digits ) . ' ' . $currency;
+}

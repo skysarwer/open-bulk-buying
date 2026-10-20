@@ -1,7 +1,14 @@
 <?php
 /**
- * Creates WordPress accounts for new co-op members. Staff use it from the Members screen
- * (`staff_create`); the frontend signup form (roadmap 003) will add the `signup` context.
+ * Co-op membership creation. Two callers:
+ *
+ * - Staff create accounts from the Members screen (`staff_create`, create_member()).
+ * - People sign themselves up on the frontend (`signup`): visitors through register()
+ *   after proving their email with a code, signed-in users without a co-op role through
+ *   join(). Signup needs no capability; the person joining is the actor.
+ *
+ * Everything is validated before anything is written, and a failure after a new user was
+ * created deletes the user again, so no half-created account is left behind.
  *
  * @package Open_Bulk_Buying
  */
@@ -12,9 +19,11 @@ final class OPENBB_Signup {
 
 	const ACCOUNT_FIELDS = array( 'email', 'first_name', 'last_name', 'phone', 'language' );
 
+	/** Form field name for the rules agreement; its errors use this key. */
+	const RULES_FIELD = 'rules_accepted';
+
 	/**
-	 * Creates a member account. Everything is validated before the user is created, and a
-	 * failure afterwards deletes the user again, so no half-created account is left behind.
+	 * Creates a member account for staff.
 	 *
 	 * Staff never set or see a password: the account gets a random one, and the member sets
 	 * their own through WordPress's set-your-password email or "Lost your password?".
@@ -27,7 +36,7 @@ final class OPENBB_Signup {
 	 */
 	public static function create_member( array $account, array $profile, string $context, array $options = array() ) {
 		if ( OPENBB_Profile_Fields::CONTEXT_STAFF_CREATE !== $context ) {
-			return new WP_Error( 'openbb_signup_context', __( 'Accounts can\'t be created here yet.', 'open-bulk-buying' ), array( 'status' => 400 ) );
+			return new WP_Error( 'openbb_signup_context', __( 'Accounts can\'t be created here.', 'open-bulk-buying' ), array( 'status' => 400 ) );
 		}
 
 		$role = OPENBB_Access::sanitize_role( $options['coop_role'] ?? OPENBB_Access::ROLE_MEMBER );
@@ -42,60 +51,32 @@ final class OPENBB_Signup {
 		if ( is_wp_error( $account ) ) {
 			return $account;
 		}
+		$conflict = self::staff_email_conflict( $account['email'] );
+		if ( $conflict ) {
+			return $conflict;
+		}
 		$profile = OPENBB_Profile_Fields::validate_values( 0, $profile, $context );
 		if ( is_wp_error( $profile ) ) {
 			return $profile;
 		}
 
-		$user_id = wp_insert_user(
-			wp_slash(
-				array(
-					'user_login'   => self::unique_login( $account['email'] ),
-					'user_email'   => $account['email'],
-					'user_pass'    => wp_generate_password( 32, true, true ),
-					'first_name'   => $account['first_name'],
-					'last_name'    => $account['last_name'],
-					'display_name' => trim( $account['first_name'] . ' ' . $account['last_name'] ),
-					// Never default_role (access spec §5.6).
-					'role'         => 'subscriber',
-				)
-			)
-		);
+		$user_id = self::insert_user( $account );
 		if ( is_wp_error( $user_id ) ) {
-			$user_id->add_data( array( 'status' => 500 ) );
 			return $user_id;
 		}
 
-		$failed = static function ( WP_Error $error ) use ( $user_id ): WP_Error {
-			self::delete_user( $user_id );
-			if ( ! isset( ( (array) $error->get_error_data() )['status'] ) ) {
-				$error->add_data( array( 'status' => 'openbb_forbidden' === $error->get_error_code() ? 403 : 500 ) );
-			}
-			return $error;
-		};
-
-		foreach ( array( 'phone', 'language' ) as $field ) {
-			if ( '' !== $account[ $field ] && ! openbb_update_member_field( $user_id, $field, $account[ $field ] ) ) {
-				return $failed( new WP_Error( 'openbb_member_save_failed', __( 'The member could not be saved.', 'open-bulk-buying' ) ) );
-			}
+		$result = self::save_account_meta( $user_id, $account );
+		if ( ! is_wp_error( $result ) ) {
+			$result = OPENBB_Access::set_coop_role( $user_id, $role );
 		}
-
-		$result = OPENBB_Access::set_coop_role( $user_id, $role );
+		if ( ! is_wp_error( $result ) ) {
+			$result = OPENBB_Profile_Fields::set_values( $user_id, $profile, $context );
+		}
 		if ( is_wp_error( $result ) ) {
-			return $failed( $result );
+			return self::undo_insert( $user_id, $result );
 		}
 
-		$result = OPENBB_Profile_Fields::set_values( $user_id, $profile, $context );
-		if ( is_wp_error( $result ) ) {
-			return $failed( $result );
-		}
-
-		/**
-		 * @param int    $user_id  The new member.
-		 * @param string $context  How the account was created.
-		 * @param int    $actor_id User who created it; 0 for self-signup.
-		 */
-		do_action( 'openbb_member_created', $user_id, $context, get_current_user_id() );
+		self::created( $user_id, $context );
 
 		$email_sent = ( $options['send_email'] ?? true ) && openbb_can_email_member( $user_id );
 		if ( $email_sent ) {
@@ -106,6 +87,405 @@ final class OPENBB_Signup {
 			'user_id'    => $user_id,
 			'email_sent' => $email_sent,
 		);
+	}
+
+	/**
+	 * Whether the co-op accepts self-signups (General settings).
+	 */
+	public static function is_open(): bool {
+		return (bool) OPENBB_Settings::get_general()['allow_signups'];
+	}
+
+	/**
+	 * The co-op role a self-signup gets: applicant while approval is required.
+	 */
+	public static function signup_role(): string {
+		return OPENBB_Settings::get_general()['require_member_approval'] ? OPENBB_Access::ROLE_APPLICANT : OPENBB_Access::ROLE_MEMBER;
+	}
+
+	/**
+	 * Account values a user already has. The signup form shows them locked, and join() keeps them.
+	 *
+	 * @return array Field => non-empty value.
+	 */
+	public static function existing_account( int $user_id ): array {
+		$user = $user_id ? get_userdata( $user_id ) : false;
+		if ( ! $user ) {
+			return array();
+		}
+
+		return array_filter(
+			array(
+				'email'      => (string) $user->user_email,
+				'first_name' => (string) $user->first_name,
+				'last_name'  => (string) $user->last_name,
+				'phone'      => (string) openbb_get_member_field( $user_id, 'phone' ),
+				'language'   => (string) openbb_get_member_field( $user_id, 'language' ),
+			),
+			static function ( string $value ): bool {
+				return '' !== trim( $value );
+			}
+		);
+	}
+
+	/**
+	 * Profile values a user already has in the signup context; locked like existing_account().
+	 */
+	public static function existing_profile( int $user_id ): array {
+		if ( ! $user_id ) {
+			return array();
+		}
+
+		return array_filter(
+			OPENBB_Profile_Fields::get_values( $user_id, OPENBB_Profile_Fields::CONTEXT_SIGNUP ),
+			static function ( $value ): bool {
+				return ! in_array( $value, array( '', false, array() ), true );
+			}
+		);
+	}
+
+	/**
+	 * Validates a signup form: account fields, profile fields and the rules agreement.
+	 * For a signed-in user ($user_id), values they already have replace submitted ones.
+	 *
+	 * $rules_version is the published rules version the person agreed to (0 = not agreed).
+	 * It must be the latest version, so nobody joins under rules they haven't seen.
+	 *
+	 * @return array{account: array, profile: array, rules_version: int}|WP_Error Errors for
+	 *         every field at once in `data.errors` (field name => message).
+	 */
+	public static function validate_signup( array $account, array $profile, int $rules_version, int $user_id = 0 ) {
+		$errors = array();
+
+		$account = array_merge( $account, self::existing_account( $user_id ) );
+		$account = self::validate_account( $account );
+		if ( is_wp_error( $account ) ) {
+			$errors = (array) ( $account->get_error_data()['errors'] ?? array() );
+		}
+
+		$profile = array_diff_key( $profile, self::existing_profile( $user_id ) );
+		$profile = OPENBB_Profile_Fields::validate_values( $user_id, $profile, OPENBB_Profile_Fields::CONTEXT_SIGNUP );
+		if ( is_wp_error( $profile ) ) {
+			$errors += (array) ( $profile->get_error_data()['errors'] ?? array() );
+		}
+
+		$latest = OPENBB_Rules::get_latest();
+		if ( $latest && $rules_version !== $latest->id ) {
+			$errors[ self::RULES_FIELD ] = $rules_version > 0
+				? __( 'The co-op rules were updated while you were signing up. Reload the page to read the new version.', 'open-bulk-buying' )
+				: __( 'You must agree to the co-op rules to join.', 'open-bulk-buying' );
+		}
+
+		if ( $errors ) {
+			return new WP_Error(
+				'openbb_signup_invalid',
+				__( 'Some details need attention.', 'open-bulk-buying' ),
+				array(
+					'status' => 400,
+					'errors' => $errors,
+				)
+			);
+		}
+
+		return array(
+			'account'       => $account,
+			'profile'       => $profile,
+			'rules_version' => $latest ? $latest->id : 0,
+		);
+	}
+
+	/**
+	 * Self-signup of a new account. Call only once the person has proven they own the email
+	 * (OPENBB_Email_Code); the input is validated again, as settings may have changed since.
+	 *
+	 * @return array{user_id: int, coop_role: string}|WP_Error
+	 */
+	public static function register( array $account, array $profile, int $rules_version ) {
+		if ( ! self::is_open() ) {
+			return self::closed();
+		}
+
+		$signup = self::validate_signup( $account, $profile, $rules_version );
+		if ( is_wp_error( $signup ) ) {
+			return $signup;
+		}
+		if ( email_exists( $signup['account']['email'] ) ) {
+			return new WP_Error( 'openbb_email_exists', __( 'You already have an account with this email. Log in to finish joining.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+		}
+
+		$user_id = self::insert_user( $signup['account'] );
+		if ( is_wp_error( $user_id ) ) {
+			return $user_id;
+		}
+
+		$role   = self::signup_role();
+		$result = self::complete_signup( $user_id, $signup, $role );
+		if ( is_wp_error( $result ) ) {
+			return self::undo_insert( $user_id, $result );
+		}
+
+		self::created( $user_id, OPENBB_Profile_Fields::CONTEXT_SIGNUP );
+		self::send_welcome( $user_id, $role );
+
+		return array(
+			'user_id'   => $user_id,
+			'coop_role' => $role,
+		);
+	}
+
+	/**
+	 * Self-signup of a signed-in user who has no co-op role yet. Only empty account and
+	 * profile fields are filled in; the user's email and WordPress role are kept.
+	 *
+	 * @return array{user_id: int, coop_role: string}|WP_Error
+	 */
+	public static function join( int $user_id, array $account, array $profile, int $rules_version ) {
+		if ( ! self::is_open() ) {
+			return self::closed();
+		}
+		if ( ! get_userdata( $user_id ) ) {
+			return self::forbidden( __( 'You must be logged in.', 'open-bulk-buying' ) );
+		}
+		if ( '' !== OPENBB_Access::get_coop_role( $user_id ) ) {
+			return new WP_Error( 'openbb_already_joined', __( 'You already have a co-op membership.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+		}
+
+		$signup = self::validate_signup( $account, $profile, $rules_version, $user_id );
+		if ( is_wp_error( $signup ) ) {
+			return $signup;
+		}
+
+		// Users of another site in the network join this one as subscribers.
+		if ( is_multisite() && ! is_user_member_of_blog( $user_id ) && ! add_user_to_blog( get_current_blog_id(), $user_id, 'subscriber' ) ) {
+			return self::save_failed();
+		}
+
+		$existing = self::existing_account( $user_id );
+		$names    = array_diff_key( array_intersect_key( $signup['account'], array_flip( array( 'first_name', 'last_name' ) ) ), $existing );
+		if ( $names ) {
+			$user = get_userdata( $user_id );
+			if ( '' === $user->display_name || $user->display_name === $user->user_login ) {
+				$names['display_name'] = trim( ( $existing['first_name'] ?? $signup['account']['first_name'] ) . ' ' . ( $existing['last_name'] ?? $signup['account']['last_name'] ) );
+			}
+			$updated = wp_update_user( wp_slash( array( 'ID' => $user_id ) + $names ) );
+			if ( is_wp_error( $updated ) ) {
+				return self::save_failed();
+			}
+		}
+
+		$role   = self::signup_role();
+		$result = self::complete_signup( $user_id, $signup, $role );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		self::created( $user_id, OPENBB_Profile_Fields::CONTEXT_SIGNUP );
+		self::send_welcome( $user_id, $role );
+
+		return array(
+			'user_id'   => $user_id,
+			'coop_role' => $role,
+		);
+	}
+
+	/**
+	 * The "enter this code" email for a visitor signing up.
+	 */
+	public static function send_code( string $email, string $code ): bool {
+		$site = self::site_name();
+
+		self::maybe_log_code( $email, $code );
+
+		return self::mail(
+			'code',
+			$email,
+			/* translators: 1: site name, 2: the code. */
+			sprintf( __( '[%1$s] Your sign-up code: %2$s', 'open-bulk-buying' ), $site, OPENBB_Email_Code::format( $code ) ),
+			sprintf(
+				/* translators: 1: site name, 2: the code, 3: minutes until the code expires. */
+				__( "Enter this code to finish joining %1\$s:\n\n%2\$s\n\nThe code expires in %3\$d minutes.\n\nIf you didn't ask to join, you can ignore this email.", 'open-bulk-buying' ),
+				$site,
+				OPENBB_Email_Code::format( $code ),
+				(int) ( OPENBB_Email_Code::TTL / MINUTE_IN_SECONDS )
+			)
+		);
+	}
+
+	/**
+	 * Sent instead of a code when the email already has an account, so the signup form
+	 * never reveals which addresses are registered.
+	 */
+	public static function send_account_exists( string $email ): bool {
+		$site = self::site_name();
+
+		return self::mail(
+			'account_exists',
+			$email,
+			/* translators: %s: site name. */
+			sprintf( __( '[%s] You already have an account', 'open-bulk-buying' ), $site ),
+			sprintf(
+				/* translators: 1: site name, 2: login URL, 3: lost password URL. */
+				__( "Someone, hopefully you, tried to sign up to %1\$s with this email address. You already have an account, so there's no code to enter.\n\nLog in to finish joining:\n%2\$s\n\nForgot your password? Reset it here:\n%3\$s\n\nIf this wasn't you, you can ignore this email.", 'open-bulk-buying' ),
+				$site,
+				wp_login_url(),
+				wp_lostpassword_url()
+			)
+		);
+	}
+
+	/**
+	 * "Application received" or "welcome", depending on the role the signup gave.
+	 */
+	private static function send_welcome( int $user_id, string $role ): bool {
+		if ( ! openbb_can_email_member( $user_id ) ) {
+			return false;
+		}
+
+		$site = self::site_name();
+		$user = get_userdata( $user_id );
+		if ( OPENBB_Access::ROLE_APPLICANT === $role ) {
+			/* translators: %s: site name. */
+			$subject = sprintf( __( '[%s] We received your membership application', 'open-bulk-buying' ), $site );
+			/* translators: 1: member's first name, 2: site name. */
+			$intro = sprintf( __( "Hi %1\$s,\n\nThanks for applying to join %2\$s. A coordinator will review your application. You'll be able to place orders once it's approved.", 'open-bulk-buying' ), $user->first_name, $site );
+		} else {
+			/* translators: %s: site name. */
+			$subject = sprintf( __( '[%s] Welcome to the co-op', 'open-bulk-buying' ), $site );
+			/* translators: 1: member's first name, 2: site name. */
+			$intro = sprintf( __( "Hi %1\$s,\n\nWelcome to %2\$s! You can place an order whenever an order cycle is open.", 'open-bulk-buying' ), $user->first_name, $site );
+		}
+
+		$message = $intro . "\n\n" . sprintf(
+			/* translators: 1: login URL, 2: lost password URL. */
+			__( "Log in at any time:\n%1\$s\n\nTo choose a password, use \"Lost your password?\":\n%2\$s", 'open-bulk-buying' ),
+			wp_login_url(),
+			wp_lostpassword_url()
+		);
+
+		return self::mail( 'welcome_' . $role, $user->user_email, $subject, $message, $user_id );
+	}
+
+	private static function mail( string $type, string $to, string $subject, string $message, int $user_id = 0 ): bool {
+		/**
+		 * Filters a signup email, e.g. to add ordering and pickup guidance to the welcome email.
+		 *
+		 * @param array  $email   to, subject, message, headers.
+		 * @param string $type    code, account_exists, welcome_applicant or welcome_member.
+		 * @param int    $user_id The new member; 0 before the account exists.
+		 */
+		$email = apply_filters(
+			'openbb_signup_email',
+			array(
+				'to'      => $to,
+				'subject' => $subject,
+				'message' => $message,
+				'headers' => '',
+			),
+			$type,
+			$user_id
+		);
+
+		return wp_mail( $email['to'], $email['subject'], $email['message'], $email['headers'] );
+	}
+
+	/**
+	 * Local development sites often can't send mail, so the code is logged there.
+	 */
+	private static function maybe_log_code( string $email, string $code ): void {
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && 'local' === wp_get_environment_type() ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( sprintf( '[open-bulk-buying] Sign-up code for %s: %s', $email, $code ) );
+		}
+	}
+
+	private static function site_name(): string {
+		return wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
+	}
+
+	/**
+	 * Saves the account details, profile and rules acceptance, then the role, so the person
+	 * only becomes an applicant or member once everything else is saved.
+	 *
+	 * @return true|WP_Error
+	 */
+	private static function complete_signup( int $user_id, array $signup, string $role ) {
+		$existing = self::existing_account( $user_id );
+		$result   = self::save_account_meta( $user_id, array_diff_key( $signup['account'], $existing ) );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		$result = OPENBB_Profile_Fields::set_values( $user_id, $signup['profile'], OPENBB_Profile_Fields::CONTEXT_SIGNUP );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		if ( $signup['rules_version'] && ! OPENBB_Rules::record_acceptance( $user_id, $signup['rules_version'] ) ) {
+			return self::save_failed();
+		}
+
+		$result = OPENBB_Access::start_membership( $user_id, $role );
+		if ( is_wp_error( $result ) ) {
+			$result->add_data( array( 'status' => 500 ) );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @return true|WP_Error
+	 */
+	private static function save_account_meta( int $user_id, array $account ) {
+		foreach ( array( 'phone', 'language' ) as $field ) {
+			if ( '' !== ( $account[ $field ] ?? '' ) && ! openbb_update_member_field( $user_id, $field, $account[ $field ] ) ) {
+				return self::save_failed();
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * @return int|WP_Error
+	 */
+	private static function insert_user( array $account ) {
+		$user_id = wp_insert_user(
+			wp_slash(
+				array(
+					'user_login'   => self::unique_login( $account['email'] ),
+					'user_email'   => $account['email'],
+					'user_pass'    => wp_generate_password( 32, true, true ),
+					'first_name'   => $account['first_name'],
+					'last_name'    => $account['last_name'],
+					'display_name' => trim( $account['first_name'] . ' ' . $account['last_name'] ),
+					// Never default_role.
+					'role'         => 'subscriber',
+				)
+			)
+		);
+		if ( is_wp_error( $user_id ) ) {
+			$user_id->add_data( array( 'status' => 500 ) );
+		}
+
+		return $user_id;
+	}
+
+	private static function undo_insert( int $user_id, WP_Error $error ): WP_Error {
+		self::delete_user( $user_id );
+		if ( ! isset( ( (array) $error->get_error_data() )['status'] ) ) {
+			$error->add_data( array( 'status' => 'openbb_forbidden' === $error->get_error_code() ? 403 : 500 ) );
+		}
+
+		return $error;
+	}
+
+	private static function created( int $user_id, string $context ): void {
+		/**
+		 * @param int    $user_id  The new member.
+		 * @param string $context  How the membership was created: staff_create or signup.
+		 * @param int    $actor_id User who created it; 0 for a visitor's self-signup.
+		 */
+		do_action( 'openbb_member_created', $user_id, $context, get_current_user_id() );
 	}
 
 	/**
@@ -142,25 +522,34 @@ final class OPENBB_Signup {
 			);
 		}
 
-		$existing = email_exists( $account['email'] );
-		if ( $existing ) {
-			// Only reveal accounts that already belong to this site (spec §12.2).
-			if ( ! is_multisite() || is_user_member_of_blog( (int) $existing ) ) {
-				return new WP_Error(
-					'openbb_email_exists',
-					'' !== OPENBB_Access::get_coop_role( (int) $existing )
-						? __( 'This person is already a member.', 'open-bulk-buying' )
-						: __( 'A user on this site already has this email. Add them with "Existing user" instead.', 'open-bulk-buying' ),
-					array(
-						'status'  => 409,
-						'user_id' => (int) $existing,
-					)
-				);
-			}
-			return new WP_Error( 'openbb_email_unavailable', __( 'This email can\'t be used. Ask an Administrator.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+		return $account;
+	}
+
+	/**
+	 * Staff learn whether the email belongs to someone on this site, so they can add that
+	 * user instead. Never used for self-signup, which must not reveal accounts.
+	 */
+	private static function staff_email_conflict( string $email ): ?WP_Error {
+		$existing = email_exists( $email );
+		if ( ! $existing ) {
+			return null;
 		}
 
-		return $account;
+		// Only reveal accounts that already belong to this site.
+		if ( ! is_multisite() || is_user_member_of_blog( (int) $existing ) ) {
+			return new WP_Error(
+				'openbb_email_exists',
+				'' !== OPENBB_Access::get_coop_role( (int) $existing )
+					? __( 'This person is already a member.', 'open-bulk-buying' )
+					: __( 'A user on this site already has this email. Add them with "Existing user" instead.', 'open-bulk-buying' ),
+				array(
+					'status'  => 409,
+					'user_id' => (int) $existing,
+				)
+			);
+		}
+
+		return new WP_Error( 'openbb_email_unavailable', __( 'This email can\'t be used. Ask an Administrator.', 'open-bulk-buying' ), array( 'status' => 409 ) );
 	}
 
 	/**
@@ -194,5 +583,13 @@ final class OPENBB_Signup {
 
 	private static function forbidden( string $message ): WP_Error {
 		return new WP_Error( 'openbb_forbidden', $message, array( 'status' => 403 ) );
+	}
+
+	private static function closed(): WP_Error {
+		return new WP_Error( 'openbb_signup_closed', __( 'Signups are closed right now.', 'open-bulk-buying' ), array( 'status' => 403 ) );
+	}
+
+	private static function save_failed(): WP_Error {
+		return new WP_Error( 'openbb_member_save_failed', __( 'The membership could not be saved. Please try again.', 'open-bulk-buying' ), array( 'status' => 500 ) );
 	}
 }

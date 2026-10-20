@@ -1,0 +1,231 @@
+// Field partials from inc/frontend/fields.php.
+
+.openbb-fields {
+	display: grid;
+	gap: 1.25rem;
+
+	&--columns {
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+	}
+}
+
+.openbb-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	min-width: 0;
+
+	&__label {
+		font-weight: 600;
+	}
+
+	&__required {
+		color: var(--openbb-error);
+		margin-inline-start: 0.15em;
+	}
+
+	&__help {
+		margin: 0;
+		color: var(--openbb-muted);
+		font-size: 0.875em;
+	}
+
+	&__error {
+		margin: 0;
+		color: var(--openbb-error);
+		font-size: 0.875em;
+		font-weight: 600;
+
+		&::before {
+			content: "⚠ ";
+		}
+	}
+
+	&--textarea,
+	&--chips,
+	&--checkbox {
+		grid-column: 1 / -1;
+	}
+}
+
+.openbb-input {
+	width: 100%;
+	min-height: 2.75rem;
+	padding: 0.55em 0.75em;
+	border: 1px solid var(--openbb-border);
+	border-radius: var(--openbb-radius);
+	background: var(--wp--preset--color--base, #fff);
+	color: inherit;
+	font: inherit;
+	line-height: 1.4;
+
+	&:focus {
+		outline: none;
+		border-color: var(--openbb-accent);
+		box-shadow: var(--openbb-focus);
+	}
+
+	.has-error & {
+		border-color: var(--openbb-error);
+	}
+
+	// Values the user already has: shown, but not editable here.
+	&[readonly],
+	&:disabled {
+		border-style: dashed;
+		background: var(--openbb-locked);
+		color: var(--openbb-muted);
+		cursor: not-allowed;
+	}
+
+	&[readonly]:focus {
+		border-color: var(--openbb-border);
+	}
+}
+
+textarea.openbb-input {
+	min-height: 6rem;
+	resize: vertical;
+}
+
+.openbb-select:not([multiple]) {
+	appearance: auto;
+}
+
+// Checkbox (boolean fields, rules agreement).
+.openbb-check {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.6em;
+	cursor: pointer;
+
+	// `.openbb` raises specificity above theme checkbox rules, keeping the box aligned
+	// with the help text.
+	.openbb &__input {
+		flex: none;
+		width: 1.25rem;
+		height: 1.25rem;
+		margin: 0.15em 0 0;
+		accent-color: var(--openbb-accent);
+	}
+
+	.is-locked & {
+		color: var(--openbb-muted);
+		cursor: not-allowed;
+	}
+}
+
+.openbb-field--checkbox {
+	.openbb-field__help,
+	.openbb-field__error {
+		padding-inline-start: calc(1.25rem + 0.6em);
+	}
+}
+
+// Chips: native radios/checkboxes, visually styled as toggle buttons.
+.openbb-chips {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+
+	> legend {
+		margin-bottom: 0.35rem;
+		padding: 0;
+	}
+
+	&__group {
+		margin: 0.75rem 0 0;
+		padding: 0;
+		border: 0;
+	}
+
+	&__legend {
+		margin-bottom: 0.35rem;
+		padding: 0;
+		color: var(--openbb-muted);
+		font-size: 0.875em;
+		font-weight: 600;
+	}
+
+	&__options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+}
+
+.openbb-chip {
+	position: relative;
+	display: inline-flex;
+
+	&__input {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		opacity: 0;
+		cursor: pointer;
+	}
+
+	&__label {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35em;
+		min-height: 2.5rem;
+		padding: 0.4em 0.95em;
+		border: 1px solid var(--openbb-border);
+		border-radius: 999px;
+		background: var(--wp--preset--color--base, #fff);
+		transition: background-color 0.15s, border-color 0.15s;
+	}
+
+	&__input:hover + &__label {
+		border-color: currentColor;
+	}
+
+	&__input:focus-visible + &__label {
+		box-shadow: var(--openbb-focus);
+	}
+
+	&__input:checked + &__label {
+		border-color: var(--openbb-accent);
+		background: var(--openbb-accent);
+		color: var(--openbb-accent-contrast);
+
+		&::before {
+			content: "✓";
+		}
+	}
+
+	&__input:disabled {
+		cursor: not-allowed;
+	}
+
+	&__input:disabled + &__label {
+		border-style: dashed;
+		background: var(--openbb-locked);
+		color: var(--openbb-muted);
+	}
+
+	&__input:disabled:checked + &__label {
+		border-color: var(--openbb-border);
+		color: inherit;
+	}
+
+	.has-error &__label {
+		border-color: var(--openbb-error);
+	}
+}
+
+@media (forced-colors: active) {
+	.openbb-chip__input:checked + .openbb-chip__label {
+		outline: 3px solid Highlight;
+	}
+
+	.openbb-chip__input:focus-visible + .openbb-chip__label {
+		outline: 2px dashed Highlight;
+		outline-offset: 2px;
+	}
+}

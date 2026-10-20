@@ -1,6 +1,5 @@
 import {
 	Button,
-	Notice,
 	SelectControl,
 	TextControl,
 	ToggleControl,
@@ -39,6 +38,7 @@ function GeneralForm( { settings, onSaved } ) {
 				: settings.membership_fee_order_interval,
 	};
 	const isDirty =
+		draft.allow_signups !== settings.allow_signups ||
 		draft.require_member_approval !== settings.require_member_approval ||
 		draft.membership_fee_type !== settings.membership_fee_type ||
 		draft.membership_fee_amount !==
@@ -78,6 +78,26 @@ function GeneralForm( { settings, onSaved } ) {
 					error={ error }
 					onDismiss={ () => setError( null ) }
 				/>
+				<Section title={ __( 'Signups', 'open-bulk-buying' ) }>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Allow signups', 'open-bulk-buying' ) }
+						help={
+							draft.allow_signups
+								? __(
+										'People can sign up from any page with the [openbb_signup] shortcode.',
+										'open-bulk-buying'
+								  )
+								: __(
+										'Signups are closed. The [openbb_signup] shortcode shows a "signups are closed" message.',
+										'open-bulk-buying'
+								  )
+						}
+						checked={ draft.allow_signups }
+						onChange={ change( 'allow_signups' ) }
+						disabled={ isBusy }
+					/>
+				</Section>
 				<Section title={ __( 'Member approval', 'open-bulk-buying' ) }>
 					<ToggleControl
 						__nextHasNoMarginBottom

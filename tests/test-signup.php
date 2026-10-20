@@ -1,6 +1,6 @@
 <?php
 /**
- * Creating new member accounts from the Members screen (profile fields spec §12).
+ * Creating new member accounts from the Members screen.
  *
  * @package Open_Bulk_Buying
  */
@@ -203,12 +203,5 @@ class Test_OPENBB_Signup extends OPENBB_TestCase {
 		$this->assertFalse( user_can( $coordinator, 'openbb_set_coop_role', 'abc', 'member' ) );
 		$this->assertFalse( user_can( $coordinator, 'openbb_edit_member', 0 ) );
 		$this->assertFalse( user_can( $this->make_user( 'member' ), 'openbb_create_members' ) );
-	}
-
-	public function test_signup_context_is_not_available_yet(): void {
-		$result = OPENBB_Signup::create_member( $this->account(), array(), OPENBB_Profile_Fields::CONTEXT_SIGNUP );
-
-		$this->assertWPError( $result );
-		$this->assertFalse( email_exists( 'jane.doe@example.com' ) );
 	}
 }

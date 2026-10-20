@@ -1,0 +1,144 @@
+// Signup view (inc/frontend/templates/signup.php).
+
+.openbb-signup {
+	&__title {
+		margin-top: 0;
+	}
+
+	&__account,
+	&__login {
+		color: var(--openbb-muted);
+	}
+
+	&__login {
+		margin-top: 1.25rem;
+	}
+
+	&__notice > .openbb-notice,
+	&__status > .openbb-notice {
+		margin-top: 0;
+	}
+
+	&__rules {
+		display: grid;
+		gap: 0.75rem;
+		margin-top: 1.5rem;
+	}
+
+	&__rules-title {
+		margin: 0;
+	}
+
+	&__fee {
+		margin: 1.5rem 0 0;
+	}
+}
+
+.openbb-form__required-note,
+.openbb-form__hint {
+	color: var(--openbb-muted);
+	font-size: 0.875em;
+}
+
+.openbb-step__title {
+	margin-top: 0;
+
+	&:focus {
+		outline: none;
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--openbb-accent);
+		outline-offset: 4px;
+	}
+}
+
+.openbb-progress {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1.5rem;
+	margin: 0 0 1.5rem;
+	padding: 0;
+	list-style: none;
+	counter-reset: openbb-step;
+	color: var(--openbb-muted);
+	font-size: 0.875em;
+
+	&__step {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		counter-increment: openbb-step;
+
+		&::before {
+			content: counter(openbb-step);
+			display: inline-grid;
+			place-items: center;
+			width: 1.75em;
+			height: 1.75em;
+			border: 1px solid var(--openbb-border);
+			border-radius: 50%;
+			font-weight: 600;
+		}
+
+		&.is-current {
+			color: var(--openbb-text);
+			font-weight: 600;
+
+			&::before {
+				border-color: var(--openbb-accent);
+				background: var(--openbb-accent);
+				color: var(--openbb-accent-contrast);
+			}
+		}
+	}
+}
+
+.openbb-rules {
+	max-height: 18rem;
+	overflow-y: auto;
+	padding: 0.75rem 1.25rem;
+	border: 1px solid var(--openbb-border);
+	border-radius: var(--openbb-radius);
+	background: var(--openbb-surface);
+
+	&:focus-visible {
+		outline: none;
+		box-shadow: var(--openbb-focus);
+	}
+
+	> :first-child {
+		margin-top: 0;
+	}
+
+	> :last-child {
+		margin-bottom: 0;
+	}
+}
+
+// One wide, spaced-out input: works with paste and one-time-code autofill.
+// `.openbb` raises specificity above theme input rules.
+.openbb .openbb-code {
+	// Width of the code, plus room for the padding.
+	width: calc(var(--openbb-code-length, 6) * 1.15em + 2em);
+	max-width: 100%;
+	min-height: 3.5rem;
+	// Letter spacing also follows the last digit; the extra start padding re-centres it.
+	padding-block: 0.2em;
+	padding-inline: 1em 0.5em;
+	direction: ltr;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 1.75rem;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.5em;
+	text-align: center;
+}
+
+.openbb-field--code {
+	align-items: flex-start;
+}
+
+.openbb-countdown {
+	font-variant-numeric: tabular-nums;
+	font-weight: 400;
+}

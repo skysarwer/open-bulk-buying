@@ -1,6 +1,6 @@
 <?php
 /**
- * Ordering cycles (roadmap 002).
+ * Ordering cycles.
  *
  * @package Open_Bulk_Buying
  */

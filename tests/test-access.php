@@ -1,6 +1,6 @@
 <?php
 /**
- * Co-op roles, grants and capability resolution (spec §5).
+ * Co-op roles, grants and capability resolution.
  *
  * @package Open_Bulk_Buying
  */
@@ -36,7 +36,7 @@ class Test_OPENBB_Access extends OPENBB_TestCase {
 	);
 
 	/**
-	 * The spec §5.3 matrix, written out so the code can't drift from it unnoticed.
+	 * The expected matrix, written out so the code can't drift from it unnoticed.
 	 */
 	private function expected_matrix(): array {
 		return array(

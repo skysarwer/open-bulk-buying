@@ -14,6 +14,7 @@ final class OPENBB_Settings {
 	public static function get_general(): array {
 		return array_merge(
 			array(
+				'allow_signups'                 => false,
 				'require_member_approval'       => true,
 				'membership_fee_type'           => 'one_time',
 				'membership_fee_amount'         => 0,

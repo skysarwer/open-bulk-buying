@@ -1,0 +1,129 @@
+.openbb {
+	--openbb-accent: var(--wp--preset--color--primary, #2f6b3a);
+	--openbb-accent-contrast: var(--wp--preset--color--base, #fff);
+	--openbb-text: inherit;
+	--openbb-muted: color-mix(in srgb, currentColor 65%, transparent);
+	--openbb-border: color-mix(in srgb, currentColor 35%, transparent);
+	--openbb-surface: color-mix(in srgb, currentColor 4%, transparent);
+	--openbb-locked: color-mix(in srgb, currentColor 8%, transparent);
+	--openbb-error: #b32d2e;
+	--openbb-success: #1e6f3a;
+	--openbb-info: #2a5d8f;
+	--openbb-radius: 6px;
+	--openbb-gap: 1rem;
+	--openbb-focus: 0 0 0 2px var(--openbb-accent-contrast), 0 0 0 4px var(--openbb-accent);
+	// Keeps focused headings and fields clear of sticky theme headers.
+	--openbb-scroll-offset: calc(var(--wp-admin--admin-bar--height, 0px) + 7rem);
+
+	box-sizing: border-box;
+	max-width: 42rem;
+
+	*,
+	*::before,
+	*::after {
+		box-sizing: inherit;
+	}
+
+	[hidden] {
+		display: none !important;
+	}
+
+	[tabindex="-1"],
+	input,
+	select,
+	textarea {
+		scroll-margin-top: var(--openbb-scroll-offset);
+	}
+}
+
+.openbb-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.4em;
+	min-height: 2.75rem;
+	padding: 0.6em 1.25em;
+	border: 1px solid var(--openbb-border);
+	border-radius: var(--openbb-radius);
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-weight: 600;
+	line-height: 1.2;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
+
+	&:hover:not(:disabled) {
+		border-color: currentColor;
+	}
+
+	&:focus-visible {
+		outline: none;
+		box-shadow: var(--openbb-focus);
+	}
+
+	&:disabled {
+		cursor: not-allowed;
+		opacity: 0.55;
+	}
+
+	&--primary {
+		border-color: var(--openbb-accent);
+		background: var(--openbb-accent);
+		color: var(--openbb-accent-contrast);
+
+		&:hover:not(:disabled) {
+			border-color: var(--openbb-accent);
+			background: color-mix(in srgb, var(--openbb-accent) 85%, #000);
+		}
+	}
+
+	&--link {
+		border-color: transparent;
+		padding-inline: 0.5em;
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+		font-weight: 400;
+
+		&:hover:not(:disabled) {
+			border-color: transparent;
+			text-decoration-thickness: 2px;
+		}
+	}
+}
+
+.openbb-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem;
+	margin-top: 1.5rem;
+}
+
+.openbb-notice {
+	margin: 0 0 var(--openbb-gap);
+	padding: 0.75em 1em;
+	border-left: 4px solid var(--openbb-info);
+	border-radius: var(--openbb-radius);
+	background: color-mix(in srgb, var(--openbb-info) 8%, transparent);
+
+	&--error {
+		border-left-color: var(--openbb-error);
+		background: color-mix(in srgb, var(--openbb-error) 8%, transparent);
+	}
+
+	&--success {
+		border-left-color: var(--openbb-success);
+		background: color-mix(in srgb, var(--openbb-success) 8%, transparent);
+	}
+}
+
+// Honeypot: off screen rather than display:none, which some bots skip.
+.openbb-hp {
+	position: absolute !important;
+	left: -10000px;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+}

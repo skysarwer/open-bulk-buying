@@ -1,6 +1,6 @@
 <?php
 /**
- * Products, their stock ledger, and product categories/suppliers (roadmap 001).
+ * Products, their stock ledger, and product categories/suppliers.
  *
  * @package Open_Bulk_Buying
  */

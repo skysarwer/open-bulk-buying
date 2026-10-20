@@ -226,6 +226,33 @@ class OPENBB_Access {
 			return new WP_Error( 'openbb_reactivate_first', __( 'Reactivate this person as a member before giving them a staff role.', 'open-bulk-buying' ) );
 		}
 
+		return self::write_role( $user_id, $role, $old_role );
+	}
+
+	/**
+	 * The signup transition: a user with no co-op role becomes an applicant or
+	 * member. There's no capability check because the person joining is the actor, often a
+	 * visitor; only OPENBB_Signup calls this, after proving they own the account or email.
+	 *
+	 * @return true|WP_Error
+	 */
+	public static function start_membership( int $user_id, string $role ) {
+		if ( ! in_array( $role, array( self::ROLE_APPLICANT, self::ROLE_MEMBER ), true ) || ! get_userdata( $user_id ) ) {
+			return new WP_Error( 'openbb_invalid_coop_role', __( 'That co-op role or user does not exist.', 'open-bulk-buying' ) );
+		}
+		if ( '' !== self::get_coop_role( $user_id ) ) {
+			return new WP_Error( 'openbb_already_joined', __( 'This person already has a co-op membership.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+		}
+
+		return self::write_role( $user_id, $role, '' );
+	}
+
+	/**
+	 * Saves the role, sets joined_at on the first active role and fires 'openbb_coop_role_changed'.
+	 *
+	 * @return true|WP_Error
+	 */
+	private static function write_role( int $user_id, string $role, string $old_role ) {
 		if ( ! openbb_update_member_field( $user_id, 'coop_role', $role ) ) {
 			return new WP_Error( 'openbb_save_failed', __( 'The co-op role could not be saved.', 'open-bulk-buying' ) );
 		}
@@ -320,7 +347,7 @@ class OPENBB_Access {
 	);
 
 	/**
-	 * Resolves the object-level co-op capabilities (spec §4.2) and NAMED_CAPS into primitive ones.
+	 * Resolves the object-level co-op capabilities and NAMED_CAPS into primitive ones.
 	 *
 	 * Hooked to 'map_meta_cap'.
 	 */

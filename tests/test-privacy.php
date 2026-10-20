@@ -74,7 +74,7 @@ class Test_OPENBB_Privacy extends OPENBB_TestCase {
 		return get_userdata( $user_id );
 	}
 
-	private function callback( string $filter ): callable {
+	private function privacy_callback( string $filter ): callable {
 		$registered = apply_filters( $filter, array() );
 		$this->assertArrayHasKey( self::KEY, $registered );
 
@@ -83,7 +83,7 @@ class Test_OPENBB_Privacy extends OPENBB_TestCase {
 
 	public function test_exports_labelled_values_including_staff_fields(): void {
 		$user   = $this->member_with_values();
-		$result = call_user_func( $this->callback( 'wp_privacy_personal_data_exporters' ), $user->user_email, 1 );
+		$result = call_user_func( $this->privacy_callback( 'wp_privacy_personal_data_exporters' ), $user->user_email, 1 );
 
 		$this->assertTrue( $result['done'] );
 		$this->assertCount( 1, $result['data'] );
@@ -110,7 +110,7 @@ class Test_OPENBB_Privacy extends OPENBB_TestCase {
 	public function test_member_without_values_exports_nothing(): void {
 		$this->save_fields();
 		$user   = get_userdata( $this->make_user( 'member' ) );
-		$result = call_user_func( $this->callback( 'wp_privacy_personal_data_exporters' ), $user->user_email, 1 );
+		$result = call_user_func( $this->privacy_callback( 'wp_privacy_personal_data_exporters' ), $user->user_email, 1 );
 
 		$this->assertSame( array(), $result['data'] );
 		$this->assertTrue( $result['done'] );
@@ -121,7 +121,7 @@ class Test_OPENBB_Privacy extends OPENBB_TestCase {
 		add_user_meta( $user->ID, OPENBB_Profile_Fields::meta_key( 'removed_field' ), 'leftover' );
 		$other = $this->member_with_values();
 
-		$result = call_user_func( $this->callback( 'wp_privacy_personal_data_erasers' ), $user->user_email, 1 );
+		$result = call_user_func( $this->privacy_callback( 'wp_privacy_personal_data_erasers' ), $user->user_email, 1 );
 
 		$this->assertTrue( $result['items_removed'] );
 		$this->assertFalse( $result['items_retained'] );
@@ -131,8 +131,8 @@ class Test_OPENBB_Privacy extends OPENBB_TestCase {
 	}
 
 	public function test_unknown_email_is_a_no_op(): void {
-		$export = call_user_func( $this->callback( 'wp_privacy_personal_data_exporters' ), 'nobody@example.invalid', 1 );
-		$erase  = call_user_func( $this->callback( 'wp_privacy_personal_data_erasers' ), 'nobody@example.invalid', 1 );
+		$export = call_user_func( $this->privacy_callback( 'wp_privacy_personal_data_exporters' ), 'nobody@example.invalid', 1 );
+		$erase  = call_user_func( $this->privacy_callback( 'wp_privacy_personal_data_erasers' ), 'nobody@example.invalid', 1 );
 
 		$this->assertSame( array(), $export['data'] );
 		$this->assertFalse( $erase['items_removed'] );
