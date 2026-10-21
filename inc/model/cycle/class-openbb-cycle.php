@@ -18,9 +18,8 @@ class OPENBB_Cycle extends OPENBB_Entity {
 	const STATUS_COMPLETE     = 'complete';
 
 	/**
-	 * Statuses whose submitted orders still reserve stock: every status but complete, since
-	 * staff can submit orders while a cycle is in setup. Several cycles (e.g. per location)
-	 * may be active at once.
+	 * Stages reserving committed orders before hold deadlines are frozen at completion.
+	 * Staff can submit orders in setup; several cycles may be active at once.
 	 */
 	const ACTIVE_STATUSES = array( self::STATUS_SETUP, self::STATUS_ORDERING, self::STATUS_PROCESSING, self::STATUS_DISTRIBUTION );
 
@@ -35,9 +34,14 @@ class OPENBB_Cycle extends OPENBB_Entity {
 	public $pickup_instructions = array();
 	public $created_at          = null;
 	public $updated_at          = null;
+	public $finalized_at        = null;
+	public $finalized_by        = null;
+	public $unpaid_hold_until   = null;
+	public $prepaid_hold_until  = null;
 
 	protected function cast(): void {
 		$this->id                  = (int) $this->id;
+		$this->finalized_by        = self::nullable_int( $this->finalized_by );
 		$this->pickup_location     = (string) $this->pickup_location;
 		$this->pickup_instructions = openbb_normalize_localized( self::decode_json( $this->pickup_instructions ) );
 	}
@@ -69,8 +73,12 @@ class OPENBB_Cycle extends OPENBB_Entity {
 				'pickup_instructions' => $instructions,
 				'created_at'          => $this->created_at,
 				'updated_at'          => $this->updated_at,
+				'finalized_at'        => $this->finalized_at,
+				'finalized_by'        => $this->finalized_by,
+				'unpaid_hold_until'   => $this->unpaid_hold_until,
+				'prepaid_hold_until'  => $this->prepaid_hold_until,
 			),
-			array( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )
+			array( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s' )
 		);
 	}
 
@@ -165,6 +173,14 @@ class OPENBB_Cycle extends OPENBB_Entity {
 
 	public function is_active(): bool {
 		return in_array( $this->status, self::ACTIVE_STATUSES, true );
+	}
+
+	public function hold_until( string $order_status ): ?string {
+		return $this->{self::hold_field( $order_status )};
+	}
+
+	public static function hold_field( string $order_status ): string {
+		return OPENBB_Order::STATUS_PREPAID === $order_status ? 'prepaid_hold_until' : 'unpaid_hold_until';
 	}
 
 	/**

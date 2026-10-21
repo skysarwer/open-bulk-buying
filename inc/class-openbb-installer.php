@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class OPENBB_Installer {
 
-	const DB_VERSION        = '1';
+	const DB_VERSION        = '2';
 	const DB_VERSION_OPTION = 'openbb_db_version';
 
 	public static function maybe_upgrade(): void {

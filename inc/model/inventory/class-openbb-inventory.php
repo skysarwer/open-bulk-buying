@@ -48,14 +48,13 @@ class OPENBB_Inventory {
 	}
 
 	/**
-	 * Base units held by submitted, uncollected orders in active cycles. Uses each
-	 * line's latest quantity (final, else prepared, else requested).
+	 * Base units held by submitted/prepaid, uncollected orders with an active hold.
+	 * Uses each line's latest quantity (final, else prepared, else requested).
 	 */
 	public static function get_reserved( int $product_id ): float {
 		global $wpdb;
 
-		$statuses     = OPENBB_Cycle::ACTIVE_STATUSES;
-		$placeholders = implode( ',', array_fill( 0, count( $statuses ), '%s' ) );
+		$condition = self::reservation_condition();
 
 		return (float) $wpdb->get_var(
 			$wpdb->prepare(
@@ -63,10 +62,8 @@ class OPENBB_Inventory {
 				FROM {$wpdb->openbb_order_lines} l
 				INNER JOIN {$wpdb->openbb_orders} o ON o.id = l.order_id
 				INNER JOIN {$wpdb->openbb_cycles} c ON c.id = o.cycle_id
-				WHERE l.product_id = %d AND o.status = %s AND o.collected_at IS NULL AND c.status IN ({$placeholders})",
-				$product_id,
-				OPENBB_Order::STATUS_SUBMITTED,
-				...$statuses
+				WHERE l.product_id = %d AND {$condition}",
+				$product_id
 			)
 		);
 	}
@@ -113,7 +110,7 @@ class OPENBB_Inventory {
 			return $totals;
 		}
 
-		$statuses = OPENBB_Cycle::ACTIVE_STATUSES;
+		$condition = self::reservation_condition();
 		$rows     = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT l.product_id, SUM(COALESCE(l.qty_final, l.qty_prepared, l.qty_requested) * l.base_per_unit) AS total
@@ -121,10 +118,9 @@ class OPENBB_Inventory {
 				INNER JOIN ' . $wpdb->openbb_orders . ' o ON o.id = l.order_id
 				INNER JOIN ' . $wpdb->openbb_cycles . ' c ON c.id = o.cycle_id
 				WHERE l.product_id IN (' . implode( ',', array_fill( 0, count( $product_ids ), '%d' ) ) . ')
-				AND o.status = %s AND o.collected_at IS NULL
-				AND c.status IN (' . implode( ',', array_fill( 0, count( $statuses ), '%s' ) ) . ')
+				AND ' . $condition . '
 				GROUP BY l.product_id',
-				...array_merge( $product_ids, array( OPENBB_Order::STATUS_SUBMITTED ), $statuses )
+				...$product_ids
 			),
 			ARRAY_A
 		);
@@ -139,12 +135,41 @@ class OPENBB_Inventory {
 	 * Whether $order's lines currently count towards reserved stock (see get_reserved()).
 	 */
 	public static function order_reserves( OPENBB_Order $order, ?OPENBB_Cycle $cycle = null ): bool {
-		if ( ! $order->id || OPENBB_Order::STATUS_SUBMITTED !== $order->status || $order->is_collected() ) {
+		if ( ! $order->id || ! in_array( $order->status, OPENBB_Order::COMMITTED_STATUSES, true ) || $order->is_collected() ) {
 			return false;
 		}
 		$cycle = $cycle ?? OPENBB_Cycles::get( $order->cycle_id );
 
-		return $cycle && $cycle->is_active();
+		if ( ! $cycle ) {
+			return false;
+		}
+		$until = $cycle->hold_until( $order->status );
+		return null !== $until ? ! $order->is_abandoned( $cycle ) : $cycle->is_active();
+	}
+
+	/**
+	 * Shared by single-product and batch queries; aliases are fixed internal SQL.
+	 */
+	private static function reservation_condition(): string {
+		global $wpdb;
+
+		$committed   = OPENBB_Order::COMMITTED_STATUSES;
+		$active      = OPENBB_Cycle::ACTIVE_STATUSES;
+		$paid_hold   = OPENBB_Cycle::hold_field( OPENBB_Order::STATUS_PREPAID );
+		$unpaid_hold = OPENBB_Cycle::hold_field( OPENBB_Order::STATUS_SUBMITTED );
+		$deadline    = $wpdb->prepare( "CASE WHEN o.status = %s THEN c.{$paid_hold} ELSE c.{$unpaid_hold} END", OPENBB_Order::STATUS_PREPAID );
+
+		return $wpdb->prepare(
+			'o.status IN (' . implode( ',', array_fill( 0, count( $committed ), '%s' ) ) . ") AND o.collected_at IS NULL
+			AND (
+				({$deadline}) > UTC_TIMESTAMP()
+				OR (
+					({$deadline}) IS NULL
+					AND c.status IN (" . implode( ',', array_fill( 0, count( $active ), '%s' ) ) . ')
+				)
+			)',
+			...array_merge( $committed, $active )
+		);
 	}
 
 	/**

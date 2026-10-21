@@ -36,13 +36,33 @@ class OPENBB_Orders {
 				staff_note text NULL,
 				submitted_at datetime NULL default NULL,
 				collected_at datetime NULL default NULL,
+				collected_by bigint(20) unsigned NULL default NULL,
+				paid_at datetime NULL default NULL,
+				paid_by bigint(20) unsigned NULL default NULL,
+				paid_amount bigint(20) NULL default NULL,
+				paid_currency char(3) NULL default NULL,
 				created_at datetime NOT NULL,
 				updated_at datetime NOT NULL,
+				revision bigint(20) unsigned NOT NULL default 0,
 				PRIMARY KEY  (id),
 				UNIQUE KEY cycle_user (cycle_id,user_id),
 				KEY user_id (user_id),
 				KEY cycle_status (cycle_id,status),
 				KEY aid_status (aid_status)
+			) {$wpdb->get_charset_collate()};",
+
+			$wpdb->openbb_order_events => "CREATE TABLE {$wpdb->openbb_order_events} (
+				id bigint(20) unsigned NOT NULL auto_increment,
+				order_id bigint(20) unsigned NOT NULL,
+				actor_id bigint(20) unsigned NOT NULL,
+				event_type varchar(30) NOT NULL,
+				from_status varchar(20) NOT NULL,
+				to_status varchar(20) NOT NULL,
+				reason text NULL,
+				details longtext NOT NULL,
+				created_at datetime NOT NULL,
+				PRIMARY KEY  (id),
+				KEY order_id (order_id)
 			) {$wpdb->get_charset_collate()};",
 
 			$wpdb->openbb_order_lines => "CREATE TABLE {$wpdb->openbb_order_lines} (
@@ -77,6 +97,49 @@ class OPENBB_Orders {
 		$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->openbb_orders} WHERE id = %d", $id ), ARRAY_A );
 
 		return $row ? new OPENBB_Order( $row ) : null;
+	}
+
+	/**
+	 * Appends lifecycle evidence inside the caller's transaction.
+	 */
+	public static function record_event( OPENBB_Order $order, array $event ): bool {
+		global $wpdb;
+
+		$details = wp_json_encode(
+			array(
+				'total'    => $order->total,
+				'currency' => $order->currency,
+				'lines'    => array_map(
+					static function ( OPENBB_Order_Line $line ): array {
+						return array(
+							'line_id'       => $line->id,
+							'product_id'    => $line->product_id,
+							'quantity'      => $line->get_quantity(),
+							'base_per_unit' => $line->base_per_unit,
+							'line_total'    => $line->calculate_total(),
+						);
+					},
+					$order->get_lines()
+				),
+			)
+		);
+		if ( false === $details ) {
+			return false;
+		}
+		return false !== $wpdb->insert(
+			$wpdb->openbb_order_events,
+			array(
+				'order_id'    => $order->id,
+				'actor_id'    => $event['actor_id'],
+				'event_type'  => $event['event_type'],
+				'from_status' => $event['from_status'],
+				'to_status'   => $order->status,
+				'reason'      => $event['reason'] ?? '',
+				'details'     => $details,
+				'created_at'  => current_time( 'mysql', true ),
+			),
+			array( '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s' )
+		);
 	}
 
 	public static function get_for_member( int $cycle_id, int $user_id ): ?OPENBB_Order {

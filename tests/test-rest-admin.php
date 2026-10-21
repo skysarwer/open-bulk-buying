@@ -196,6 +196,73 @@ class Test_OPENBB_REST_Admin extends OPENBB_TestCase {
 		$this->assertEquals( 2, OPENBB_Inventory::get_on_hand( $product_id ) );
 	}
 
+	public function test_payment_and_fulfillment_require_confirmation_and_capabilities(): void {
+		$product_id = $this->make_stocked_product( 5 );
+		$cycle_id   = $this->make_open_cycle();
+		$order_id   = $this->new_order( $cycle_id );
+		$order      = $this->submit( $order_id, $product_id, 2 )->get_data();
+		$params     = array(
+			'confirmed'           => true,
+			'expected_updated_at' => $order['updated_at'],
+			'expected_revision'   => $order['revision'],
+		);
+		$this->assertSame( 400, $this->api( 'POST', "/orders/{$order_id}/prepay", array_merge( $params, array( 'confirmed' => false ) ) )->get_status() );
+		$this->assertSame( 400, $this->api( 'POST', "/orders/{$order_id}/prepay" )->get_status() );
+		$this->assertSame( 400, $this->api( 'PUT', "/orders/{$order_id}", array( 'status' => 'prepaid' ) )->get_status() );
+		$this->assertSame( 400, $this->api( 'PUT', "/orders/{$order_id}", array( 'status' => 'fulfilled' ) )->get_status() );
+		wp_set_current_user( $this->make_user( 'member' ) );
+		$this->assertSame( 403, $this->api( 'POST', "/orders/{$order_id}/prepay", $params )->get_status() );
+		wp_set_current_user( $this->coordinator );
+		$this->assertSame( 409, $this->api( 'POST', "/orders/{$order_id}/fulfill", $params )->get_status() );
+		$paid = $this->api( 'POST', "/orders/{$order_id}/prepay", $params );
+		$this->assertSame( 200, $paid->get_status() );
+		$this->assertSame( 'prepaid', $paid->get_data()['status'] );
+		$this->assertEquals( 500, $paid->get_data()['paid_amount'] );
+		$this->assertTrue( $paid->get_data()['reserves_stock'] );
+		$this->assertTrue( $paid->get_data()['is_locked'] );
+		$this->assertFalse( $paid->get_data()['can_edit_lines'] );
+		$this->assertFalse( $paid->get_data()['can_edit_amounts'] );
+		$this->assertFalse( $paid->get_data()['can_cancel'] );
+		$this->assertFalse( $paid->get_data()['can_delete'] );
+		$this->assertFalse( $paid->get_data()['can_prepay'] );
+		$this->assertFalse( $paid->get_data()['can_fulfill'] );
+		$this->assertSame( 1, (int) $this->api( 'GET', '/orders', array( 'status' => array( 'prepaid' ) ) )->get_headers()['X-WP-Total'] );
+		$cycle = OPENBB_Cycles::get( $cycle_id );
+		$cycle->status = OPENBB_Cycle::STATUS_DISTRIBUTION;
+		$this->assertTrue( $cycle->save() );
+		$params['expected_updated_at'] = $paid->get_data()['updated_at'];
+		$params['expected_revision']   = $paid->get_data()['revision'];
+		$available = $this->api( 'GET', "/orders/{$order_id}" )->get_data();
+		$this->assertTrue( $available['can_fulfill'] );
+		$this->assertFalse( $available['can_edit_lines'] );
+		$done = $this->api( 'POST', "/orders/{$order_id}/fulfill", $params );
+		$this->assertSame( 200, $done->get_status() );
+		$this->assertSame( 'fulfilled', $done->get_data()['status'] );
+		$this->assertFalse( $done->get_data()['reserves_stock'] );
+		$this->assertNotNull( $done->get_data()['collected_at'] );
+		$this->assertSame( 200, $this->api( 'POST', "/orders/{$order_id}/fulfill", $params )->get_status() );
+		$this->assertEquals( 3, OPENBB_Inventory::get_on_hand( $product_id ) );
+	}
+
+	public function test_cycle_summaries_include_prepaid_and_fulfilled_orders(): void {
+		$product_id = $this->make_stocked_product( 10 );
+		$cycle_id   = $this->make_open_cycle();
+		$paid_id    = $this->new_order( $cycle_id );
+		$done_id    = $this->new_order( $cycle_id );
+		$this->submit( $paid_id, $product_id, 2 );
+		$this->submit( $done_id, $product_id, 1 );
+		$this->assertInstanceOf( OPENBB_Order::class, OPENBB_Order_Lifecycle::confirm( $paid_id, 'prepay', $this->coordinator ) );
+		$cycle = OPENBB_Cycles::get( $cycle_id );
+		$cycle->status = 'distribution';
+		$this->assertTrue( $cycle->save() );
+		$this->assertInstanceOf( OPENBB_Order::class, OPENBB_Order_Lifecycle::confirm( $done_id, 'fulfill', $this->coordinator ) );
+		$summary = $this->api( 'GET', "/cycles/{$cycle_id}" )->get_data();
+		$this->assertSame( 1, $summary['submitted_count'] );
+		$this->assertSame( 1, $summary['prepaid_count'] );
+		$this->assertSame( 1, $summary['fulfilled_count'] );
+		$this->assertSame( 750, $summary['orders_total'] );
+	}
+
 	public function test_distribution_can_be_recorded_by_hand_and_only_removes_stock(): void {
 		$product_id = $this->make_stocked_product( 5 );
 		$move       = function ( float $quantity ) use ( $product_id ) {

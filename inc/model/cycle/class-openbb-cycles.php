@@ -27,6 +27,10 @@ class OPENBB_Cycles {
 				pickup_instructions longtext NULL,
 				created_at datetime NOT NULL,
 				updated_at datetime NOT NULL,
+				finalized_at datetime NULL default NULL,
+				finalized_by bigint(20) unsigned NULL default NULL,
+				unpaid_hold_until datetime NULL default NULL,
+				prepaid_hold_until datetime NULL default NULL,
 				PRIMARY KEY  (id),
 				KEY status (status),
 				KEY ordering_window (opens_at,closes_at)
@@ -51,6 +55,34 @@ class OPENBB_Cycles {
 	 * @return true|WP_Error
 	 */
 	public static function store( OPENBB_Cycle $cycle, string $old_status, int $actor_id ) {
+		if ( ! OPENBB_Inventory::lock() ) {
+			return new WP_Error( 'openbb_busy', __( 'Stock is being updated. Please try again.', 'open-bulk-buying' ), array( 'status' => 503 ) );
+		}
+		try {
+			$existing = $cycle->id ? self::get( $cycle->id ) : null;
+			if ( $cycle->id && ! $existing ) {
+				return new WP_Error( 'openbb_cycle_not_found', __( 'Cycle not found.', 'open-bulk-buying' ), array( 'status' => 404 ) );
+			}
+			$old_status = $existing ? $existing->status : '';
+			if ( $existing && OPENBB_Cycle::STATUS_COMPLETE === $old_status && $cycle->status !== $old_status ) {
+				return new WP_Error( 'openbb_cycle_finalized', __( 'A completed cycle cannot be reopened.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+			}
+			foreach ( array( 'finalized_at', 'finalized_by', 'unpaid_hold_until', 'prepaid_hold_until' ) as $field ) {
+				$cycle->$field = $existing ? $existing->$field : null;
+			}
+			if ( OPENBB_Cycle::STATUS_COMPLETE === $cycle->status && OPENBB_Cycle::STATUS_COMPLETE !== $old_status ) {
+				$cycle->finalized_at       = current_time( 'mysql', true );
+				$cycle->finalized_by       = $actor_id;
+				$cycle->unpaid_hold_until  = $cycle->finalized_at;
+				$cycle->prepaid_hold_until = $cycle->finalized_at;
+			}
+			return self::store_locked( $cycle, $old_status, $actor_id );
+		} finally {
+			OPENBB_Inventory::unlock();
+		}
+	}
+
+	private static function store_locked( OPENBB_Cycle $cycle, string $old_status, int $actor_id ) {
 		$valid = $cycle->validate();
 		if ( is_wp_error( $valid ) ) {
 			return $valid;
@@ -75,7 +107,7 @@ class OPENBB_Cycles {
 	}
 
 	/**
-	 * Cycles whose submitted orders currently reserve stock.
+	 * Cycles in active operational stages.
 	 *
 	 * @return OPENBB_Cycle[]
 	 */

@@ -239,13 +239,15 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 				$wpdb->prepare(
 					"SELECT cycle_id,
 						SUM(status != %s) AS orders_count,
-						SUM(status = %s) AS submitted_count,
-						SUM(CASE WHEN status IN (%s, %s) THEN total ELSE 0 END) AS total
+						SUM(status IN (%s, %s)) AS submitted_count,
+						SUM(status = 'prepaid') AS prepaid_count,
+						SUM(status = 'fulfilled') AS fulfilled_count,
+						SUM(CASE WHEN status IN (%s, %s, %s) THEN total ELSE 0 END) AS total
 					FROM {$wpdb->openbb_orders}
 					WHERE cycle_id IN (" . implode( ',', array_fill( 0, count( $ids ), '%d' ) ) . ')
 					GROUP BY cycle_id',
 					...array_merge(
-						array( OPENBB_Order::STATUS_CANCELLED, OPENBB_Order::STATUS_SUBMITTED, OPENBB_Order::STATUS_SUBMITTED, OPENBB_Order::STATUS_COMPLETED ),
+						array( OPENBB_Order::STATUS_CANCELLED, OPENBB_Order::STATUS_SUBMITTED, OPENBB_Order::STATUS_PREPAID, OPENBB_Order::STATUS_SUBMITTED, OPENBB_Order::STATUS_PREPAID, OPENBB_Order::STATUS_FULFILLED ),
 						$ids
 					)
 				),
@@ -272,11 +274,17 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 					'pickup_opens_at'  => self::to_local_datetime( $cycle->pickup_opens_at ),
 					'pickup_closes_at' => self::to_local_datetime( $cycle->pickup_closes_at ),
 					'pickup_location'  => $cycle->pickup_location,
+					'finalized_at'     => self::to_local_datetime( $cycle->finalized_at ),
+					'finalized_by'     => $cycle->finalized_by,
+					'unpaid_hold_until' => self::to_local_datetime( $cycle->unpaid_hold_until ),
+					'prepaid_hold_until' => self::to_local_datetime( $cycle->prepaid_hold_until ),
 				),
 				self::localized_out( 'pickup_instructions', $cycle->pickup_instructions ),
 				array(
 					'orders_count'    => (int) ( $row['orders_count'] ?? 0 ),
 					'submitted_count' => (int) ( $row['submitted_count'] ?? 0 ),
+					'prepaid_count'   => (int) ( $row['prepaid_count'] ?? 0 ),
+					'fulfilled_count' => (int) ( $row['fulfilled_count'] ?? 0 ),
 					'orders_total'    => (int) ( $row['total'] ?? 0 ),
 					'modified'        => self::to_local_datetime( $cycle->updated_at ),
 				)

@@ -155,6 +155,8 @@ class OPENBB_Admin {
 				'openbb_manage_cycles',
 				'openbb_view_orders',
 				'openbb_edit_orders',
+				'openbb_record_payments',
+				'openbb_distribute_orders',
 				'openbb_view_members',
 				'openbb_edit_members',
 				'openbb_view_aid',

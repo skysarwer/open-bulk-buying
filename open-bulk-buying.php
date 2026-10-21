@@ -24,7 +24,7 @@ define('OPENBB_META_PREFIX', 'openbb_');
 
 // Listing tables in $wpdb->tables makes switch_to_blog() re-prefix them on multisite.
 global $wpdb;
-foreach ( array( 'openbb_cycles', 'openbb_orders', 'openbb_order_lines', 'openbb_stock_moves', 'openbb_rules_versions' ) as $openbb_table ) {
+foreach ( array( 'openbb_cycles', 'openbb_orders', 'openbb_order_lines', 'openbb_order_events', 'openbb_stock_moves', 'openbb_rules_versions' ) as $openbb_table ) {
 	$wpdb->tables[]      = $openbb_table;
 	$wpdb->$openbb_table = $wpdb->prefix . $openbb_table;
 }
@@ -49,7 +49,9 @@ require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-line.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-orders.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/inventory/class-openbb-stock-move.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/inventory/class-openbb-inventory.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-policy.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-editor.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-lifecycle.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/rules/class-openbb-rules-version.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/rules/class-openbb-rules.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/access/class-openbb-access.php';

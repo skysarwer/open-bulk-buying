@@ -125,18 +125,29 @@ class OPENBB_Order_Line extends OPENBB_Entity {
 	}
 
 	/**
-	 * Order lines can only be hard-deleted while their parent is a draft or cancelled.
+	 * Order lines can only be hard-deleted on drafts without submission history.
 	 *
 	 * @return true|WP_Error
 	 */
 	public function delete() {
+		if ( ! OPENBB_Inventory::lock() ) {
+			return new WP_Error( 'openbb_busy', __( 'Stock is being updated. Please try again.', 'open-bulk-buying' ), array( 'status' => 503 ) );
+		}
+		try {
+			return $this->delete_locked();
+		} finally {
+			OPENBB_Inventory::unlock();
+		}
+	}
+
+	private function delete_locked() {
 		global $wpdb;
 
 		$order = OPENBB_Orders::get( $this->order_id );
 		if ( ! $this->id || ! $order ) {
 			return new WP_Error( 'openbb_order_line_not_found', __( 'This order line no longer exists.', 'open-bulk-buying' ) );
 		}
-		if ( ! in_array( $order->status, array( OPENBB_Order::STATUS_DRAFT, OPENBB_Order::STATUS_CANCELLED ), true ) ) {
+		if ( OPENBB_Order::STATUS_DRAFT !== $order->status || $order->submitted_at ) {
 			return new WP_Error( 'openbb_order_line_not_deletable', __( 'Lines on submitted orders cannot be deleted.', 'open-bulk-buying' ) );
 		}
 

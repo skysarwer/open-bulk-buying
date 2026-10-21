@@ -72,6 +72,32 @@ will display a notice explaining how to build them.
    When changing a submitted order or cancelling it, staff are asked to provide
    a reason.
 
+## Order payment and fulfillment
+
+Orders start as **Draft**, then become **Submitted** when committed. Submitted
+and **Prepaid** orders reserve stock. Use **Mark prepaid** after confirming that
+the full amount due is settled; this does not remove inventory. During a cycle's
+**Distribution** stage, **Fulfill order** confirms settlement and handoff of the
+listed quantities, deducts stock once, and marks the order **Fulfilled**.
+Save edits before using either confirmation. Zero-balance orders are supported.
+
+Prepaid quantities, amounts, and cancellations are locked until payment
+adjustments/refunds are supported. Unpaid orders can be cancelled with a reason.
+Cancelled orders are retained; only drafts without operational history can be
+deleted.
+
+Marking a cycle **Complete** finalizes distribution, records fixed hold deadlines,
+and immediately releases its uncollected orders' reservations. Submitted/prepaid
+orders remaining at that deadline are **abandoned**; their payment status remains
+unchanged and no stock is deducted for goods not handed over. Closing ordering
+alone does not abandon orders. Complete cycles cannot be reopened.
+
+Orders without a valid currency snapshot must be corrected before settlement
+can be confirmed; the payment action never guesses their currency.
+
+See [the lifecycle roadmap](ROADMAP.md) for configurable prepaid holds,
+cancellation policies, refunds, pickup exceptions, reporting, and privacy work.
+
 An Administrator already has co-op staff permissions. To place orders as a
 co-op member, an Administrator also needs an active co-op role. Members can
 order for themselves; Applicants and Inactive users cannot order.
@@ -177,3 +203,9 @@ For PHP integration tests, see `tests/` and the PHPUnit configuration files.
 Tests use the WordPress test library and must be configured with a separate,
 disposable test database. Set `WP_TESTS_DIR` to the library's `tests/phpunit`
 directory, then run `vendor/bin/phpunit`.
+
+Order eligibility lives in `OPENBB_Order_Policy`: services enforce it and REST
+exposes its decisions to the admin UI. Keep authorization in controllers and
+transactional writes in the editor/lifecycle services. Inventory SQL and PHP
+checks share committed/active status definitions and the cycle's hold-field
+mapping; reservation tests must keep both representations in agreement.

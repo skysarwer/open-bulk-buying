@@ -134,7 +134,23 @@ const cycleFields = [
 	},
 	{
 		id: 'submitted_count',
-		label: __( 'Submitted', 'open-bulk-buying' ),
+		label: __( 'Unfulfilled', 'open-bulk-buying' ),
+		type: 'integer',
+		readOnly: true,
+		enableSorting: false,
+		filterBy: false,
+	},
+	{
+		id: 'prepaid_count',
+		label: __( 'Prepaid', 'open-bulk-buying' ),
+		type: 'integer',
+		readOnly: true,
+		enableSorting: false,
+		filterBy: false,
+	},
+	{
+		id: 'fulfilled_count',
+		label: __( 'Fulfilled', 'open-bulk-buying' ),
 		type: 'integer',
 		readOnly: true,
 		enableSorting: false,
@@ -241,11 +257,15 @@ function CycleSummary( { cycle } ) {
 				) }
 				{ cycle.submitted_count > 0 &&
 					` (${ sprintf(
-						/* translators: %d: number of submitted orders. */
-						__( '%d submitted', 'open-bulk-buying' ),
+						/* translators: %d: number of committed, unfulfilled orders. */
+						__( '%d unfulfilled', 'open-bulk-buying' ),
 						cycle.submitted_count
 					) })` }
 			</dd>
+			<dt>{ __( 'Prepaid', 'open-bulk-buying' ) }</dt>
+			<dd>{ cycle.prepaid_count }</dd>
+			<dt>{ __( 'Fulfilled', 'open-bulk-buying' ) }</dt>
+			<dd>{ cycle.fulfilled_count }</dd>
 			<dt>{ __( 'Order total', 'open-bulk-buying' ) }</dt>
 			<dd>{ formatMoney( cycle.orders_total ) }</dd>
 		</dl>

@@ -558,7 +558,8 @@ $openbb-wide-sidebar-width: 640px;
 	&--success,
 	&--cycle-ordering,
 	&--order-submitted,
-	&--order-completed,
+	&--order-prepaid,
+	&--order-fulfilled,
 	&--role-member {
 		background: #edfaef;
 		color: $openbb-success;

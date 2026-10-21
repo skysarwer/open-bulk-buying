@@ -86,9 +86,14 @@ function buildFields( cycles ) {
 			type: 'text',
 			elements: toElements( config.orderStatuses ),
 			render: ( { item } ) => (
-				<span className={ `openbb-badge openbb-badge--order-${ item.status }` }>
-					{ item.status_label }
-				</span>
+				<>
+					<span className={ `openbb-badge openbb-badge--order-${ item.status }` }>
+						{ item.status_label }
+					</span>
+					{ item.is_abandoned && (
+						<div className="openbb-muted">{ __( 'Abandoned (uncollected)', 'open-bulk-buying' ) }</div>
+					) }
+				</>
 			),
 			filterBy: { operators: [ 'isAny' ], isPrimary: true },
 			enableSorting: false,
@@ -328,8 +333,7 @@ export default function OrdersScreen() {
 				label: __( 'Delete', 'open-bulk-buying' ),
 				icon: trash,
 				isDestructive: true,
-				isEligible: ( item ) =>
-					canEdit && item.can_edit && [ 'draft', 'cancelled' ].includes( item.status ),
+				isEligible: ( item ) => item.can_delete,
 				modalHeader: __( 'Delete order', 'open-bulk-buying' ),
 				RenderModal: ( { items: [ item ], closeModal } ) => (
 					<ConfirmBody

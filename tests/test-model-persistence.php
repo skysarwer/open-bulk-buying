@@ -168,9 +168,15 @@ class Test_OPENBB_Model_Persistence extends OPENBB_TestCase {
 		);
 		$this->assertGreaterThan( 0, $product_id );
 
+		$order = new OPENBB_Order(
+			array( 'cycle_id' => $this->make_cycle( 'setup' ), 'user_id' => $user_id )
+		);
+		$this->assertTrue( $order->save() );
+		$this->assertTrue( OPENBB_Orders::record_event( $order, array( 'actor_id' => $user_id, 'event_type' => 'created', 'from_status' => '' ) ) );
 		$this->assertTrue( OPENBB_Maintenance::delete_all_site_data() );
 		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->openbb_orders}" ) );
 		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->openbb_order_lines}" ) );
+		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->openbb_order_events}" ) );
 		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->openbb_stock_moves}" ) );
 		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->openbb_cycles}" ) );
 		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->openbb_rules_versions}" ) );

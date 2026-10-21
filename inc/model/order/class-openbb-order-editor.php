@@ -21,9 +21,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class OPENBB_Order_Editor {
 
-	/** Statuses staff can set; completion happens at distribution. */
-	const EDITABLE_STATUSES = array( OPENBB_Order::STATUS_DRAFT, OPENBB_Order::STATUS_SUBMITTED, OPENBB_Order::STATUS_CANCELLED );
-
 	/** Tolerance for decimal quantity comparisons (the columns hold 3 decimals). */
 	const EPSILON = 0.0005;
 
@@ -71,7 +68,7 @@ class OPENBB_Order_Editor {
 	 * Applies staff changes to $order (saved or from start()) and saves it.
 	 *
 	 * Every key of $changes is optional:
-	 * - status              One of EDITABLE_STATUSES.
+	 * - status              One of OPENBB_Order_Policy::EDITABLE_STATUSES.
 	 * - lines               The full list of lines: { id?, product_id?, qty, own_container? }.
 	 *                       Existing lines missing from the list are removed.
 	 * - donation            Minor units.
@@ -145,14 +142,11 @@ class OPENBB_Order_Editor {
 		$before     = clone $order;
 		$old_status = $order->status;
 		$new_status = isset( $changes['status'] ) ? (string) $changes['status'] : $old_status;
-		$locked     = OPENBB_Order::STATUS_COMPLETED === $old_status || $order->is_collected();
 		$has_lines  = isset( $changes['lines'] );
 
-		if ( $locked && ( $has_lines || $new_status !== $old_status || isset( $changes['donation'] ) ) ) {
-			return new WP_Error( 'openbb_order_locked', __( 'This order has been collected. Only the staff note can be changed.', 'open-bulk-buying' ), array( 'status' => 409 ) );
-		}
-		if ( ! in_array( $new_status, self::EDITABLE_STATUSES, true ) && $new_status !== $old_status ) {
-			return self::invalid( __( 'That status cannot be set here.', 'open-bulk-buying' ) );
+		$valid = OPENBB_Order_Policy::validate_edit( $order, OPENBB_Cycles::get( $order->cycle_id ), $changes );
+		if ( is_wp_error( $valid ) ) {
+			return $valid;
 		}
 
 		$lines      = array();
@@ -176,6 +170,10 @@ class OPENBB_Order_Editor {
 		if ( isset( $changes['donation'] ) ) {
 			$order->donation = max( 0, (int) $changes['donation'] );
 		}
+		$valid = OPENBB_Order_Policy::validate_content_change( $before, (bool) $lines_changed, $order->donation );
+		if ( is_wp_error( $valid ) ) {
+			return $valid;
+		}
 		if ( isset( $changes['staff_note'] ) ) {
 			$order->staff_note = (string) $changes['staff_note'];
 		}
@@ -188,7 +186,7 @@ class OPENBB_Order_Editor {
 			|| $new_status !== $old_status
 			|| $order->donation !== $before->donation;
 		$reason  = trim( (string) ( $changes['reason'] ?? '' ) );
-		if ( ! $is_new && $changed && ( OPENBB_Order::STATUS_DRAFT !== $old_status || OPENBB_Order::STATUS_CANCELLED === $new_status ) ) {
+		if ( ! $is_new && $changed && OPENBB_Order_Policy::needs_reason( $before, $new_status ) ) {
 			if ( '' === $reason ) {
 				return self::invalid( __( 'Explain why this order is being changed.', 'open-bulk-buying' ), 'openbb_reason_required' );
 			}
@@ -204,7 +202,13 @@ class OPENBB_Order_Editor {
 			);
 		}
 
-		if ( ! $order->save_with_lines( $lines, $delete_ids ) ) {
+		$event = ( $is_new || $changed ) ? array(
+			'actor_id'    => $actor_id,
+			'event_type'  => $is_new ? 'created' : 'edited',
+			'from_status' => $is_new ? '' : $old_status,
+			'reason'      => $reason,
+		) : null;
+		if ( ! $order->save_with_lines( $lines, $delete_ids, $event ) ) {
 			return new WP_Error( 'openbb_order_save_failed', __( 'The order could not be saved.', 'open-bulk-buying' ), array( 'status' => 500 ) );
 		}
 

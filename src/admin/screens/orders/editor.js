@@ -20,7 +20,6 @@ import { request } from '../../utils/api';
 import { can, config } from '../../utils/config';
 import { formatMoney, formatQty, roundQty, toMajor, toMinor } from '../../utils/format';
 
-const EDITABLE_STATUSES = [ 'draft', 'submitted', 'cancelled' ];
 const EPSILON = 0.0005;
 
 let nextKey = 1;
@@ -217,6 +216,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 	const [ reason, setReason ] = useState( '' );
 	const [ error, setError ] = useState( null );
 	const [ isBusy, setIsBusy ] = useState( false );
+	const [ confirmation, setConfirmation ] = useState( null );
 
 	const load = ( item ) => {
 		setOrder( item );
@@ -225,6 +225,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 		setDonationInput( String( toMajor( item.donation ) ) );
 		setStaffNote( item.staff_note );
 		setReason( '' );
+		setConfirmation( null );
 	};
 
 	useEffect( () => {
@@ -240,9 +241,9 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 		( linesChanged || status !== order.status || donation !== order.donation );
 	const noteChanged = order && staffNote !== order.staff_note;
 	const needsReason =
-		order && changed && ( order.status !== 'draft' || status === 'cancelled' );
+		order && changed && order.reason_required_statuses.includes( status );
 	const canEdit = can( 'openbb_edit_orders' ) && order?.can_edit;
-	const isLocked = ! canEdit || order?.is_locked;
+	const isLocked = ! order?.can_edit_lines;
 	useUnsavedChanges( !! ( changed || noteChanged ) );
 
 	const problems = useMemo( () => {
@@ -304,14 +305,16 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 		const data = {
 			expected_updated_at: order.updated_at || '',
 		};
-		if ( ! order.is_locked ) {
+		if ( order.can_edit_lines ) {
 			data.status = status;
-			data.donation = donation;
 			data.lines = visibleLines.map( ( line ) => ( {
 				...( line.id ? { id: line.id } : { product_id: line.product_id } ),
 				qty: roundQty( line.qty ),
 				own_container: !! line.own_container,
 			} ) );
+		}
+		if ( order.can_edit_amounts ) {
+			data.donation = donation;
 		}
 		if ( noteChanged ) {
 			data.staff_note = staffNote;
@@ -342,6 +345,26 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 	const date = ( value ) =>
 		value ? dateI18n( getSettings().formats.datetime, value ) : '—';
 
+	const confirmOrder = async () => {
+		setIsBusy( true );
+		setError( null );
+		try {
+			const saved = await request( `/orders/${ order.id }/${ confirmation }`, {
+				method: 'POST',
+				data: {
+					confirmed: true,
+					expected_updated_at: order.updated_at,
+					expected_revision: order.revision,
+				},
+			} );
+			load( saved );
+			onSaved( saved );
+		} catch ( err ) {
+			setError( err );
+		}
+		setIsBusy( false );
+	};
+
 	return (
 		<SidePanel
 			/* translators: 1: order number, 2: member name. */
@@ -369,6 +392,14 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 					</dd>
 					<dt>{ __( 'Submitted', 'open-bulk-buying' ) }</dt>
 					<dd>{ date( order.submitted_at ) }</dd>
+					{ order.paid_at && (
+						<>
+							<dt>{ __( 'Payment settled', 'open-bulk-buying' ) }</dt>
+							<dd>
+								{ date( order.paid_at ) } ({ formatMoney( order.paid_amount ) })
+							</dd>
+						</>
+					) }
 					{ order.collected_at && (
 						<>
 							<dt>{ __( 'Collected', 'open-bulk-buying' ) }</dt>
@@ -388,7 +419,18 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 
 				{ order.is_locked && (
 					<Notice status="info" isDismissible={ false }>
-						{ __( 'This order has been collected. Only the staff note can be changed.', 'open-bulk-buying' ) }
+						{ __(
+							'This order is locked against quantity, amount, and status edits. Staff can still update its note.',
+							'open-bulk-buying'
+						) }
+					</Notice>
+				) }
+				{ order.is_abandoned && (
+					<Notice status="warning" isDismissible={ false }>
+						{ __(
+							'This order was not collected before its hold expired. It is abandoned and no longer reserves stock. Its payment status is retained.',
+							'open-bulk-buying'
+						) }
 					</Notice>
 				) }
 				{ order.member_note && (
@@ -467,7 +509,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 					</tfoot>
 				</table>
 
-				{ ! isLocked && (
+				{ order.can_edit_lines && (
 					<ProductPicker
 						orderId={ order.id }
 						excluded={ visibleLines.map( ( line ) => line.product_id ) }
@@ -504,18 +546,14 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 							__nextHasNoMarginBottom
 							label={ __( 'Status', 'open-bulk-buying' ) }
 							value={ status }
-							options={ [
-								...( EDITABLE_STATUSES.includes( order.status ) ? [] : [ order.status ] ),
-								...EDITABLE_STATUSES,
-							].map( ( value ) => ( {
+							options={ order.editable_statuses.map( ( value ) => ( {
 								value,
 								label: config.orderStatuses[ value ] || value,
-								disabled: ! EDITABLE_STATUSES.includes( value ),
 							} ) ) }
 							onChange={ setStatus }
 						/>
 					) }
-					{ ! isLocked && (
+					{ order.can_edit_amounts && (
 						<NumberControl
 							__next40pxDefaultSize
 							label={ __( 'Donation', 'open-bulk-buying' ) }
@@ -563,6 +601,75 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 							) ) }
 						</ul>
 					</Notice>
+				) }
+
+				{ ( order.can_prepay || order.can_fulfill ) && (
+					<VStack spacing={ 3 }>
+						<HStack justify="flex-start">
+							{ order.can_prepay && (
+								<Button
+									variant="secondary"
+									disabled={ isBusy || changed || noteChanged }
+									onClick={ () => setConfirmation( 'prepay' ) }
+								>
+									{ __( 'Mark prepaid', 'open-bulk-buying' ) }
+								</Button>
+							) }
+							{ order.can_fulfill && (
+								<Button
+									variant="secondary"
+									disabled={ isBusy || changed || noteChanged }
+									onClick={ () => setConfirmation( 'fulfill' ) }
+								>
+									{ __( 'Fulfill order', 'open-bulk-buying' ) }
+								</Button>
+							) }
+						</HStack>
+						{ ( changed || noteChanged ) && (
+							<p>
+								{ __(
+									'Save your changes before confirming payment or fulfillment.',
+									'open-bulk-buying'
+								) }
+							</p>
+						) }
+						{ confirmation && (
+							<Notice status="warning" isDismissible={ false }>
+								<p>
+									{ confirmation === 'prepay'
+										? sprintf(
+												__(
+													'Confirm that the full amount due (%s) is settled. Stock will remain reserved; no goods are handed over.',
+													'open-bulk-buying'
+												),
+												order.total_formatted
+										  )
+										: sprintf(
+												__(
+													'Confirm that the full amount due (%s) is settled and the listed quantities have been handed over. This deducts stock and cannot be undone here.',
+													'open-bulk-buying'
+												),
+												order.total_formatted
+										  ) }
+								</p>
+								<Button
+									variant="primary"
+									isBusy={ isBusy }
+									disabled={ isBusy || changed || noteChanged }
+									onClick={ confirmOrder }
+								>
+									{ __( 'Confirm', 'open-bulk-buying' ) }
+								</Button>
+								<Button
+									variant="tertiary"
+									disabled={ isBusy }
+									onClick={ () => setConfirmation( null ) }
+								>
+									{ __( 'Cancel', 'open-bulk-buying' ) }
+								</Button>
+							</Notice>
+						) }
+					</VStack>
 				) }
 
 				<HStack justify="flex-end" className="openbb-form-actions">

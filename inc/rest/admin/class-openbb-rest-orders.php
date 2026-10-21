@@ -118,13 +118,51 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				),
 			)
 		);
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/orders/(?P<id>\d+)/(?P<action>prepay|fulfill)',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'confirm_order' ),
+				'permission_callback' => static function ( WP_REST_Request $request ) {
+					$allowed = self::authorize( 'openbb_view_order', (int) $request['id'] );
+					if ( true !== $allowed ) {
+						return $allowed;
+					}
+					$allowed = self::authorize( 'openbb_record_payments' );
+					return true === $allowed && 'fulfill' === $request['action']
+						? self::authorize( 'openbb_distribute_orders' )
+						: $allowed;
+				},
+				'args'                => array_merge(
+					self::id_arg(),
+					array(
+						'confirmed' => array( 'type' => 'boolean', 'required' => true ),
+						'expected_updated_at' => array( 'type' => 'string', 'required' => true ),
+						'expected_revision' => array( 'type' => 'integer', 'minimum' => 0, 'required' => true ),
+					)
+				),
+			)
+		);
+	}
+
+	public function confirm_order( WP_REST_Request $request ) {
+		if ( true !== $request['confirmed'] || '' === trim( (string) $request['expected_updated_at'] ) ) {
+			return new WP_Error( 'openbb_confirmation_required', __( 'Confirm payment and reload the order before continuing.', 'open-bulk-buying' ), array( 'status' => 400 ) );
+		}
+		$expected = self::to_gmt_datetime( $request['expected_updated_at'], 'expected_updated_at' );
+		if ( is_wp_error( $expected ) ) {
+			return $expected;
+		}
+		$order = OPENBB_Order_Lifecycle::confirm( (int) $request['id'], $request['action'], get_current_user_id(), $expected, (int) $request['expected_revision'] );
+		return is_wp_error( $order ) ? $order : rest_ensure_response( $this->prepare_order_detail( $order ) );
 	}
 
 	private function write_args(): array {
 		return array(
 			'status'              => array(
 				'type' => 'string',
-				'enum' => OPENBB_Order_Editor::EDITABLE_STATUSES,
+				'enum' => OPENBB_Order_Policy::EDITABLE_STATUSES,
 			),
 			'lines'               => array(
 				'type'  => 'array',
@@ -397,7 +435,9 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 		$aid_labels = OPENBB_Order::aid_status_labels();
 		$items      = array();
 		foreach ( $orders as $order ) {
-			$cycle  = $cycles[ $order->cycle_id ] ?? null;
+			$cycle             = $cycles[ $order->cycle_id ] ?? null;
+			$can_edit          = current_user_can( 'openbb_edit_order', $order->id );
+			$can_edit_contents = OPENBB_Order_Policy::can_edit_contents( $order, $cycle );
 			$item   = array(
 				'id'               => $order->id,
 				'cycle_id'         => $order->cycle_id,
@@ -413,13 +453,39 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				'container_credit' => $order->container_credit,
 				'donation'         => $order->donation,
 				'total'            => $order->total,
+				'total_formatted'  => preg_match( '/^[A-Z]{3}$/', $order->currency )
+					? openbb_format_money( $order->total, $order->currency )
+					: __( 'Unknown currency', 'open-bulk-buying' ),
 				'lines_count'      => $line_counts[ $order->id ] ?? 0,
 				'submitted_at'     => self::to_local_datetime( $order->submitted_at ),
 				'collected_at'     => self::to_local_datetime( $order->collected_at ),
 				'updated_at'       => self::to_local_datetime( $order->updated_at ),
+				'revision'         => $order->revision,
 				'reserves_stock'   => OPENBB_Inventory::order_reserves( $order, $cycle ),
-				'is_locked'        => OPENBB_Order::STATUS_COMPLETED === $order->status || $order->is_collected(),
-				'can_edit'         => current_user_can( 'openbb_edit_order', $order->id ),
+				'is_locked'        => ! $can_edit_contents,
+				'can_edit_lines'   => $can_edit_contents && $can_edit,
+				'can_edit_amounts' => $can_edit_contents && $can_edit,
+				'can_cancel'       => OPENBB_Order_Policy::can_cancel( $order, $cycle ) && $can_edit,
+				'can_delete'       => OPENBB_Order_Policy::can_delete( $order ) && $can_edit,
+				'is_abandoned'     => $order->is_abandoned( $cycle ),
+				'hold_until'       => $cycle ? self::to_local_datetime( $cycle->hold_until( $order->status ) ) : null,
+				'paid_at'          => self::to_local_datetime( $order->paid_at ),
+				'paid_by'          => $order->paid_by,
+				'paid_amount'      => $order->paid_amount,
+				'paid_currency'    => $order->paid_currency,
+				'collected_by'     => $order->collected_by,
+				'can_prepay'       => OPENBB_Order_Policy::can_confirm( $order, $cycle, 'prepay' ) && current_user_can( 'openbb_record_payments' ),
+				'can_fulfill'      => OPENBB_Order_Policy::can_confirm( $order, $cycle, 'fulfill' ) && current_user_can( 'openbb_record_payments' ) && current_user_can( 'openbb_distribute_orders' ),
+				'editable_statuses' => OPENBB_Order_Policy::editable_statuses( $order, $cycle ),
+				'reason_required_statuses' => array_values(
+					array_filter(
+						OPENBB_Order_Policy::EDITABLE_STATUSES,
+						static function ( string $status ) use ( $order ): bool {
+							return OPENBB_Order_Policy::needs_reason( $order, $status );
+						}
+					)
+				),
+				'can_edit'         => $can_edit,
 			);
 			if ( current_user_can( 'openbb_view_order_aid', $order->id ) ) {
 				$item['aid_status']       = $order->aid_status;

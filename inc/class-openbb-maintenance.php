@@ -105,6 +105,7 @@ class OPENBB_Maintenance {
 					'cycle_id' => $cycle->id,
 					'user_id'  => $user_id,
 					'status'   => OPENBB_Order::STATUS_DRAFT,
+					'currency' => openbb_currency(),
 				)
 			);
 			if ( ! $order->save() ) {
@@ -167,6 +168,7 @@ class OPENBB_Maintenance {
 		}
 
 		$tables = array(
+			$wpdb->openbb_order_events,
 			$wpdb->openbb_order_lines,
 			$wpdb->openbb_orders,
 			$wpdb->openbb_stock_moves,
