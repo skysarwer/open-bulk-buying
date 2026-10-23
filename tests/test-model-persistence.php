@@ -181,7 +181,7 @@ class Test_OPENBB_Model_Persistence extends OPENBB_TestCase {
 		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->openbb_cycles}" ) );
 		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->openbb_rules_versions}" ) );
 		$this->assertNull( get_post( $product_id ) );
-		$this->assertSame( '', OPENBB_Access::get_coop_role( $user_id ) );
+		$this->assertSame( '', OPENBB_Access::get_status( $user_id ) );
 		$this->assertFalse( OPENBB_Maintenance::is_test_mode() );
 		$this->assertSame( OPENBB_Installer::DB_VERSION, get_option( OPENBB_Installer::DB_VERSION_OPTION ) );
 		$this->assertNotNull( get_userdata( $user_id ) );

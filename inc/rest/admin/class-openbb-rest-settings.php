@@ -169,6 +169,83 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 			)
 		);
 
+		$can_manage_access = static function () {
+			return self::authorize( 'openbb_manage_access' );
+		};
+		$role_revision     = array(
+			'revision' => array(
+				'description' => __( 'The roles revision the change is based on; \'\' while the roles are the defaults.', 'open-bulk-buying' ),
+				'type'        => 'string',
+				'required'    => true,
+			),
+		);
+		$role_data         = $role_revision + array(
+			'label' => array(
+				'type'     => 'string',
+				'required' => true,
+			),
+			'caps'  => array(
+				'type'     => 'array',
+				'items'    => array( 'type' => 'string' ),
+				'required' => true,
+			),
+		);
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/settings/roles',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_roles' ),
+					'permission_callback' => $can_manage_access,
+				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_role' ),
+					'permission_callback' => $can_manage_access,
+					'args'                => $role_data,
+				),
+			)
+		);
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/settings/roles/reset-all',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'reset_roles' ),
+				'permission_callback' => $can_manage_access,
+				'args'                => $role_revision,
+			)
+		);
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/settings/roles/(?P<key>[a-z0-9_]+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_role' ),
+					'permission_callback' => $can_manage_access,
+					'args'                => $role_data,
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_role' ),
+					'permission_callback' => $can_manage_access,
+					'args'                => $role_revision,
+				),
+			)
+		);
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/settings/roles/(?P<key>[a-z0-9_]+)/reset',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'reset_role' ),
+				'permission_callback' => $can_manage_access,
+				'args'                => $role_revision,
+			)
+		);
+
 		register_rest_route(
 			self::API_NAMESPACE,
 			'/settings/delete-all-data',
@@ -314,6 +391,66 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 		}
 
 		return rest_ensure_response( array( 'deleted' => true ) );
+	}
+
+	public function get_roles(): WP_REST_Response {
+		return rest_ensure_response( OPENBB_Roles::describe() );
+	}
+
+	/**
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function create_role( WP_REST_Request $request ) {
+		return self::roles_response( OPENBB_Roles::create_role( self::role_data( $request ), (string) $request['revision'] ), 201 );
+	}
+
+	/**
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function update_role( WP_REST_Request $request ) {
+		return self::roles_response( OPENBB_Roles::save_role( (string) $request['key'], self::role_data( $request ), (string) $request['revision'] ) );
+	}
+
+	/**
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function delete_role( WP_REST_Request $request ) {
+		return self::roles_response( OPENBB_Roles::delete_role( (string) $request['key'], (string) $request['revision'] ) );
+	}
+
+	/**
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function reset_role( WP_REST_Request $request ) {
+		return self::roles_response( OPENBB_Roles::reset_role( (string) $request['key'], (string) $request['revision'] ) );
+	}
+
+	/**
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function reset_roles( WP_REST_Request $request ) {
+		return self::roles_response( OPENBB_Roles::reset_all( (string) $request['revision'] ) );
+	}
+
+	private static function role_data( WP_REST_Request $request ): array {
+		return array(
+			'label' => $request['label'],
+			'caps'  => $request['caps'],
+		);
+	}
+
+	/**
+	 * @param array|WP_Error $result
+	 * @return WP_REST_Response|WP_Error
+	 */
+	private static function roles_response( $result, int $status = 200 ) {
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		$response = rest_ensure_response( $result );
+		$response->set_status( $status );
+
+		return $response;
 	}
 
 	public function get_profile_fields(): WP_REST_Response {

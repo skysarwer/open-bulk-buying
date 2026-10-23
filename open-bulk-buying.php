@@ -54,6 +54,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-editor.php'
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-lifecycle.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/rules/class-openbb-rules-version.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/rules/class-openbb-rules.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/access/class-openbb-roles.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/access/class-openbb-access.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/access/user-profile.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/class-openbb-installer.php';
@@ -77,9 +78,13 @@ register_activation_hook( __FILE__, array( 'OPENBB_Installer', 'install' ) );
 add_action( 'plugins_loaded', array( 'OPENBB_Installer', 'maybe_upgrade' ) );
 add_filter( 'user_has_cap', array( 'OPENBB_Access', 'filter_user_has_cap' ), 10, 4 );
 add_filter( 'map_meta_cap', array( 'OPENBB_Access', 'filter_map_meta_cap' ), 10, 4 );
-add_action( 'edit_user_profile', 'openbb_render_user_access_fields' );
-add_action( 'show_user_profile', 'openbb_render_user_access_fields' );
-add_action( 'user_profile_update_errors', 'openbb_save_user_access_fields', 100, 3 );
+foreach ( array( 'added_user_meta', 'updated_user_meta', 'deleted_user_meta' ) as $openbb_meta_action ) {
+	add_action( $openbb_meta_action, array( 'OPENBB_Access', 'on_user_meta_change' ) );
+}
+foreach ( array( 'add_option_' . OPENBB_Roles::OPTION, 'update_option_' . OPENBB_Roles::OPTION, 'delete_option_' . OPENBB_Roles::OPTION, 'switch_blog' ) as $openbb_roles_action ) {
+	add_action( $openbb_roles_action, array( 'OPENBB_Roles', 'flush' ) );
+}
+unset( $openbb_meta_action, $openbb_roles_action );
 add_filter( 'manage_users_columns', 'openbb_user_access_column' );
 add_filter( 'manage_users_custom_column', 'openbb_user_access_column_value', 10, 3 );
 add_action( 'init', 'openbb_register_product_post_type' );

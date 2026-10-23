@@ -25,7 +25,7 @@ import {
 import { request } from '../../utils/api';
 import { can, config, queryArg, toElements } from '../../utils/config';
 import relatedPanels from '../related-panels';
-import { memberFields } from './fields';
+import { RolesEdit, memberFields } from './fields';
 import MemberPanel from './panel';
 import {
 	profileEdits,
@@ -39,7 +39,8 @@ import {
 const LIST_MAPPING = {
 	orderby: { display_name: 'name', email: 'email', joined_at: 'registered' },
 	filters: {
-		coop_role: ( filter ) => ( { coop_role: filter.value } ),
+		status: ( filter ) => ( { status: filter.value } ),
+		roles: ( filter ) => ( { role: filter.value } ),
 	},
 };
 
@@ -51,18 +52,14 @@ const DEFAULT_VIEW = {
 	sort: { field: 'display_name', direction: 'asc' },
 	titleField: 'display_name',
 	descriptionField: 'email',
-	fields: [ 'coop_role', 'phone', 'orders_count', 'last_order_at', 'rules_accepted' ],
+	fields: [ 'status', 'roles', 'phone', 'orders_count', 'last_order_at', 'rules_accepted' ],
 	filters: [],
 };
 
-/**
- * Roles a new member may be given. Staff roles need openbb_manage_access; the
- * server checks again.
- */
-const addableRoles = () =>
-	toElements( config.coopRoles ).filter(
-		( role ) =>
-			can( 'openbb_manage_access' ) || ! config.staffRoles.includes( role.value )
+// New members start as applicants or active members.
+const addableStatuses = () =>
+	toElements( config.memberStatuses ).filter( ( status ) =>
+		[ 'active', 'applicant' ].includes( status.value )
 	);
 
 const ACCOUNT_KEYS = [ 'email', 'first_name', 'last_name', 'phone', 'language' ];
@@ -91,6 +88,13 @@ const accountForm = {
 	],
 };
 
+// RolesEdit outside a DataForm.
+const rolesField = {
+	label: __( 'Team roles', 'open-bulk-buying' ),
+	getValue: ( { item } ) => item.roles,
+	setValue: ( { value } ) => ( { roles: value } ),
+};
+
 // Reserved TLD (RFC 2606) for members without an email address; mail is never sent there.
 const isPlaceholderEmail = ( email ) => /\.invalid$/i.test( ( email || '' ).trim() );
 
@@ -101,7 +105,8 @@ function AddMemberPanel( { onClose, onAdded } ) {
 	const [ userId, setUserId ] = useState( null );
 	const [ account, setAccount ] = useState( {} );
 	const [ sendEmail, setSendEmail ] = useState( true );
-	const [ role, setRole ] = useState( 'member' );
+	const [ status, setStatus ] = useState( 'active' );
+	const [ roles, setRoles ] = useState( [] );
 	const [ profile, setProfile ] = useState( {} );
 	const [ isBusy, setIsBusy ] = useState( false );
 	const [ error, setError ] = useState( null );
@@ -157,7 +162,10 @@ function AddMemberPanel( { onClose, onAdded } ) {
 		setIsBusy( true );
 		setError( null );
 		try {
-			const data = { coop_role: role, profile: profileEdits( profile, profile ) };
+			const data = { status, profile: profileEdits( profile, profile ) };
+			if ( roles.length ) {
+				data.roles = roles;
+			}
 			if ( isNew ) {
 				data.account = Object.fromEntries( ACCOUNT_KEYS.map( ( key ) => [ key, ( account[ key ] || '' ).trim() ] ) );
 				data.send_email = sendEmail && ! placeholder;
@@ -238,11 +246,19 @@ function AddMemberPanel( { onClose, onAdded } ) {
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-						label={ __( 'Role', 'open-bulk-buying' ) }
-						value={ role }
-						options={ addableRoles() }
-						onChange={ setRole }
+						label={ __( 'Status', 'open-bulk-buying' ) }
+						value={ status }
+						options={ addableStatuses() }
+						onChange={ setStatus }
 					/>
+					{ can( 'openbb_manage_access' ) && (
+						<RolesEdit
+							data={ { roles } }
+							field={ rolesField }
+							assignable={ Object.keys( config.coopRoles ) }
+							onChange={ ( next ) => setRoles( next.roles ) }
+						/>
+					) }
 					<ErrorNotice error={ defsError } />
 					{ profileFields.length > 0 && (
 						<DataForm
@@ -303,6 +319,7 @@ export default function MembersScreen() {
 	const list = useList( '/members', view, mapping );
 	const notify = useNotify();
 	const canEdit = can( 'openbb_edit_members' );
+	const canCreate = can( 'openbb_create_members' );
 	const [ guard, discardDialog ] = useDiscardGuard();
 
 	const closePanel = () =>
@@ -386,7 +403,7 @@ export default function MembersScreen() {
 			sidebar={ nav.render( sidebar ) }
 			sidebarSize={ nav.size || 'default' }
 			actions={
-				canEdit && (
+				canCreate && (
 					<Button variant="primary" icon={ plus } onClick={ () => openPanel( 0 ) }>
 						{ __( 'Add member', 'open-bulk-buying' ) }
 					</Button>

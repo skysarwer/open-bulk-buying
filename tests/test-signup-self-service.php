@@ -116,11 +116,11 @@ class Test_OPENBB_Signup_Self_Service extends OPENBB_TestCase {
 		$result = OPENBB_Signup::register( $this->account( array( 'language' => 'en' ) ), array( 'household' => 'Three' ), $this->rules );
 
 		$this->assertIsArray( $result );
-		$this->assertSame( OPENBB_Access::ROLE_APPLICANT, $result['coop_role'] );
+		$this->assertSame( OPENBB_Access::STATUS_APPLICANT, $result['status'] );
 		$user = get_userdata( $result['user_id'] );
 		$this->assertSame( 'janedoe', $user->user_login );
 		$this->assertSame( 'Jane', $user->first_name );
-		$this->assertSame( OPENBB_Access::ROLE_APPLICANT, OPENBB_Access::get_coop_role( $user->ID ) );
+		$this->assertSame( OPENBB_Access::STATUS_APPLICANT, OPENBB_Access::get_status( $user->ID ) );
 		$this->assertSame( '555-0100', openbb_get_member_field( $user->ID, 'phone' ) );
 		$this->assertSame( 'en', openbb_get_member_field( $user->ID, 'language' ) );
 		$this->assertSame( $this->rules, (int) openbb_get_member_field( $user->ID, 'rules_version' ) );
@@ -134,8 +134,8 @@ class Test_OPENBB_Signup_Self_Service extends OPENBB_TestCase {
 
 		$result = OPENBB_Signup::register( $this->account(), array(), $this->rules );
 
-		$this->assertSame( OPENBB_Access::ROLE_MEMBER, $result['coop_role'] );
-		$this->assertSame( OPENBB_Access::ROLE_MEMBER, OPENBB_Access::get_coop_role( $result['user_id'] ) );
+		$this->assertSame( OPENBB_Access::STATUS_ACTIVE, $result['status'] );
+		$this->assertSame( OPENBB_Access::STATUS_ACTIVE, OPENBB_Access::get_status( $result['user_id'] ) );
 	}
 
 	public function test_register_refuses_when_signups_are_closed(): void {
@@ -199,7 +199,7 @@ class Test_OPENBB_Signup_Self_Service extends OPENBB_TestCase {
 		$this->assertSame( 'Doe', $user->last_name );
 		$this->assertSame( '555-0100', openbb_get_member_field( $user_id, 'phone' ) );
 		$this->assertSame( 'Two', OPENBB_Profile_Fields::get_values( $user_id, OPENBB_Profile_Fields::CONTEXT_SIGNUP )['household'] );
-		$this->assertSame( OPENBB_Access::ROLE_APPLICANT, OPENBB_Access::get_coop_role( $user_id ) );
+		$this->assertSame( OPENBB_Access::STATUS_APPLICANT, OPENBB_Access::get_status( $user_id ) );
 		$this->assertSame( $this->rules, (int) openbb_get_member_field( $user_id, 'rules_version' ) );
 	}
 
@@ -213,13 +213,13 @@ class Test_OPENBB_Signup_Self_Service extends OPENBB_TestCase {
 		$this->assertSame( 'One', OPENBB_Profile_Fields::get_values( $user_id, OPENBB_Profile_Fields::CONTEXT_SIGNUP )['household'] );
 	}
 
-	public function test_join_refuses_users_with_a_coop_role(): void {
+	public function test_join_refuses_existing_members(): void {
 		$user_id = $this->make_user( 'inactive' );
 
 		$result = OPENBB_Signup::join( $user_id, $this->account(), array(), $this->rules );
 
 		$this->assertSame( 'openbb_already_joined', $result->get_error_code() );
-		$this->assertSame( 'inactive', OPENBB_Access::get_coop_role( $user_id ) );
+		$this->assertSame( 'inactive', OPENBB_Access::get_status( $user_id ) );
 	}
 
 	public function test_staff_create_still_refuses_the_signup_context(): void {
@@ -262,7 +262,7 @@ class Test_OPENBB_Signup_Self_Service extends OPENBB_TestCase {
 
 		$this->assertSame( 200, $verified->get_status() );
 		$this->assertSame( 'done', $verified->get_data()['step'] );
-		$this->assertSame( OPENBB_Access::ROLE_APPLICANT, $verified->get_data()['coop_role'] );
+		$this->assertSame( OPENBB_Access::STATUS_APPLICANT, $verified->get_data()['status'] );
 		$this->assertNotEmpty( $verified->get_data()['nonce'] );
 		$user_id = email_exists( 'jane.doe@example.com' );
 		$this->assertNotFalse( $user_id );
@@ -360,7 +360,7 @@ class Test_OPENBB_Signup_Self_Service extends OPENBB_TestCase {
 
 		$this->assertSame( 200, $response->get_status() );
 		$this->assertSame( 'done', $response->get_data()['step'] );
-		$this->assertSame( OPENBB_Access::ROLE_APPLICANT, OPENBB_Access::get_coop_role( $user_id ) );
+		$this->assertSame( OPENBB_Access::STATUS_APPLICANT, OPENBB_Access::get_status( $user_id ) );
 		$this->assertSame( 'Janet', get_userdata( $user_id )->first_name );
 	}
 

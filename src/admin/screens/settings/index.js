@@ -6,6 +6,7 @@ import MaintenanceTab from './maintenance';
 import ProfileFieldsTab from './profile-fields';
 import SettingsPage from './settings-page';
 import RulesTab from './rules';
+import RolesTab from './roles';
 import GeneralTab from './general';
 
 const tabs = [
@@ -26,6 +27,12 @@ const tabs = [
 		title: __( 'Profile Fields', 'open-bulk-buying' ),
 		cap: 'openbb_manage_profile_fields',
 		Component: ProfileFieldsTab,
+	},
+	{
+		name: 'roles',
+		title: __( 'Team roles', 'open-bulk-buying' ),
+		cap: 'openbb_manage_access',
+		Component: RolesTab,
 	},
 	{
 		name: 'maintenance',

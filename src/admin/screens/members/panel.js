@@ -6,7 +6,7 @@ import { useRecord } from '../../hooks';
 import { request } from '../../utils/api';
 import { can, config } from '../../utils/config';
 import { formatMoney } from '../../utils/format';
-import { formatDate, memberFields, memberForm } from './fields';
+import { RolesEdit, formatDate, memberFields, memberForm } from './fields';
 import {
 	PROFILE_PREFIX,
 	fieldLabel,
@@ -18,26 +18,41 @@ import {
 } from './profile';
 
 const GROUP_LAYOUT = { type: 'regular', labelPosition: 'top' };
+const DETAIL_KEYS = [ 'first_name', 'last_name', 'phone', 'language' ];
+
+/**
+ * What the current user may change about this member.
+ *
+ * @param {Object} member
+ */
+const permissions = ( member ) => ( {
+	details: can( 'openbb_edit_members' ) && member.can_edit,
+	status: member.status_options.length > 1,
+	roles: member.assignable_roles.length > 0,
+} );
 
 function MemberDetailsForm( { member, onSaved, onCancel } ) {
 	const { fields: defs, error: defsError } = useProfileFields();
+	const allowed = permissions( member );
 
-	// Only offer roles this user may assign to this member.
 	const fields = useMemo(
 		() => [
-			...memberFields.map( ( field ) =>
-				field.id === 'coop_role'
-					? {
-							...field,
-							elements: field.elements.filter( ( el ) =>
-								member.assignable_roles.includes( el.value )
-							),
-					  }
-					: field
-			),
-			...profileFormFields( defs || [], 'staff' ),
+			...memberFields.flatMap( ( field ) => {
+				if ( field.id === 'status' ) {
+					return allowed.status
+						? [ { ...field, elements: field.elements.filter( ( el ) => member.status_options.includes( el.value ) ) } ]
+						: [];
+				}
+				if ( field.id === 'roles' ) {
+					return allowed.roles
+						? [ { ...field, Edit: ( props ) => <RolesEdit { ...props } assignable={ member.assignable_roles } /> } ]
+						: [];
+				}
+				return allowed.details || ! DETAIL_KEYS.includes( field.id ) ? [ field ] : [];
+			} ),
+			...( allowed.details ? profileFormFields( defs || [], 'staff' ) : [] ),
 		],
-		[ member, defs ]
+		[ member, defs ] // eslint-disable-line react-hooks/exhaustive-deps
 	);
 
 	const form = useMemo( () => {
@@ -45,16 +60,19 @@ function MemberDetailsForm( { member, onSaved, onCancel } ) {
 		const active = ( defs || [] ).filter( ( def ) => ! def.archived );
 		const archived = ( defs || [] ).filter( ( def ) => def.archived );
 		const group = ( id, label, list ) =>
-			list.length ? [ { id, label, layout: GROUP_LAYOUT, children: ids( list ) } ] : [];
+			allowed.details && list.length ? [ { id, label, layout: GROUP_LAYOUT, children: ids( list ) } ] : [];
+		const shown = new Set( fields.map( ( field ) => field.id ) );
 		return {
 			...memberForm,
 			fields: [
-				...memberForm.fields,
+				...memberForm.fields.filter( ( entry ) =>
+					typeof entry === 'string' ? shown.has( entry ) : allowed.details
+				),
 				...group( 'profile', __( 'Profile fields', 'open-bulk-buying' ), active ),
 				...group( 'profile-archived', __( 'Archived fields', 'open-bulk-buying' ), archived ),
 			],
 		};
-	}, [ defs ] );
+	}, [ defs, fields ] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	return (
 		<EditForm
@@ -64,7 +82,7 @@ function MemberDetailsForm( { member, onSaved, onCancel } ) {
 			requireChanges
 			onCancel={ onCancel }
 			onSubmit={ async ( data, edits ) => {
-				const keys = [ 'first_name', 'last_name', 'phone', 'language', 'coop_role' ];
+				const keys = [ ...DETAIL_KEYS, 'status', 'roles' ];
 				const payload = Object.fromEntries(
 					keys.filter( ( key ) => key in edits ).map( ( key ) => [ key, data[ key ] ?? '' ] )
 				);
@@ -82,14 +100,26 @@ function MemberDetailsForm( { member, onSaved, onCancel } ) {
 			} }
 		>
 			<ErrorNotice error={ defsError } />
-			<MemberFacts member={ member } />
+			<MemberFacts member={ member } showStatus={ ! allowed.status } showRoles={ ! allowed.roles } />
 		</EditForm>
 	);
 }
 
-function MemberFacts( { member } ) {
+function MemberFacts( { member, showStatus = true, showRoles = true } ) {
 	return (
 		<dl className="openbb-details">
+			{ showStatus && (
+				<>
+					<dt>{ __( 'Status', 'open-bulk-buying' ) }</dt>
+					<dd>{ member.status_label }</dd>
+				</>
+			) }
+			{ showRoles && (
+				<>
+					<dt>{ __( 'Team roles', 'open-bulk-buying' ) }</dt>
+					<dd>{ member.role_labels.join( ', ' ) || '—' }</dd>
+				</>
+			) }
 			<dt>{ __( 'Email', 'open-bulk-buying' ) }</dt>
 			<dd>
 				<a href={ `mailto:${ member.email }` }>{ member.email }</a>
@@ -102,12 +132,6 @@ function MemberFacts( { member } ) {
 					? __( 'Accepted', 'open-bulk-buying' )
 					: __( 'Not accepted', 'open-bulk-buying' ) }
 			</dd>
-			{ member.grant_labels?.length > 0 && (
-				<>
-					<dt>{ __( 'Grants', 'open-bulk-buying' ) }</dt>
-					<dd>{ member.grant_labels.join( ', ' ) }</dd>
-				</>
-			) }
 			{ member.profile_url && (
 				<>
 					<dt>{ __( 'Profile', 'open-bulk-buying' ) }</dt>
@@ -140,8 +164,6 @@ function MemberReadOnly( { member } ) {
 			<dl className="openbb-details">
 				<dt>{ __( 'Phone', 'open-bulk-buying' ) }</dt>
 				<dd>{ member.phone || '—' }</dd>
-				<dt>{ __( 'Role', 'open-bulk-buying' ) }</dt>
-				<dd>{ member.coop_role_label }</dd>
 				{ shown.map( ( def ) => (
 					<Fragment key={ def.key }>
 						<dt>
@@ -223,7 +245,7 @@ export default function MemberPanel( { memberId, onClose, onSaved } ) {
 				if ( tab.name === 'orders' ) {
 					return <MemberOrders orders={ member.orders || [] } />;
 				}
-				if ( ! can( 'openbb_edit_members' ) || ! member.can_edit ) {
+				if ( ! Object.values( permissions( member ) ).some( Boolean ) ) {
 					return <MemberReadOnly member={ member } />;
 				}
 				return (

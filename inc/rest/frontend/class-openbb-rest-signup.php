@@ -2,7 +2,7 @@
 /**
  * Signup routes for the [openbb_signup] view.
  *
- * POST /signup         Validate the form. Signed-in users without a co-op role join right
+ * POST /signup         Validate the form. Signed-in users without a membership status join right
  *                      away. Visitors get an emailed code (OPENBB_Email_Code), bound to
  *                      this browser by an HttpOnly cookie; no account exists until it's verified.
  * POST /signup/resend  A new code, after a cooldown.
@@ -112,7 +112,7 @@ class OPENBB_REST_Signup extends OPENBB_REST_Controller {
 				return $joined;
 			}
 
-			return rest_ensure_response( self::done( $joined['coop_role'] ) );
+			return rest_ensure_response( self::done( $joined['status'] ) );
 		}
 
 		$signup = OPENBB_Signup::validate_signup( $account, $profile, $rules_version );
@@ -206,7 +206,7 @@ class OPENBB_REST_Signup extends OPENBB_REST_Controller {
 
 		self::log_in( $registered['user_id'] );
 
-		return rest_ensure_response( self::done( $registered['coop_role'] ) + array( 'nonce' => wp_create_nonce( 'wp_rest' ) ) );
+		return rest_ensure_response( self::done( $registered['status'] ) + array( 'nonce' => wp_create_nonce( 'wp_rest' ) ) );
 	}
 
 	/**
@@ -279,10 +279,10 @@ class OPENBB_REST_Signup extends OPENBB_REST_Controller {
 		);
 	}
 
-	private static function done( string $role ): array {
+	private static function done( string $status ): array {
 		return array(
-			'step'      => 'done',
-			'coop_role' => $role,
+			'step'   => 'done',
+			'status' => $status,
 		);
 	}
 

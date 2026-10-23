@@ -148,7 +148,7 @@ function MemberSearch( { value, onChange } ) {
 			query: {
 				search: debounced,
 				per_page: 20,
-				coop_role: [ 'member', 'coordinator', 'manager' ],
+				status: [ 'active' ],
 			},
 		} )
 			.then( ( members ) => {

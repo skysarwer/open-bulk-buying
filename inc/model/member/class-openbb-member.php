@@ -1,8 +1,8 @@
 <?php
 /**
- * A WordPress user with a co-op role on this site. Datetimes are UTC.
+ * A WordPress user with a co-op membership on this site. Datetimes are UTC.
  *
- * For permissions, check capabilities rather than coop_role (see OPENBB_Access).
+ * For permissions, check capabilities rather than status or roles (see OPENBB_Access).
  *
  * @package Open_Bulk_Buying
  */
@@ -20,13 +20,15 @@ class OPENBB_Member extends OPENBB_Entity {
 	public $display_name      = '';
 	public $phone             = '';
 	public $language          = '';
-	public $coop_role         = '';
+	public $status            = '';
+	/** @var string[] Team roles held. */
+	public $roles             = array();
 	public $joined_at         = null;
 	public $rules_version     = 0;
 	public $rules_accepted_at = null;
 
 	/**
-	 * Null when the user doesn't exist or has no co-op role on this site.
+	 * Null when the user doesn't exist or isn't a member on this site.
 	 */
 	public static function get( int $user_id ): ?self {
 		$user = get_userdata( $user_id );
@@ -44,9 +46,10 @@ class OPENBB_Member extends OPENBB_Entity {
 		foreach ( array_keys( openbb_member_meta_fields() ) as $field ) {
 			$data[ $field ] = openbb_get_member_field( $user->ID, $field );
 		}
-		$data['coop_role'] = OPENBB_Access::sanitize_role( $data['coop_role'] );
+		$data['status'] = OPENBB_Access::sanitize_status( $data['status'] );
+		$data['roles']  = OPENBB_Access::get_roles( $user->ID );
 
-		return '' === $data['coop_role'] ? null : new self( $data );
+		return '' === $data['status'] ? null : new self( $data );
 	}
 
 	protected function cast(): void {
@@ -57,24 +60,24 @@ class OPENBB_Member extends OPENBB_Entity {
 	}
 
 	/**
-	 * Member, coordinator or manager: someone who can order.
+	 * A current member, whose roles apply.
 	 */
 	public function is_active(): bool {
-		return in_array( $this->coop_role, OPENBB_Access::ACTIVE_ROLES, true );
+		return OPENBB_Access::STATUS_ACTIVE === $this->status;
 	}
 
 	/**
 	 * Signed up and awaiting approval.
 	 */
 	public function is_applicant(): bool {
-		return OPENBB_Access::ROLE_APPLICANT === $this->coop_role;
+		return OPENBB_Access::STATUS_APPLICANT === $this->status;
 	}
 
 	/**
-	 * An applicant who was turned down: inactive without ever having joined.
+	 * An applicant who was turned down.
 	 */
 	public function is_declined(): bool {
-		return OPENBB_Access::ROLE_INACTIVE === $this->coop_role && null === $this->joined_at;
+		return OPENBB_Access::STATUS_DECLINED === $this->status;
 	}
 
 	/**

@@ -162,7 +162,7 @@ const { state } = store( 'openbb/signup', {
 					startCountdown( ctx, data.resend_after );
 					go( ctx, 'code' );
 				} else {
-					ctx.applicant = data.coop_role === 'applicant';
+					ctx.applicant = data.status === 'applicant';
 					go( ctx, 'done' );
 				}
 			} finally {
@@ -218,7 +218,7 @@ const { state } = store( 'openbb/signup', {
 				const { ok, data } = yield post( '/verify', { code } );
 				if ( ok ) {
 					state.nonce = data.nonce;
-					ctx.applicant = data.coop_role === 'applicant';
+					ctx.applicant = data.status === 'applicant';
 					go( ctx, 'done' );
 					return;
 				}

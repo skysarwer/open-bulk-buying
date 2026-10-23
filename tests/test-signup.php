@@ -60,7 +60,8 @@ class Test_OPENBB_Signup extends OPENBB_TestCase {
 		$this->assertSame( 'janedoe', $user->user_login );
 		$this->assertSame( array( 'subscriber' ), $user->roles );
 		$this->assertSame( 'Jane Doe', $user->display_name );
-		$this->assertSame( 'member', OPENBB_Access::get_coop_role( $user->ID ) );
+		$this->assertSame( 'active', OPENBB_Access::get_status( $user->ID ) );
+		$this->assertSame( array(), OPENBB_Access::get_roles( $user->ID ) );
 		$this->assertSame( '555-0100', openbb_get_member_field( $user->ID, 'phone' ) );
 		$this->assertNotSame( '', (string) openbb_get_member_field( $user->ID, 'joined_at' ) );
 	}
@@ -130,14 +131,34 @@ class Test_OPENBB_Signup extends OPENBB_TestCase {
 
 		$staff = $this->create(
 			array(
-				'account'   => $this->account(),
-				'coop_role' => 'manager',
+				'account' => $this->account(),
+				'roles'   => array( 'distribution_helper' ),
 			)
 		);
 		$this->assertSame( 403, $staff->get_status() );
 		$this->assertFalse( email_exists( 'jane.doe@example.com' ) );
 
-		$this->assertSame( 201, $this->create( array( 'account' => $this->account() ) )->get_status() );
+		$applicant = $this->create(
+			array(
+				'account' => $this->account(),
+				'status'  => 'applicant',
+			)
+		);
+		$this->assertSame( 201, $applicant->get_status() );
+		$this->assertSame( 'applicant', OPENBB_Access::get_status( $applicant->get_data()['id'] ) );
+	}
+
+	public function test_access_managers_create_members_with_roles(): void {
+		$response = $this->create(
+			array(
+				'account' => $this->account(),
+				'roles'   => array( 'coordinator' ),
+			)
+		);
+
+		$this->assertSame( 201, $response->get_status() );
+		$this->assertSame( array( 'coordinator' ), OPENBB_Access::get_roles( $response->get_data()['id'] ) );
+		$this->assertSame( 400, $this->create( array( 'account' => $this->account( array( 'email' => 'x@example.com' ) ), 'status' => 'inactive' ) )->get_status() );
 	}
 
 	public function test_members_cannot_create_accounts(): void {
@@ -177,7 +198,7 @@ class Test_OPENBB_Signup extends OPENBB_TestCase {
 
 	public function test_rolls_back_when_saving_fails_after_insert(): void {
 		$fail = static function ( $check, $object_id, $meta_key ) {
-			return str_ends_with( $meta_key, 'coop_role' ) ? false : $check;
+			return str_ends_with( $meta_key, 'openbb_status' ) ? false : $check;
 		};
 		add_filter( 'add_user_metadata', $fail, 10, 3 );
 		add_filter( 'update_user_metadata', $fail, 10, 3 );
@@ -197,10 +218,11 @@ class Test_OPENBB_Signup extends OPENBB_TestCase {
 		$coordinator = $this->make_user( 'coordinator' );
 
 		$this->assertTrue( user_can( $coordinator, 'openbb_create_members' ) );
-		$this->assertTrue( user_can( $coordinator, 'openbb_set_coop_role', 0, 'member' ) );
-		$this->assertFalse( user_can( $coordinator, 'openbb_set_coop_role', 0, 'manager' ) );
-		$this->assertFalse( user_can( $coordinator, 'openbb_set_grants', 0 ) );
-		$this->assertFalse( user_can( $coordinator, 'openbb_set_coop_role', 'abc', 'member' ) );
+		$this->assertTrue( user_can( $coordinator, 'openbb_set_member_status', 0, 'active' ) );
+		$this->assertTrue( user_can( $coordinator, 'openbb_set_member_status', 0, 'applicant' ) );
+		$this->assertFalse( user_can( $coordinator, 'openbb_set_member_status', 0, 'inactive' ) );
+		$this->assertFalse( user_can( $coordinator, 'openbb_set_member_roles', 0, array( 'distribution_helper' ) ) );
+		$this->assertFalse( user_can( $coordinator, 'openbb_set_member_status', 'abc', 'active' ) );
 		$this->assertFalse( user_can( $coordinator, 'openbb_edit_member', 0 ) );
 		$this->assertFalse( user_can( $this->make_user( 'member' ), 'openbb_create_members' ) );
 	}

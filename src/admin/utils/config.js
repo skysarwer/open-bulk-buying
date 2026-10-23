@@ -11,8 +11,9 @@ export const config = {
 	unitConversions: boot.unitConversions || {},
 	languages: boot.languages || [],
 	translationLanguages: boot.translationLanguages || [],
+	memberStatuses: boot.memberStatuses || {},
+	// Team role key => label, in display order.
 	coopRoles: boot.coopRoles || {},
-	staffRoles: boot.staffRoles || [],
 	cycleStatuses: boot.cycleStatuses || {},
 	orderStatuses: boot.orderStatuses || {},
 	stockReasons: boot.stockReasons || {},

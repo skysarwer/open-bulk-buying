@@ -5,7 +5,7 @@
  * One template serves every "you need to be a member" screen: pass a title, intro and
  * redirect_to (e.g. the order form shows it to visitors and non-members). What it shows:
  *
- * - Signed-in users with a co-op role: their status (applicant, member, inactive).
+ * - Signed-in users with a membership status: their status (applicant, active, inactive, declined).
  * - Signups closed: a notice (with a Settings link for staff).
  * - Everyone else: the form. Steps are Details → Profile & rules → Code → Done; the
  *   profile step is left out when there are no profile fields or rules, and signed-in
@@ -37,9 +37,9 @@ final class OPENBB_Signup_View {
 		$args['redirect_to'] = self::redirect_url( (string) $args['redirect_to'] );
 
 		$user_id = get_current_user_id();
-		$role    = $user_id ? OPENBB_Access::get_coop_role( $user_id ) : '';
-		if ( '' !== $role ) {
-			return self::message( $args, self::status_message( $role ), $args['redirect_to'] );
+		$status  = $user_id ? OPENBB_Access::get_status( $user_id ) : '';
+		if ( '' !== $status ) {
+			return self::message( $args, self::status_message( $status ), $args['redirect_to'] );
 		}
 		if ( ! OPENBB_Signup::is_open() ) {
 			return self::message( $args, self::closed_message() );
@@ -105,7 +105,7 @@ final class OPENBB_Signup_View {
 			'email'        => (string) ( $pending['email'] ?? '' ),
 			'resendIn'     => (int) ( $pending['resend_after'] ?? 0 ),
 			'canResend'    => $pending && $pending['resend_after'] <= 0,
-			'applicant'    => OPENBB_Access::ROLE_APPLICANT === OPENBB_Signup::signup_role(),
+			'applicant'    => OPENBB_Access::STATUS_APPLICANT === OPENBB_Signup::signup_status(),
 			'focus'        => false,
 			'rulesVersion' => $rules ? $rules->id : 0,
 		);
@@ -300,11 +300,13 @@ final class OPENBB_Signup_View {
 			: sprintf( _n( 'Membership has a fee of %1$s, charged every %2$d order.', 'Membership has a fee of %1$s, charged every %2$d orders.', $interval, 'open-bulk-buying' ), $money, $interval );
 	}
 
-	private static function status_message( string $role ): string {
-		switch ( $role ) {
-			case OPENBB_Access::ROLE_APPLICANT:
+	private static function status_message( string $status ): string {
+		switch ( $status ) {
+			case OPENBB_Access::STATUS_APPLICANT:
 				return __( 'Thanks for signing up! The co-op will review your application and email you once you\'re approved.', 'open-bulk-buying' );
-			case OPENBB_Access::ROLE_INACTIVE:
+			case OPENBB_Access::STATUS_DECLINED:
+				return __( 'Your membership application wasn\'t approved. Contact the co-op if you have questions.', 'open-bulk-buying' );
+			case OPENBB_Access::STATUS_INACTIVE:
 				return __( 'Your membership is inactive. Contact the co-op if you\'d like to rejoin.', 'open-bulk-buying' );
 			default:
 				return __( 'You\'re a member of the co-op.', 'open-bulk-buying' );

@@ -1,6 +1,6 @@
 <?php
 /**
- * Co-op members: WordPress users with a co-op role on this site.
+ * Co-op members: WordPress users with a membership status on this site.
  *
  * Email, login and password stay with WordPress's own user screens.
  *
@@ -20,6 +20,15 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 		$can_edit = static function () {
 			return self::authorize( 'openbb_edit_members' );
 		};
+		// Status and role changes are checked per member in update_item().
+		$can_update = static function () {
+			return current_user_can( 'openbb_manage_access' ) ? true : self::authorize( 'openbb_edit_members' );
+		};
+		$role_list  = array(
+			'type'    => 'array',
+			'items'   => array( 'type' => 'string' ),
+			'default' => array(),
+		);
 
 		register_rest_route(
 			self::API_NAMESPACE,
@@ -33,15 +42,16 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 						array( 'name', 'email', 'registered' ),
 						'asc',
 						array(
-							'coop_role' => array(
+							'status'  => array(
 								'type'    => 'array',
 								'items'   => array(
 									'type' => 'string',
-									'enum' => array_keys( OPENBB_Access::coop_roles() ),
+									'enum' => OPENBB_Access::STATUSES,
 								),
 								'default' => array(),
 							),
-							'profile'   => array(
+							'role'    => $role_list,
+							'profile' => array(
 								'description'          => __( 'Profile field key => values. Matches any of a field\'s values, and all fields.', 'open-bulk-buying' ),
 								'type'                 => 'object',
 								'additionalProperties' => array(
@@ -72,11 +82,12 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 							'type'        => 'boolean',
 							'default'     => true,
 						),
-						'coop_role'  => array(
+						'status'     => array(
 							'type'    => 'string',
-							'default' => OPENBB_Access::ROLE_MEMBER,
-							'enum'    => array_keys( OPENBB_Access::coop_roles() ),
+							'default' => OPENBB_Access::STATUS_ACTIVE,
+							'enum'    => OPENBB_Access::TRANSITIONS[''],
 						),
+						'roles'      => $role_list,
 						'profile'    => array(
 							'type'    => 'object',
 							'default' => array(),
@@ -126,15 +137,19 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 				array(
 					'methods'             => WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'update_item' ),
-					'permission_callback' => $can_edit,
+					'permission_callback' => $can_update,
 					'args'                => array(
 						'first_name' => array( 'type' => 'string' ),
 						'last_name'  => array( 'type' => 'string' ),
 						'phone'      => array( 'type' => 'string' ),
 						'language'   => array( 'type' => 'string' ),
-						'coop_role'  => array(
+						'status'     => array(
 							'type' => 'string',
-							'enum' => array_keys( OPENBB_Access::coop_roles() ),
+							'enum' => OPENBB_Access::STATUSES,
+						),
+						'roles'      => array(
+							'type'  => 'array',
+							'items' => array( 'type' => 'string' ),
 						),
 						'profile'    => array( 'type' => 'object' ),
 					),
@@ -144,9 +159,10 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 	}
 
 	public function get_items( WP_REST_Request $request ): WP_REST_Response {
-		$role_key = openbb_member_meta_key( 'coop_role' );
-		$roles    = array_values( array_intersect( (array) $request['coop_role'], array_keys( OPENBB_Access::coop_roles() ) ) );
-		$per_page = (int) $request['per_page'];
+		$status_key = openbb_member_meta_key( 'status' );
+		$statuses   = array_values( array_intersect( (array) $request['status'], OPENBB_Access::STATUSES ) );
+		$roles      = OPENBB_Access::sanitize_roles( (array) $request['role'] );
+		$per_page   = (int) $request['per_page'];
 
 		$args = array(
 			'number'      => $per_page,
@@ -160,19 +176,30 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 			'count_total' => true,
 			'blog_id'     => 0,
 			'meta_query'  => array(
-				$roles
+				$statuses
 					? array(
-						'key'     => $role_key,
-						'value'   => $roles,
+						'key'     => $status_key,
+						'value'   => $statuses,
 						'compare' => 'IN',
 					)
 					: array(
-						'key'     => $role_key,
+						'key'     => $status_key,
 						'value'   => '',
 						'compare' => '!=',
 					),
 			),
 		);
+		if ( $roles ) {
+			// One row per role held; an OR group makes WP_User_Query select DISTINCT users.
+			$group = array( 'relation' => 'OR' );
+			foreach ( $roles as $role ) {
+				$group[] = array(
+					'key'   => openbb_member_meta_key( 'roles' ),
+					'value' => $role,
+				);
+			}
+			$args['meta_query'][] = $group;
+		}
 		if ( '' !== $request['search'] ) {
 			$args['search']         = '*' . $request['search'] . '*';
 			$args['search_columns'] = array( 'user_login', 'user_email', 'display_name', 'user_nicename' );
@@ -248,7 +275,7 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 	}
 
 	/**
-	 * Gives an existing user who isn't a member a co-op role, or creates a new user (`account`).
+	 * Makes an existing user who isn't a member one, or creates a new user (`account`).
 	 */
 	public function create_item( WP_REST_Request $request ) {
 		if ( $request->has_param( 'account' ) && ! $request->has_param( 'user_id' ) ) {
@@ -262,8 +289,12 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 		if ( ! get_userdata( $user_id ) || ! $this->is_site_user( $user_id ) ) {
 			return self::not_found( __( 'User not found.', 'open-bulk-buying' ) );
 		}
-		if ( '' !== OPENBB_Access::get_coop_role( $user_id ) ) {
-			return new WP_Error( 'openbb_already_member', __( 'This person already has a co-op role.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+		if ( '' !== OPENBB_Access::get_status( $user_id ) ) {
+			return new WP_Error( 'openbb_already_member', __( 'This person is already a member.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+		}
+		$roles = (array) $request['roles'];
+		if ( $roles && ! current_user_can( 'openbb_set_member_roles', 0, $roles ) ) {
+			return new WP_Error( 'openbb_forbidden', __( 'You are not allowed to give these roles.', 'open-bulk-buying' ), array( 'status' => 403 ) );
 		}
 
 		// Check the profile first so an invalid one doesn't leave a half-added member.
@@ -273,9 +304,11 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 			return $valid;
 		}
 
-		$result = OPENBB_Access::set_coop_role( $user_id, (string) $request['coop_role'] );
+		$result = OPENBB_Access::set_status( $user_id, (string) $request['status'] );
+		if ( ! is_wp_error( $result ) && $roles ) {
+			$result = OPENBB_Access::set_roles( $user_id, $roles );
+		}
 		if ( is_wp_error( $result ) ) {
-			$result->add_data( array( 'status' => 'openbb_forbidden' === $result->get_error_code() ? 403 : 400 ) );
 			return $result;
 		}
 
@@ -296,7 +329,8 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 			(array) $request['profile'],
 			OPENBB_Profile_Fields::CONTEXT_STAFF_CREATE,
 			array(
-				'coop_role'  => (string) $request['coop_role'],
+				'status'     => (string) $request['status'],
+				'roles'      => (array) $request['roles'],
 				'send_email' => (bool) $request['send_email'],
 			)
 		);
@@ -341,6 +375,23 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 				return $valid;
 			}
 		}
+		if ( $request->has_param( 'status' ) && (string) $request['status'] !== $member->status ) {
+			if ( ! in_array( (string) $request['status'], OPENBB_Access::TRANSITIONS[ $member->status ] ?? array(), true ) ) {
+				return self::invalid( __( 'A membership can\'t change to that status from its current one.', 'open-bulk-buying' ) );
+			}
+			if ( ! current_user_can( 'openbb_set_member_status', $member->user_id, (string) $request['status'] ) ) {
+				return new WP_Error( 'openbb_forbidden', __( 'You are not allowed to change this person\'s membership status.', 'open-bulk-buying' ), array( 'status' => 403 ) );
+			}
+		}
+		if ( $request->has_param( 'roles' ) ) {
+			$roles = array_values( array_unique( (array) $request['roles'] ) );
+			sort( $roles );
+			$held = $member->roles;
+			sort( $held );
+			if ( $roles !== $held && ! current_user_can( 'openbb_set_member_roles', $member->user_id, (array) $request['roles'] ) ) {
+				return new WP_Error( 'openbb_forbidden', __( 'You are not allowed to give or take away these roles.', 'open-bulk-buying' ), array( 'status' => 403 ) );
+			}
+		}
 
 		if ( $details ) {
 			$user = array( 'ID' => $member->user_id );
@@ -370,10 +421,16 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 			}
 		}
 
-		if ( $request->has_param( 'coop_role' ) && $request['coop_role'] !== $member->coop_role ) {
-			$result = OPENBB_Access::set_coop_role( $member->user_id, (string) $request['coop_role'] );
+		if ( $request->has_param( 'status' ) ) {
+			$result = OPENBB_Access::set_status( $member->user_id, (string) $request['status'] );
 			if ( is_wp_error( $result ) ) {
-				$result->add_data( array( 'status' => 'openbb_forbidden' === $result->get_error_code() ? 403 : 400 ) );
+				return $result;
+			}
+		}
+
+		if ( $request->has_param( 'roles' ) ) {
+			$result = OPENBB_Access::set_roles( $member->user_id, (array) $request['roles'] );
+			if ( is_wp_error( $result ) ) {
 				return $result;
 			}
 		}
@@ -392,10 +449,10 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 	}
 
 	/**
-	 * Users of this site without a co-op role, for the "Add member" picker.
+	 * Users of this site who aren't members, for the "Add member" picker.
 	 */
 	public function get_candidates( WP_REST_Request $request ): WP_REST_Response {
-		$role_key = openbb_member_meta_key( 'coop_role' );
+		$role_key = openbb_member_meta_key( 'status' );
 		$args     = array(
 			'number'     => 20,
 			'orderby'    => 'display_name',
@@ -470,17 +527,25 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 			}
 		}
 
-		$role_labels  = OPENBB_Access::role_labels();
-		$grant_labels = OPENBB_Access::grant_labels();
-		$items        = array();
+		$status_labels = OPENBB_Access::status_labels();
+		$role_labels   = OPENBB_Roles::labels();
+		$items         = array();
 		foreach ( $members as $member ) {
+			$statuses = array( $member->status );
+			foreach ( OPENBB_Access::TRANSITIONS[ $member->status ] ?? array() as $status ) {
+				if ( current_user_can( 'openbb_set_member_status', $member->user_id, $status ) ) {
+					$statuses[] = $status;
+				}
+			}
+
+			// Roles this user may give or take away, one at a time.
 			$assignable = array();
 			foreach ( array_keys( $role_labels ) as $role ) {
-				if ( $role === $member->coop_role || current_user_can( 'openbb_set_coop_role', $member->user_id, $role ) ) {
+				$toggled = in_array( $role, $member->roles, true ) ? array_values( array_diff( $member->roles, array( $role ) ) ) : array_merge( $member->roles, array( $role ) );
+				if ( current_user_can( 'openbb_set_member_roles', $member->user_id, $toggled ) ) {
 					$assignable[] = $role;
 				}
 			}
-			$grants = OPENBB_Access::get_grants( $member->user_id );
 
 			$items[] = array(
 				'id'               => $member->user_id,
@@ -490,10 +555,11 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 				'email'            => $member->email,
 				'phone'            => (string) $member->phone,
 				'language'         => (string) $member->language,
-				'coop_role'        => $member->coop_role,
-				'coop_role_label'  => $role_labels[ $member->coop_role ] ?? $member->coop_role,
-				'grants'           => $grants,
-				'grant_labels'     => array_values( array_intersect_key( $grant_labels, array_flip( $grants ) ) ),
+				'status'           => $member->status,
+				'status_label'     => $status_labels[ $member->status ] ?? $member->status,
+				'roles'            => $member->roles,
+				'role_labels'      => array_values( array_intersect_key( $role_labels, array_flip( $member->roles ) ) ),
+				'status_options'   => $statuses,
 				'joined_at'        => self::to_local_datetime( $member->joined_at ),
 				'rules_accepted'   => $member->has_accepted_rules( OPENBB_Rules::get_required_version_id() ),
 				'orders_count'     => (int) ( $counts[ $member->user_id ]['orders_count'] ?? 0 ),

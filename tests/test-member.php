@@ -12,26 +12,28 @@ class Test_OPENBB_Member extends OPENBB_TestCase {
 
 		$user_id = $this->make_user( 'member' );
 
-		$this->assertSame( $wpdb->get_blog_prefix() . 'openbb_coop_role', openbb_member_meta_key( 'coop_role' ) );
-		$this->assertSame( 'member', get_user_meta( $user_id, $wpdb->get_blog_prefix() . 'openbb_coop_role', true ) );
-		$this->assertSame( '', get_user_meta( $user_id, 'openbb_coop_role', true ) );
+		$this->assertSame( $wpdb->get_blog_prefix() . 'openbb_status', openbb_member_meta_key( 'status' ) );
+		$this->assertSame( 'active', get_user_meta( $user_id, $wpdb->get_blog_prefix() . 'openbb_status', true ) );
+		$this->assertSame( '', get_user_meta( $user_id, 'openbb_status', true ) );
 	}
 
 	public function test_network_wide_keys_are_ignored(): void {
 		$user_id = $this->make_user();
-		update_user_meta( $user_id, 'openbb_coop_role', 'manager' );
+		update_user_meta( $user_id, 'openbb_status', 'active' );
+		add_user_meta( $user_id, 'openbb_roles', 'manager' );
 
-		$this->assertSame( '', OPENBB_Access::get_coop_role( $user_id ) );
+		$this->assertSame( '', OPENBB_Access::get_status( $user_id ) );
 		$this->assertFalse( user_can( $user_id, 'openbb_manage_access' ) );
 	}
 
 	public function test_unknown_stored_values_are_ignored(): void {
 		$user_id = $this->make_user();
-		update_user_meta( $user_id, openbb_member_meta_key( 'coop_role' ), 'overlord' );
-		update_user_meta( $user_id, openbb_member_meta_key( 'grants' ), array( 'superpowers', 'aid_reviewer' ) );
+		update_user_meta( $user_id, openbb_member_meta_key( 'status' ), 'overlord' );
+		add_user_meta( $user_id, openbb_member_meta_key( 'roles' ), 'superpowers' );
+		add_user_meta( $user_id, openbb_member_meta_key( 'roles' ), 'aid_reviewer' );
 
-		$this->assertSame( '', OPENBB_Access::get_coop_role( $user_id ) );
-		$this->assertSame( array( 'aid_reviewer' ), OPENBB_Access::get_grants( $user_id ) );
+		$this->assertSame( '', OPENBB_Access::get_status( $user_id ) );
+		$this->assertSame( array( 'aid_reviewer' ), OPENBB_Access::get_roles( $user_id ) );
 		$this->assertNull( OPENBB_Member::get( $user_id ) );
 	}
 
@@ -47,11 +49,10 @@ class Test_OPENBB_Member extends OPENBB_TestCase {
 			$this->assertTrue( OPENBB_Member::get( $this->make_user( $role ) )->is_active(), $role );
 		}
 
-		$former = $this->make_user( 'inactive' );
-		openbb_update_member_field( $former, 'joined_at', '2020-01-01 00:00:00' );
-		$this->assertFalse( OPENBB_Member::get( $former )->is_active() );
-		$this->assertFalse( OPENBB_Member::get( $former )->is_declined() );
-		$this->assertTrue( OPENBB_Member::get( $this->make_user( 'inactive' ) )->is_declined() );
+		$former = OPENBB_Member::get( $this->make_user( 'inactive' ) );
+		$this->assertFalse( $former->is_active() );
+		$this->assertFalse( $former->is_declined() );
+		$this->assertTrue( OPENBB_Member::get( $this->make_user( 'declined' ) )->is_declined() );
 	}
 
 	/**
@@ -66,7 +67,7 @@ class Test_OPENBB_Member extends OPENBB_TestCase {
 		$site_id = self::factory()->blog->create();
 
 		switch_to_blog( $site_id );
-		$role     = OPENBB_Access::get_coop_role( $user_id );
+		$role     = OPENBB_Access::get_status( $user_id );
 		$can      = user_can( $user_id, 'openbb_manage_access' );
 		$can_shop = user_can( $user_id, 'openbb_place_orders' );
 		restore_current_blog();

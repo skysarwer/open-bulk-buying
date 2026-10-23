@@ -1,3 +1,4 @@
+import { CheckboxControl, __experimentalVStack as VStack } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { dateI18n, getSettings } from '@wordpress/date';
 
@@ -5,6 +6,49 @@ import { config, languageLabel, toElements } from '../../utils/config';
 
 export const formatDate = ( value ) =>
 	value ? dateI18n( getSettings().formats.date, value ) : '—';
+
+// A function, as the Team roles settings tab can change the roles without a page load.
+export const roleElements = () => toElements( config.coopRoles );
+
+/**
+ * Role checkboxes; only roles in `assignable` can be ticked or unticked.
+ *
+ * @param {Object}   props
+ * @param {string[]} props.assignable
+ */
+export function RolesEdit( { data, field, onChange, assignable } ) {
+	const value = field.getValue( { item: data } ) || [];
+	return (
+		<fieldset className="openbb-roles-edit">
+			<legend>{ field.label }</legend>
+			<VStack spacing={ 2 }>
+				{ roleElements().map( ( role ) => (
+					<CheckboxControl
+						__nextHasNoMarginBottom
+						key={ role.value }
+						id={ `openbb-role-${ role.value }` }
+						label={ role.label }
+						checked={ value.includes( role.value ) }
+						disabled={ ! assignable.includes( role.value ) }
+						onChange={ ( checked ) =>
+							onChange(
+								field.setValue( {
+									item: data,
+									value: checked
+										? [ ...value, role.value ]
+										: value.filter( ( key ) => key !== role.value ),
+								} )
+							)
+						}
+					/>
+				) ) }
+			</VStack>
+			<p className="description">
+				{ __( 'Gives access to admin screens. Only applies while the member is active.', 'open-bulk-buying' ) }
+			</p>
+		</fieldset>
+	);
+}
 
 const languageElements = config.languages.map( ( lang ) => ( {
 	value: lang,
@@ -64,22 +108,28 @@ export const memberFields = [
 		filterBy: false,
 	},
 	{
-		id: 'coop_role',
-		label: __( 'Role', 'open-bulk-buying' ),
+		id: 'status',
+		label: __( 'Status', 'open-bulk-buying' ),
 		type: 'text',
 		Edit: 'select',
-		elements: toElements( config.coopRoles ),
+		elements: toElements( config.memberStatuses ),
 		render: ( { item } ) => (
-			<>
-				<span className={ `openbb-badge openbb-badge--role-${ item.coop_role }` }>
-					{ item.coop_role_label }
-				</span>
-				{ item.grant_labels?.length > 0 && (
-					<span className="openbb-muted"> + { item.grant_labels.join( ', ' ) }</span>
-				) }
-			</>
+			<span className={ `openbb-badge openbb-badge--status-${ item.status }` }>
+				{ item.status_label }
+			</span>
 		),
 		filterBy: { operators: [ 'isAny' ], isPrimary: true },
+		enableSorting: false,
+	},
+	{
+		id: 'roles',
+		label: __( 'Team roles', 'open-bulk-buying' ),
+		type: 'array',
+		get elements() {
+			return roleElements();
+		},
+		render: ( { item } ) => item.role_labels?.join( ', ' ) || '',
+		filterBy: { operators: [ 'isAny' ] },
 		enableSorting: false,
 	},
 	{
@@ -132,6 +182,7 @@ export const memberForm = {
 		},
 		'phone',
 		'language',
-		'coop_role',
+		'status',
+		'roles',
 	],
 };

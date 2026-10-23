@@ -2,7 +2,7 @@
 /**
  * Member fields. WordPress owns identity (email, names, password); co-op fields are
  * per-site user meta, keyed with the site's table prefix like core's
- * {prefix}capabilities, so a co-op role on one site of a network means nothing on another.
+ * {prefix}capabilities, so a co-op membership on one site of a network means nothing on another.
  *
  * @package Open_Bulk_Buying
  */
@@ -18,16 +18,18 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function openbb_member_meta_fields(): array {
 	return array(
-		'coop_role'         => array(
+		'status'            => array(
 			'type'              => 'string',
 			'default'           => '',
-			'sanitize_callback' => array( 'OPENBB_Access', 'sanitize_role' ),
+			'sanitize_callback' => array( 'OPENBB_Access', 'sanitize_status' ),
 			'editable'          => false,
 		),
-		'grants'            => array(
-			'type'              => 'array',
-			'default'           => array(),
-			'sanitize_callback' => array( 'OPENBB_Access', 'sanitize_grants' ),
+		// One row per role held, so members can be queried by role.
+		'roles'             => array(
+			'type'              => 'string',
+			'single'            => false,
+			'default'           => '',
+			'sanitize_callback' => 'sanitize_key',
 			'editable'          => false,
 		),
 		'joined_at'         => array(
@@ -112,18 +114,18 @@ function openbb_can_email_member( int $user_id ): bool {
 
 function openbb_register_member_meta(): void {
 	foreach ( openbb_member_meta_fields() as $field => $args ) {
-		register_meta(
-			'user',
-			openbb_member_meta_key( $field ),
-			array(
-				'type'              => $args['type'],
-				'single'            => true,
-				'default'           => $args['default'],
-				'show_in_rest'      => false,
-				'sanitize_callback' => $args['sanitize_callback'],
-				'auth_callback'     => $args['editable'] ? 'openbb_can_edit_member_meta' : '__return_false',
-			)
+		$single = $args['single'] ?? true;
+		$meta_args = array(
+			'type'              => $args['type'],
+			'single'            => $single,
+			'show_in_rest'      => false,
+			'sanitize_callback' => $args['sanitize_callback'],
+			'auth_callback'     => $args['editable'] ? 'openbb_can_edit_member_meta' : '__return_false',
 		);
+		if ( $single ) {
+			$meta_args['default'] = $args['default'];
+		}
+		register_meta( 'user', openbb_member_meta_key( $field ), $meta_args );
 	}
 }
 

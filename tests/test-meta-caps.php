@@ -116,7 +116,7 @@ class Test_OPENBB_Meta_Caps extends OPENBB_TestCase {
 
 		$this->assertTrue( user_can( $member, 'edit_user_meta', $member, openbb_member_meta_key( 'phone' ) ) );
 		$this->assertTrue( user_can( $member, 'edit_user_meta', $member, openbb_member_meta_key( 'language' ) ) );
-		foreach ( array( 'coop_role', 'grants', 'joined_at', 'rules_version', 'rules_accepted_at' ) as $field ) {
+		foreach ( array( 'status', 'roles', 'joined_at', 'rules_version', 'rules_accepted_at' ) as $field ) {
 			$this->assertFalse( user_can( $member, 'edit_user_meta', $member, openbb_member_meta_key( $field ) ), $field );
 			$this->assertFalse( user_can( $admin, 'edit_user_meta', $member, openbb_member_meta_key( $field ) ), $field );
 		}

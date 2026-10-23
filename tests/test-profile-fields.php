@@ -85,14 +85,14 @@ class Test_OPENBB_Profile_Fields extends OPENBB_TestCase {
 	}
 
 	public function test_reserved_keys_are_rejected(): void {
-		$result = OPENBB_Profile_Fields::save_schema( array( $this->boolean_field( 'coop_role' ) ), 0 );
+		$result = OPENBB_Profile_Fields::save_schema( array( $this->boolean_field( 'status' ) ), 0 );
 
 		$this->assertWPError( $result );
 		$this->assertSame( 'openbb_invalid_profile_fields', $result->get_error_code() );
 	}
 
 	public function test_values_use_their_own_meta_namespace(): void {
-		$this->assertNotSame( openbb_member_meta_key( 'grants' ), OPENBB_Profile_Fields::meta_key( 'grants' ) );
+		$this->assertNotSame( openbb_member_meta_key( 'roles' ), OPENBB_Profile_Fields::meta_key( 'roles' ) );
 	}
 
 	public function test_saved_keys_and_types_are_immutable(): void {

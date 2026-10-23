@@ -55,8 +55,8 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 			$this->assertSame( 200, $this->api( 'POST', array( 'general' => $general ) )->get_status() );
 			$this->assertSame( 200, $this->api( 'POST', array( 'general' => array_reverse( $general, true ) ) )->get_status() );
 		}
-		$this->assertSame( 'applicant', OPENBB_Access::get_coop_role( $applicant ) );
-		$this->assertSame( 'member', OPENBB_Access::get_coop_role( $member ) );
+		$this->assertSame( 'applicant', OPENBB_Access::get_status( $applicant ) );
+		$this->assertSame( 'active', OPENBB_Access::get_status( $member ) );
 	}
 
 	public function test_invalid_settings_do_not_write(): void {

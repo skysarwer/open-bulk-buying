@@ -15,11 +15,13 @@ From the **Co-op** menu in the WordPress dashboard, staff can:
 - Create and manage orders, with quantities limited by available stock.
 - Configure co-op settings and member profile fields.
 
-The plugin includes co-op roles for Members, Coordinators and Managers, as well
-as Applicant and Inactive statuses. Coordinators can handle day-to-day co-op
-work; Managers also have access to settings and access management. These are
-co-op permissions, not WordPress roles, so assigning a co-op role does not
-change someone's WordPress role.
+Each member has a membership status: Applicant, Active, Inactive or Declined.
+Active members can order. Team roles give members access to the co-op's admin
+screens: Coordinator, Manager, Aid reviewer, Distribution helper, Rules editor,
+or roles you create. Team roles are not WordPress roles, so giving someone a
+team role does not change their WordPress role.
+
+Manage team roles and their permissions in **Co-op > Settings > Team roles**.
 
 ## Requirements
 
@@ -66,8 +68,8 @@ will display a notice explaining how to build them.
 3. **Set up an order cycle.** Open **Co-op > Cycles** and enter the cycle's
    ordering dates and other details.
 4. **Add members.** Open **Co-op > Members** to connect an existing WordPress
-   user or create a new member account. Review the member's co-op role and
-   profile information.
+   user or create a new member account. Review the member's status, team roles
+   and profile information.
 5. **Manage orders.** Use **Co-op > Orders** to review, create or edit orders.
    When changing a submitted order or cancelling it, staff are asked to provide
    a reason.
@@ -99,8 +101,8 @@ See [the lifecycle roadmap](ROADMAP.md) for configurable prepaid holds,
 cancellation policies, refunds, pickup exceptions, reporting, and privacy work.
 
 An Administrator already has co-op staff permissions. To place orders as a
-co-op member, an Administrator also needs an active co-op role. Members can
-order for themselves; Applicants and Inactive users cannot order.
+co-op member, an Administrator also needs an Active membership. Members can
+order for themselves; Applicants, Inactive and Declined users cannot order.
 
 ## General settings
 
@@ -134,9 +136,9 @@ accepts optional attributes:
 Visitors enter their details, any member profile fields, and agree to the
 latest co-op rules. They then receive a 6-digit code by email. Their account
 is only created, and they are logged in, once they enter the code. Someone who
-is already logged in but has no co-op role can join without a code. Details
-already on their account are shown but can't be changed. People with a co-op
-role see their status instead of the form. When signups are off, the page
+is already logged in but isn't a member can join without a code. Details
+already on their account are shown but can't be changed. People who already
+have a membership status see it instead of the form. When signups are off, the page
 shows a notice.
 
 New signups become Applicants or Members, depending on the approval setting.
@@ -170,8 +172,8 @@ keeps any unsaved draft edits intact. Reopen a closed panel with **Version histo
 Published versions cannot be edited or deleted. The first version requires
 acceptance; translation-only changes do not require renewed acceptance.
 
-Managers and users with the **Rules editor** grant can manage rules. The grant
-does not provide access to the other settings tabs.
+Managers and users with the **Rules editor** role can manage rules. That role
+does not give access to the other settings tabs.
 
 ## Data and deactivation
 
