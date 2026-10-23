@@ -39,6 +39,7 @@ function GeneralForm( { settings, onSaved } ) {
 	};
 	const isDirty =
 		draft.allow_signups !== settings.allow_signups ||
+		draft.allow_login_links !== settings.allow_login_links ||
 		draft.require_member_approval !== settings.require_member_approval ||
 		draft.membership_fee_type !== settings.membership_fee_type ||
 		draft.membership_fee_amount !==
@@ -95,6 +96,26 @@ function GeneralForm( { settings, onSaved } ) {
 						}
 						checked={ draft.allow_signups }
 						onChange={ change( 'allow_signups' ) }
+						disabled={ isBusy }
+					/>
+				</Section>
+				<Section title={ __( 'Login', 'open-bulk-buying' ) }>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Allow login links', 'open-bulk-buying' ) }
+						help={
+							draft.allow_login_links
+								? __(
+										'The [openbb_login] form also lets people log in with a single-use link sent by email. Editors and administrators must still use their password.',
+										'open-bulk-buying'
+								  )
+								: __(
+										'People log in with their password only.',
+										'open-bulk-buying'
+								  )
+						}
+						checked={ draft.allow_login_links }
+						onChange={ change( 'allow_login_links' ) }
 						disabled={ isBusy }
 					/>
 				</Section>

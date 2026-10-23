@@ -110,6 +110,10 @@ In **Co-op > Settings > General**, turn on **Allow signups** to let people
 join from the website (see [Member signup](#member-signup)). Signups are off
 by default.
 
+Turn on **Allow login links** to let people log in with a single-use link sent
+by email instead of their password (see [Member login](#member-login)). Login
+links are off by default.
+
 Configure whether new signups need staff approval (Applicants) or are
 automatically approved as Members. Approval is required by default. This
 setting does not change existing members or accounts created by staff.
@@ -126,8 +130,12 @@ accepts optional attributes:
 
 - `title`: a heading shown above the form.
 - `intro`: a short plain-text introduction.
-- `redirect_to`: a URL on this site to continue to after joining (defaults to
-  the current page).
+- `login_redirect`: a URL on this site to continue to after joining or logging
+  in (defaults to the current page). `redirect_to` is still accepted as an
+  alias.
+
+Visitors who already have an account can switch to the login form from the
+signup form (see [Member login](#member-login)).
 
 ```text
 [openbb_signup title="Join the co-op" intro="Members order together every month."]
@@ -153,7 +161,42 @@ emails (code, account exists, welcome) can be changed with the
 `openbb_signup_email` filter.
 
 Themes and other plugins can show the same view on any member-only screen with
-`openbb_render_signup( array( 'title' => ..., 'intro' => ..., 'redirect_to' => ... ) )`.
+`openbb_render_signup( array( 'title' => ..., 'intro' => ..., 'login_redirect' => ... ) )`.
+
+## Member login
+
+Add the `[openbb_login]` shortcode to a page to show a login form. It accepts
+the same optional `title`, `intro` and `login_redirect` attributes as the
+signup shortcode.
+
+```text
+[openbb_login title="Welcome back" login_redirect="/shop/"]
+```
+
+People log in with their username or email and password. When **Allow login
+links** is on in the general settings, they can ask for a login link by email
+instead. Links work once, expire after 15 minutes, and
+only the most recent link sent to an account works. Turning the setting off
+also stops links that were already sent from working. Opening a link shows a
+"Log in" confirmation button, so email scanners that open links can't use
+them up. The login form links to the signup form, and the signup form links
+back, on the same page. People who are already logged in see who they are
+logged in as, with a link to continue and a log-out link.
+
+Password logins go through `wp_signon()`, so plugins that hook WordPress
+authentication (for example two-factor plugins) still apply. Login links skip
+that step, so by default editors and administrators (anyone who can edit
+others' posts, plus network super admins) can't use them. When one of them
+asks for a link, the form responds as usual, but the email tells them to log
+in with their password instead, with a password reset link. The
+`openbb_login_link_allowed` filter can change who may use links. The core
+`login_redirect` filter is
+applied to the redirect, and the login link email can be changed with the
+`openbb_login_email` filter. The login routes are rate-limited per IP address
+like the signup routes.
+
+Themes and other plugins can show the same view with
+`openbb_render_login( array( 'title' => ..., 'intro' => ..., 'login_redirect' => ... ) )`.
 
 ## Co-op rules
 

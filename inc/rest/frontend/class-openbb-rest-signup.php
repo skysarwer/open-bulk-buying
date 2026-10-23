@@ -258,10 +258,11 @@ class OPENBB_REST_Signup extends OPENBB_REST_Controller {
 	}
 
 	/**
-	 * Logs the new member in. The nonce in the response must belong to the new session,
-	 * which wp_create_nonce() reads from the logged-in cookie, so it's mirrored into $_COOKIE.
+	 * Logs a user in (a new member here, or a login link in OPENBB_REST_Login). The nonce in
+	 * the response must belong to the new session, which wp_create_nonce() reads from the
+	 * logged-in cookie, so it's mirrored into $_COOKIE.
 	 */
-	private static function log_in( int $user_id ): void {
+	public static function log_in( int $user_id ): void {
 		$mirror = static function ( string $cookie ): void {
 			$_COOKIE[ LOGGED_IN_COOKIE ] = $cookie;
 		};

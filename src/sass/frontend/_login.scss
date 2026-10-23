@@ -1,0 +1,44 @@
+// Login view (inc/frontend/templates/login.php) and the login/signup switch.
+
+.openbb-login {
+
+	&__title {
+		margin-top: 0;
+	}
+
+	&__notice > .openbb-notice,
+	&__status > .openbb-notice {
+		margin-top: 0;
+	}
+
+	&__password {
+		margin-top: var(--openbb-gap);
+	}
+
+	&__method {
+		margin: 1rem 0 0;
+
+		.openbb-button--link {
+			padding-inline: 0;
+		}
+	}
+}
+
+.openbb-auth {
+
+	&__panel:focus {
+		outline: none;
+	}
+
+	&__switch {
+		margin-top: 1.25rem;
+		color: var(--openbb-muted);
+
+		.openbb-button--link {
+			min-height: 0;
+			padding: 0 0.25em;
+			color: var(--openbb-text);
+			font-weight: 600;
+		}
+	}
+}

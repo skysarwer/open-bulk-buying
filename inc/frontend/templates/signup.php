@@ -123,10 +123,10 @@ $openbb_actions = static function ( string $step ) use ( $view, $openbb_last ): 
 
 			<?php echo $openbb_actions( 'details' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
-			<?php if ( '' !== $view['login_url'] ) : ?>
-				<p class="openbb-signup__login">
+			<?php if ( $view['can_switch'] ) : ?>
+				<p class="openbb-signup__login openbb-auth__switch">
 					<?php esc_html_e( 'Already have an account?', 'open-bulk-buying' ); ?>
-					<a href="<?php echo esc_url( $view['login_url'] ); ?>"><?php esc_html_e( 'Log in', 'open-bulk-buying' ); ?></a>
+					<button type="button" class="openbb-button openbb-button--link" data-wp-on--click="openbb/auth::actions.showLogin"><?php esc_html_e( 'Log in', 'open-bulk-buying' ); ?></button>
 				</p>
 			<?php endif; ?>
 		</section>

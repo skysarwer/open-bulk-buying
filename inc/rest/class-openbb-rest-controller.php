@@ -38,6 +38,7 @@ abstract class OPENBB_REST_Controller {
 					new OPENBB_REST_Orders(),
 					new OPENBB_REST_Settings(),
 					new OPENBB_REST_Signup(),
+					new OPENBB_REST_Login(),
 				);
 				foreach ( $controllers as $controller ) {
 					$controller->register_routes();

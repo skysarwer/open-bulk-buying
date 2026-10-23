@@ -3,13 +3,15 @@
  * The signup view: [openbb_signup] and openbb_render_signup().
  *
  * One template serves every "you need to be a member" screen: pass a title, intro and
- * redirect_to (e.g. the order form shows it to visitors and non-members). What it shows:
+ * login_redirect (e.g. the order form shows it to visitors and non-members). What it shows:
  *
  * - Signed-in users with a membership status: their status (applicant, active, inactive, declined).
  * - Signups closed: a notice (with a Settings link for staff).
  * - Everyone else: the form. Steps are Details → Profile & rules → Code → Done; the
  *   profile step is left out when there are no profile fields or rules, and signed-in
  *   users skip the code step. Values a signed-in user already has are shown locked.
+ *
+ * Visitors can switch to the login form in place (see OPENBB_Login_View::auth()).
  *
  * @package Open_Bulk_Buying
  */
@@ -20,11 +22,16 @@ final class OPENBB_Signup_View {
 
 	const ID = 'openbb-signup';
 
+	/**
+	 * login_redirect: where to go after logging in or signing up (URL on this site; default:
+	 * this page). redirect_to is its older name, used when login_redirect is empty.
+	 */
 	public static function defaults(): array {
 		return array(
-			'title'       => '',
-			'intro'       => '',
-			'redirect_to' => '',
+			'title'          => '',
+			'intro'          => '',
+			'login_redirect' => '',
+			'redirect_to'    => '',
 		);
 	}
 
@@ -34,20 +41,41 @@ final class OPENBB_Signup_View {
 		OPENBB_Frontend::no_cache();
 		OPENBB_Frontend::enqueue_style();
 
-		$args['redirect_to'] = self::redirect_url( (string) $args['redirect_to'] );
+		$redirect            = '' !== (string) $args['login_redirect'] ? (string) $args['login_redirect'] : (string) $args['redirect_to'];
+		$args['redirect_to'] = OPENBB_Frontend::redirect_url( $redirect );
 
 		$user_id = get_current_user_id();
 		$status  = $user_id ? OPENBB_Access::get_status( $user_id ) : '';
 		if ( '' !== $status ) {
 			return self::message( $args, self::status_message( $status ), $args['redirect_to'] );
 		}
-		if ( ! OPENBB_Signup::is_open() ) {
-			return self::message( $args, self::closed_message() );
+
+		$open = OPENBB_Signup::is_open();
+		if ( $user_id ) {
+			return $open ? OPENBB_Frontend::process( self::form( $args, $user_id ) ) : self::message( $args, self::closed_message() );
 		}
 
+		return OPENBB_Login_View::auth(
+			'signup',
+			array(
+				'login'  => OPENBB_Login_View::panel( array( 'login_redirect' => $args['redirect_to'] ), $open ),
+				'signup' => $open ? self::form( $args, 0 ) : self::message( $args, self::closed_message(), '', true ),
+			)
+		);
+	}
+
+	/**
+	 * The signup form for a visitor, as the second panel of the login view. Unprocessed:
+	 * the caller runs the directives over the whole view.
+	 */
+	public static function panel( string $redirect ): string {
+		return self::form( array_merge( self::defaults(), array( 'redirect_to' => $redirect ) ), 0 );
+	}
+
+	private static function form( array $args, int $user_id ): string {
 		OPENBB_Frontend::enqueue( array( OPENBB_Frontend::MODULE_SIGNUP ) );
 
-		return OPENBB_Frontend::process( self::template( 'signup', self::form_view( $args, $user_id ) ) );
+		return OPENBB_Frontend::template( 'signup', self::form_view( $args, $user_id ) );
 	}
 
 	/**
@@ -111,17 +139,7 @@ final class OPENBB_Signup_View {
 		);
 		$context['current'][ $current ] = true;
 
-		wp_interactivity_state(
-			'openbb/forms',
-			array(
-				'messages' => array(
-					'required'      => __( 'This field is required.', 'open-bulk-buying' ),
-					'requiredCheck' => __( 'This box must be checked.', 'open-bulk-buying' ),
-					'requiredOne'   => __( 'Choose an option.', 'open-bulk-buying' ),
-					'email'         => __( 'Enter a valid email address.', 'open-bulk-buying' ),
-				),
-			)
-		);
+		OPENBB_Frontend::forms_state();
 		wp_interactivity_state(
 			'openbb/signup',
 			array(
@@ -152,7 +170,7 @@ final class OPENBB_Signup_View {
 			'heading_tag'    => '' !== $args['title'] ? 'h3' : 'h2',
 			'logged_in_as'   => $user_id ? wp_get_current_user()->user_email : '',
 			'has_locked'     => (bool) array_filter( array_column( array_merge( $account_fields, $profile_fields ), 'locked' ) ),
-			'login_url'      => $user_id ? '' : wp_login_url( $args['redirect_to'] ),
+			'can_switch'     => ! $user_id,
 			'steps'          => $steps,
 			'form_steps'     => $form_steps,
 			'labels'         => $labels,
@@ -327,46 +345,27 @@ final class OPENBB_Signup_View {
 	}
 
 	/**
-	 * A static notice in the signup frame. $html must be escaped already.
+	 * A static notice in the signup frame. $html must be escaped already. With $can_switch,
+	 * visitors get a button to switch to the login form.
 	 */
-	private static function message( array $args, string $html, string $continue_url = '' ): string {
-		return self::template(
+	private static function message( array $args, string $html, string $continue_url = '', bool $can_switch = false ): string {
+		return OPENBB_Frontend::template(
 			'signup-message',
 			array(
 				'title'        => (string) $args['title'],
 				'message'      => $html,
-				'continue_url' => $continue_url !== self::current_url() ? $continue_url : '',
+				'continue_url' => $continue_url !== OPENBB_Frontend::current_url() ? $continue_url : '',
+				'can_switch'   => $can_switch,
 			)
 		);
-	}
-
-	/**
-	 * Where "Continue" leads after signing up: redirect_to when it's on this site, else this page.
-	 */
-	private static function redirect_url( string $redirect_to ): string {
-		$current = self::current_url();
-
-		return '' !== $redirect_to ? wp_validate_redirect( $redirect_to, $current ) : $current;
-	}
-
-	private static function current_url(): string {
-		$post = get_post();
-
-		return $post && is_singular() ? (string) get_permalink( $post ) : home_url( '/' );
-	}
-
-	private static function template( string $name, array $view ): string {
-		ob_start();
-		require OPENBB_PLUGIN_DIR . 'inc/frontend/templates/' . $name . '.php';
-
-		return (string) ob_get_clean();
 	}
 }
 
 /**
  * Renders the signup view anywhere a member-only screen needs it.
  *
- * @param array $args title, intro (plain text), redirect_to (URL on this site; default: this page).
+ * @param array $args title, intro (plain text), login_redirect (URL on this site to go to
+ *                    after logging in or signing up; default: this page).
  */
 function openbb_render_signup( array $args = array() ): string {
 	return OPENBB_Signup_View::render( $args );

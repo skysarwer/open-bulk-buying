@@ -36,9 +36,10 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 						'general'   => array(
 							'type'                 => 'object',
 							'additionalProperties' => false,
-							'required'             => array( 'allow_signups', 'require_member_approval', 'membership_fee_type', 'membership_fee_amount', 'membership_fee_order_interval' ),
+							'required'             => array( 'allow_signups', 'allow_login_links', 'require_member_approval', 'membership_fee_type', 'membership_fee_amount', 'membership_fee_order_interval' ),
 							'properties'           => array(
 								'allow_signups'                 => array( 'type' => 'boolean' ),
+								'allow_login_links'             => array( 'type' => 'boolean' ),
 								'require_member_approval'       => array( 'type' => 'boolean' ),
 								'membership_fee_type'           => array(
 									'type' => 'string',

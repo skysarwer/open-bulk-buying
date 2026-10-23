@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  * Field kinds openbb_render_field() supports.
  */
 function openbb_field_kinds(): array {
-	return array( 'text', 'email', 'tel', 'textarea', 'select', 'chips', 'checkbox' );
+	return array( 'text', 'email', 'tel', 'password', 'textarea', 'select', 'chips', 'checkbox' );
 }
 
 /**

@@ -21,12 +21,13 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 		return rest_do_request( $request );
 	}
 
-	public function test_defaults_close_signups_require_approval_and_have_no_fee(): void {
+	public function test_defaults_close_signups_and_login_links_require_approval_and_have_no_fee(): void {
 		$response = $this->api( 'GET' );
 		$this->assertSame( 200, $response->get_status() );
 		$this->assertSame(
 			array(
 				'allow_signups'                 => false,
+				'allow_login_links'             => false,
 				'require_member_approval'       => true,
 				'membership_fee_type'           => 'one_time',
 				'membership_fee_amount'         => 0,
@@ -42,6 +43,7 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 		foreach ( array( 'recurring', 'one_time' ) as $type ) {
 			$general = array(
 				'allow_signups'                 => true,
+				'allow_login_links'             => true,
 				'require_member_approval'       => false,
 				'membership_fee_type'           => $type,
 				'membership_fee_amount'         => 1250,
@@ -71,6 +73,7 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 			array( 'membership_fee_order_interval' => 'many' ),
 			array( 'require_member_approval' => 'maybe' ),
 			array( 'allow_signups' => 'yes' ),
+			array( 'allow_login_links' => 'yes' ),
 			array( 'unexpected' => true ),
 		);
 		foreach ( $invalid as $changes ) {

@@ -10,6 +10,8 @@
  * Script modules:
  * - @open-bulk-buying/forms   Store `openbb/forms`: field state, validation, errors.
  * - @open-bulk-buying/signup  Store `openbb/signup`: the signup flow.
+ * - @open-bulk-buying/login   Store `openbb/login`: password and email-link login.
+ * - @open-bulk-buying/auth    Store `openbb/auth`: switches between the login and signup panels.
  *
  * @package Open_Bulk_Buying
  */
@@ -22,10 +24,13 @@ final class OPENBB_Frontend {
 
 	const MODULE_FORMS  = '@open-bulk-buying/forms';
 	const MODULE_SIGNUP = '@open-bulk-buying/signup';
+	const MODULE_LOGIN  = '@open-bulk-buying/login';
+	const MODULE_AUTH   = '@open-bulk-buying/auth';
 
 	/** Shortcode tag => view class with a static render( array $args ): string. */
 	const SHORTCODES = array(
 		'openbb_signup' => 'OPENBB_Signup_View',
+		'openbb_login'  => 'OPENBB_Login_View',
 	);
 
 	public static function register_hooks(): void {
@@ -38,6 +43,8 @@ final class OPENBB_Frontend {
 		$modules = array(
 			self::MODULE_FORMS  => array( 'forms.js', array( '@wordpress/interactivity' ) ),
 			self::MODULE_SIGNUP => array( 'signup.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
+			self::MODULE_LOGIN  => array( 'login.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
+			self::MODULE_AUTH   => array( 'auth.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
 		);
 		foreach ( $modules as $id => list( $file, $deps ) ) {
 			wp_register_script_module( $id, OPENBB_PLUGIN_URL . 'assets/js/' . $file, $deps, self::version( 'assets/js/' . $file ) );
@@ -107,6 +114,51 @@ final class OPENBB_Frontend {
 	 */
 	public static function process( string $html ): string {
 		return function_exists( 'wp_interactivity_process_directives' ) ? wp_interactivity_process_directives( $html ) : $html;
+	}
+
+	/**
+	 * Renders inc/frontend/templates/$name.php with $view in scope.
+	 */
+	public static function template( string $name, array $view ): string {
+		ob_start();
+		require OPENBB_PLUGIN_DIR . 'inc/frontend/templates/' . $name . '.php';
+
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Validation messages for the `openbb/forms` store.
+	 */
+	public static function forms_state(): void {
+		wp_interactivity_state(
+			'openbb/forms',
+			array(
+				'messages' => array(
+					'required'      => __( 'This field is required.', 'open-bulk-buying' ),
+					'requiredCheck' => __( 'This box must be checked.', 'open-bulk-buying' ),
+					'requiredOne'   => __( 'Choose an option.', 'open-bulk-buying' ),
+					'email'         => __( 'Enter a valid email address.', 'open-bulk-buying' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * The page a view is shown on: the queried post, else the home page.
+	 */
+	public static function current_url(): string {
+		$post = get_post();
+
+		return $post && is_singular() ? (string) get_permalink( $post ) : home_url( '/' );
+	}
+
+	/**
+	 * $url when it's on this site, else the current page.
+	 */
+	public static function redirect_url( string $url ): string {
+		$current = self::current_url();
+
+		return '' !== $url ? wp_validate_redirect( $url, $current ) : $current;
 	}
 
 	private static function version( string $path ): string {

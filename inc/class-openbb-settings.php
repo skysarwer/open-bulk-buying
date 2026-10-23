@@ -15,6 +15,7 @@ final class OPENBB_Settings {
 		return array_merge(
 			array(
 				'allow_signups'                 => false,
+				'allow_login_links'             => false,
 				'require_member_approval'       => true,
 				'membership_fee_type'           => 'one_time',
 				'membership_fee_amount'         => 0,
