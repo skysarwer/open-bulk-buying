@@ -127,6 +127,9 @@ class Test_OPENBB_Signup_Self_Service extends OPENBB_TestCase {
 		$this->assertNotSame( '', (string) openbb_get_member_field( $user->ID, 'rules_accepted_at' ) );
 		$this->assertSame( 'Three', OPENBB_Profile_Fields::get_values( $user->ID, OPENBB_Profile_Fields::CONTEXT_SIGNUP )['household'] );
 		$this->assertSame( array( 'jane.doe@example.com' ), wp_list_pluck( $this->mail, 'to' ) );
+		$this->assertStringContainsString( 'We received your membership application', $this->mail[0]['subject'] );
+		$this->assertStringContainsString( 'review your application', $this->mail[0]['message'] );
+		$this->assertStringNotContainsString( 'Welcome to the co-op', $this->mail[0]['subject'] );
 	}
 
 	public function test_register_gives_member_when_approval_is_off(): void {
@@ -136,6 +139,9 @@ class Test_OPENBB_Signup_Self_Service extends OPENBB_TestCase {
 
 		$this->assertSame( OPENBB_Access::STATUS_ACTIVE, $result['status'] );
 		$this->assertSame( OPENBB_Access::STATUS_ACTIVE, OPENBB_Access::get_status( $result['user_id'] ) );
+		$this->assertCount( 1, $this->mail );
+		$this->assertStringContainsString( 'Welcome to the co-op', $this->mail[0]['subject'] );
+		$this->assertStringNotContainsString( 'review your application', $this->mail[0]['message'] );
 	}
 
 	public function test_register_refuses_when_signups_are_closed(): void {

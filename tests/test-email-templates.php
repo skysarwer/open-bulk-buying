@@ -25,14 +25,14 @@ class Test_OPENBB_Email_Templates extends OPENBB_TestCase {
 				"Someone, hopefully you, tried to sign up to $site with this email address. You already have an account, so there's no code to enter.\n\nLog in to finish joining:\n" . wp_login_url() . "\n\nForgot your password? Reset it here:\n" . wp_lostpassword_url() . "\n\nIf this wasn't you, you can ignore this email.",
 			),
 			array(
-				'welcome',
-				array( 'first_name' => 'Jane', 'is_applicant' => true ),
+				'application-pending',
+				array( 'first_name' => 'Jane' ),
 				"[$site] We received your membership application",
 				"Hi Jane,\n\nThanks for applying to join $site. A coordinator will review your application. You'll be able to place orders once it's approved." . $this->welcome_footer(),
 			),
 			array(
 				'welcome',
-				array( 'first_name' => 'Jane', 'is_applicant' => false ),
+				array( 'first_name' => 'Jane' ),
 				"[$site] Welcome to the co-op",
 				"Hi Jane,\n\nWelcome to $site! You can place an order whenever an order cycle is open." . $this->welcome_footer(),
 			),

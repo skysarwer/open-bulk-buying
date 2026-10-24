@@ -323,21 +323,22 @@ final class OPENBB_Signup {
 	}
 
 	/**
-	 * Welcome applicants once staff have successfully approved their membership.
+	 * Welcome existing members whenever staff activate their membership.
 	 */
 	public static function on_member_status_changed( int $user_id, string $status, string $old ): void {
-		if ( OPENBB_Access::STATUS_APPLICANT !== $old || OPENBB_Access::STATUS_ACTIVE !== $status || ! openbb_can_email_member( $user_id ) ) {
+		// New memberships have their own signup or staff-created account notification.
+		if ( '' === $old || OPENBB_Access::STATUS_ACTIVE === $old || OPENBB_Access::STATUS_ACTIVE !== $status || ! openbb_can_email_member( $user_id ) ) {
 			return;
 		}
 
 		if ( ! self::send_welcome( $user_id, $status ) ) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			error_log( sprintf( '[open-bulk-buying] Membership approval email could not be sent for user %d on site %d.', $user_id, get_current_blog_id() ) );
+			error_log( sprintf( '[open-bulk-buying] Membership welcome email could not be sent for user %d on site %d.', $user_id, get_current_blog_id() ) );
 		}
 	}
 
 	/**
-	 * "Application received" or "welcome", on signup or subsequent approval.
+	 * "Application received" or "welcome", on signup or subsequent activation.
 	 */
 	private static function send_welcome( int $user_id, string $status ): bool {
 		if ( ! openbb_can_email_member( $user_id ) ) {
@@ -347,10 +348,9 @@ final class OPENBB_Signup {
 		$user = get_userdata( $user_id );
 		$is_applicant = OPENBB_Access::STATUS_APPLICANT === $status;
 		$template = OPENBB_Emails::render(
-			'welcome',
+			$is_applicant ? 'application-pending' : 'welcome',
 			array(
-				'first_name'   => $user->first_name,
-				'is_applicant' => $is_applicant,
+				'first_name' => $user->first_name,
 			)
 		);
 
@@ -363,7 +363,7 @@ final class OPENBB_Signup {
 		 *
 		 * @param array  $email   to, subject, message, headers.
 		 * @param string $type    code, account_exists, welcome_applicant or welcome_member.
-		 * @param int    $user_id The member signing up or being approved; 0 before the account exists.
+		 * @param int    $user_id The member signing up or being activated; 0 before the account exists.
 		 */
 		$email = apply_filters(
 			'openbb_signup_email',

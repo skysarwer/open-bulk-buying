@@ -1,6 +1,6 @@
 <?php
 /**
- * Welcome email when an applicant becomes an active member.
+ * Welcome email when an existing membership becomes active.
  *
  * @package Open_Bulk_Buying
  */
@@ -47,7 +47,7 @@ class Test_OPENBB_Member_Approval_Email extends OPENBB_TestCase {
 
 	public function test_members_screen_approval_sends_email(): void {
 		rest_get_server();
-		$user_id = $this->make_user( 'applicant' );
+		$user_id = $this->make_user( 'inactive' );
 		$request = new WP_REST_Request( 'PUT', '/openbb/v1/members/' . $user_id );
 		$request->set_param( 'status', 'active' );
 
@@ -56,13 +56,36 @@ class Test_OPENBB_Member_Approval_Email extends OPENBB_TestCase {
 		$this->assertSame( 200, $response->get_status() );
 		$this->assertCount( 1, $this->mail );
 		$this->assertSame( get_userdata( $user_id )->user_email, $this->mail[0]['to'] );
+		$this->assertStringContainsString( 'Welcome to the co-op', $this->mail[0]['subject'] );
+	}
+
+	public function test_inactive_and_declined_members_receive_welcome_when_activated(): void {
+		foreach ( array( 'inactive', 'declined' ) as $status ) {
+			$user_id = $this->make_user( $status );
+			$joined_at = openbb_get_member_field( $user_id, 'joined_at' );
+			$this->mail = array();
+
+			$this->assertTrue( OPENBB_Access::set_status( $user_id, 'active' ) );
+			$this->assertCount( 1, $this->mail );
+			$this->assertSame( get_userdata( $user_id )->user_email, $this->mail[0]['to'] );
+			$this->assertStringContainsString( 'Welcome to the co-op', $this->mail[0]['subject'] );
+			$this->assertStringNotContainsString( 'review your application', $this->mail[0]['message'] );
+			if ( 'inactive' === $status ) {
+				$this->assertSame( $joined_at, openbb_get_member_field( $user_id, 'joined_at' ) );
+			}
+
+			$this->assertTrue( OPENBB_Access::set_status( $user_id, 'active' ) );
+			$this->assertCount( 1, $this->mail );
+			$this->assertTrue( OPENBB_Access::set_status( $user_id, 'inactive' ) );
+			$this->assertCount( 1, $this->mail );
+			$this->assertTrue( OPENBB_Access::set_status( $user_id, 'active' ) );
+			$this->assertCount( 2, $this->mail );
+		}
 	}
 
 	public function test_other_status_transitions_do_not_send_approval_email(): void {
 		$this->assertTrue( OPENBB_Access::set_status( $this->make_user( 'applicant' ), 'declined' ) );
 		$this->assertTrue( OPENBB_Access::set_status( $this->make_user( 'member' ), 'inactive' ) );
-		$this->assertTrue( OPENBB_Access::set_status( $this->make_user( 'inactive' ), 'active' ) );
-		$this->assertTrue( OPENBB_Access::set_status( $this->make_user( 'declined' ), 'active' ) );
 		$this->assertTrue( OPENBB_Access::set_status( $this->make_user(), 'active' ) );
 		$this->assertTrue( OPENBB_Access::start_membership( $this->make_user(), 'active' ) );
 		$this->assertTrue( OPENBB_Access::start_membership( $this->make_user(), 'applicant' ) );
@@ -141,7 +164,7 @@ class Test_OPENBB_Member_Approval_Email extends OPENBB_TestCase {
 			$this->assertTrue( OPENBB_Access::set_status( $user_id, 'active' ) );
 			$this->assertSame( 'active', OPENBB_Access::get_status( $user_id ) );
 			$this->assertStringContainsString(
-				sprintf( 'Membership approval email could not be sent for user %d on site %d.', $user_id, get_current_blog_id() ),
+				sprintf( 'Membership welcome email could not be sent for user %d on site %d.', $user_id, get_current_blog_id() ),
 				file_get_contents( $log )
 			);
 		} finally {
