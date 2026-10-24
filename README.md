@@ -154,7 +154,15 @@ have a membership status see it instead of the form. When signups are off, the p
 shows a notice.
 
 New signups become Applicants or Members, depending on the approval setting.
-They receive an email confirming either outcome. If someone signs up with an
+They receive an email confirming either outcome. When staff change an Applicant
+to Active, the member receives the welcome email with login instructions and
+confirmation that they can order. Saving an already-active member does not send
+it again. Approval emails respect the member email eligibility filter and use
+the `welcome_member` type of the `openbb_signup_email` filter. A mail failure is
+logged without undoing the approval; delivery still requires working WordPress
+mail configuration.
+
+If someone signs up with an
 email that already has an account, the form behaves the same way, but the
 email asks them to log in instead of sending a code.
 
@@ -163,6 +171,13 @@ one address can raise the limits with the `openbb_rate_limit` filter. Behind a
 reverse proxy, supply the real client address with `openbb_client_ip`. Signup
 emails (code, account exists, welcome) can be changed with the
 `openbb_signup_email` filter.
+
+All plugin-authored email subjects and bodies live in `inc/emails/`: signup
+codes, existing-account notices, application/welcome messages (including
+approval), login links and password-required notices. Services still handle
+recipients, eligibility, sending and the existing `openbb_signup_email` and
+`openbb_login_email` filters. Staff-created accounts continue to use WordPress's
+standard set-your-password notification, whose template is owned by WordPress.
 
 Themes and other plugins can show the same view on any member-only screen with
 `openbb_render_signup( array( 'title' => ..., 'intro' => ..., 'login_redirect' => ... ) )`.

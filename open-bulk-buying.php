@@ -39,6 +39,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/model/member/user-meta.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-member.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-profile-fields.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-email-code.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/emails/class-openbb-emails.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-signup.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-login-link.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/product/units.php';
@@ -82,6 +83,7 @@ register_activation_hook( __FILE__, array( 'OPENBB_Installer', 'install' ) );
 add_action( 'plugins_loaded', array( 'OPENBB_Installer', 'maybe_upgrade' ) );
 add_filter( 'user_has_cap', array( 'OPENBB_Access', 'filter_user_has_cap' ), 10, 4 );
 add_filter( 'map_meta_cap', array( 'OPENBB_Access', 'filter_map_meta_cap' ), 10, 4 );
+add_action( 'openbb_member_status_changed', array( 'OPENBB_Signup', 'on_member_status_changed' ), 10, 3 );
 foreach ( array( 'added_user_meta', 'updated_user_meta', 'deleted_user_meta' ) as $openbb_meta_action ) {
 	add_action( $openbb_meta_action, array( 'OPENBB_Access', 'on_user_meta_change' ) );
 }

@@ -161,7 +161,13 @@ final class OPENBB_Login_Link {
 	}
 
 	public static function send( WP_User $user, string $url ): bool {
-		$site = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
+		$template = OPENBB_Emails::render(
+			'login-link',
+			array(
+				'url'     => $url,
+				'minutes' => (int) ( self::TTL / MINUTE_IN_SECONDS ),
+			)
+		);
 
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && 'local' === wp_get_environment_type() ) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
@@ -179,15 +185,8 @@ final class OPENBB_Login_Link {
 			'openbb_login_email',
 			array(
 				'to'      => $user->user_email,
-				/* translators: %s: site name. */
-				'subject' => sprintf( __( '[%s] Your login link', 'open-bulk-buying' ), $site ),
-				'message' => sprintf(
-					/* translators: 1: site name, 2: login link, 3: minutes until the link expires. */
-					__( "Use this link to log in to %1\$s:\n\n%2\$s\n\nThe link works once and expires in %3\$d minutes.\n\nIf you didn't ask to log in, you can ignore this email.", 'open-bulk-buying' ),
-					$site,
-					$url,
-					(int) ( self::TTL / MINUTE_IN_SECONDS )
-				),
+				'subject' => $template['subject'],
+				'message' => $template['message'],
 				'headers' => '',
 			),
 			$user,
@@ -202,22 +201,15 @@ final class OPENBB_Login_Link {
 	 * for, and to log in with their password at $page instead.
 	 */
 	public static function send_password_required( WP_User $user, string $page ): bool {
-		$site = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
+		$template = OPENBB_Emails::render( 'password-required', array( 'page' => $page ) );
 
 		/** This filter is documented in send() above; $url is the login page. */
 		$email = apply_filters(
 			'openbb_login_email',
 			array(
 				'to'      => $user->user_email,
-				/* translators: %s: site name. */
-				'subject' => sprintf( __( '[%s] Log in with your password', 'open-bulk-buying' ), $site ),
-				'message' => sprintf(
-					/* translators: 1: site name, 2: login page, 3: lost password page. */
-					__( "Someone asked for a login link for your account on %1\$s.\n\nAccounts that can manage the site can't log in with an emailed link. Please log in with your password instead:\n\n%2\$s\n\nIf you've forgotten your password, you can reset it here:\n\n%3\$s\n\nIf you didn't ask to log in, you can ignore this email.", 'open-bulk-buying' ),
-					$site,
-					$page,
-					wp_lostpassword_url( $page )
-				),
+				'subject' => $template['subject'],
+				'message' => $template['message'],
 				'headers' => '',
 			),
 			$user,

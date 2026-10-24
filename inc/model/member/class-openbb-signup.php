@@ -299,23 +299,17 @@ final class OPENBB_Signup {
 	 * The "enter this code" email for a visitor signing up.
 	 */
 	public static function send_code( string $email, string $code ): bool {
-		$site = self::site_name();
-
 		self::maybe_log_code( $email, $code );
 
-		return self::mail(
-			'code',
-			$email,
-			/* translators: 1: site name, 2: the code. */
-			sprintf( __( '[%1$s] Your sign-up code: %2$s', 'open-bulk-buying' ), $site, OPENBB_Email_Code::format( $code ) ),
-			sprintf(
-				/* translators: 1: site name, 2: the code, 3: minutes until the code expires. */
-				__( "Enter this code to finish joining %1\$s:\n\n%2\$s\n\nThe code expires in %3\$d minutes.\n\nIf you didn't ask to join, you can ignore this email.", 'open-bulk-buying' ),
-				$site,
-				OPENBB_Email_Code::format( $code ),
-				(int) ( OPENBB_Email_Code::TTL / MINUTE_IN_SECONDS )
+		$template = OPENBB_Emails::render(
+			'signup-code',
+			array(
+				'code'    => OPENBB_Email_Code::format( $code ),
+				'minutes' => (int) ( OPENBB_Email_Code::TTL / MINUTE_IN_SECONDS ),
 			)
 		);
+
+		return self::mail( 'code', $email, $template['subject'], $template['message'] );
 	}
 
 	/**
@@ -323,54 +317,44 @@ final class OPENBB_Signup {
 	 * never reveals which addresses are registered.
 	 */
 	public static function send_account_exists( string $email ): bool {
-		$site = self::site_name();
+		$template = OPENBB_Emails::render( 'account-exists' );
 
-		return self::mail(
-			'account_exists',
-			$email,
-			/* translators: %s: site name. */
-			sprintf( __( '[%s] You already have an account', 'open-bulk-buying' ), $site ),
-			sprintf(
-				/* translators: 1: site name, 2: login URL, 3: lost password URL. */
-				__( "Someone, hopefully you, tried to sign up to %1\$s with this email address. You already have an account, so there's no code to enter.\n\nLog in to finish joining:\n%2\$s\n\nForgot your password? Reset it here:\n%3\$s\n\nIf this wasn't you, you can ignore this email.", 'open-bulk-buying' ),
-				$site,
-				wp_login_url(),
-				wp_lostpassword_url()
-			)
-		);
+		return self::mail( 'account_exists', $email, $template['subject'], $template['message'] );
 	}
 
 	/**
-	 * "Application received" or "welcome", depending on the status the signup gave.
+	 * Welcome applicants once staff have successfully approved their membership.
+	 */
+	public static function on_member_status_changed( int $user_id, string $status, string $old ): void {
+		if ( OPENBB_Access::STATUS_APPLICANT !== $old || OPENBB_Access::STATUS_ACTIVE !== $status || ! openbb_can_email_member( $user_id ) ) {
+			return;
+		}
+
+		if ( ! self::send_welcome( $user_id, $status ) ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( sprintf( '[open-bulk-buying] Membership approval email could not be sent for user %d on site %d.', $user_id, get_current_blog_id() ) );
+		}
+	}
+
+	/**
+	 * "Application received" or "welcome", on signup or subsequent approval.
 	 */
 	private static function send_welcome( int $user_id, string $status ): bool {
 		if ( ! openbb_can_email_member( $user_id ) ) {
 			return false;
 		}
 
-		$site = self::site_name();
 		$user = get_userdata( $user_id );
 		$is_applicant = OPENBB_Access::STATUS_APPLICANT === $status;
-		if ( $is_applicant ) {
-			/* translators: %s: site name. */
-			$subject = sprintf( __( '[%s] We received your membership application', 'open-bulk-buying' ), $site );
-			/* translators: 1: member's first name, 2: site name. */
-			$intro = sprintf( __( "Hi %1\$s,\n\nThanks for applying to join %2\$s. A coordinator will review your application. You'll be able to place orders once it's approved.", 'open-bulk-buying' ), $user->first_name, $site );
-		} else {
-			/* translators: %s: site name. */
-			$subject = sprintf( __( '[%s] Welcome to the co-op', 'open-bulk-buying' ), $site );
-			/* translators: 1: member's first name, 2: site name. */
-			$intro = sprintf( __( "Hi %1\$s,\n\nWelcome to %2\$s! You can place an order whenever an order cycle is open.", 'open-bulk-buying' ), $user->first_name, $site );
-		}
-
-		$message = $intro . "\n\n" . sprintf(
-			/* translators: 1: login URL, 2: lost password URL. */
-			__( "Log in at any time:\n%1\$s\n\nTo choose a password, use \"Lost your password?\":\n%2\$s", 'open-bulk-buying' ),
-			wp_login_url(),
-			wp_lostpassword_url()
+		$template = OPENBB_Emails::render(
+			'welcome',
+			array(
+				'first_name'   => $user->first_name,
+				'is_applicant' => $is_applicant,
+			)
 		);
 
-		return self::mail( $is_applicant ? 'welcome_applicant' : 'welcome_member', $user->user_email, $subject, $message, $user_id );
+		return self::mail( $is_applicant ? 'welcome_applicant' : 'welcome_member', $user->user_email, $template['subject'], $template['message'], $user_id );
 	}
 
 	private static function mail( string $type, string $to, string $subject, string $message, int $user_id = 0 ): bool {
@@ -379,7 +363,7 @@ final class OPENBB_Signup {
 		 *
 		 * @param array  $email   to, subject, message, headers.
 		 * @param string $type    code, account_exists, welcome_applicant or welcome_member.
-		 * @param int    $user_id The new member; 0 before the account exists.
+		 * @param int    $user_id The member signing up or being approved; 0 before the account exists.
 		 */
 		$email = apply_filters(
 			'openbb_signup_email',
@@ -404,10 +388,6 @@ final class OPENBB_Signup {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			error_log( sprintf( '[open-bulk-buying] Sign-up code for %s: %s', $email, $code ) );
 		}
-	}
-
-	private static function site_name(): string {
-		return wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
 	}
 
 	/**
