@@ -30,7 +30,7 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 					'callback'            => array( $this, 'get_items' ),
 					'permission_callback' => $can_manage,
 					'args'                => self::collection_args(
-						array( 'title', 'date', 'modified', 'price' ),
+						array( 'title', 'date', 'modified', 'price', 'menu_order' ),
 						'asc',
 						array(
 							'active'   => array(
@@ -164,7 +164,22 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 							'required'          => true,
 							'sanitize_callback' => 'sanitize_text_field',
 						),
+						'order' => array( 'type' => 'integer' ),
 					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/product-terms/categories/(?P<id>\d+)',
+			array(
+				'methods'             => WP_REST_Server::EDITABLE,
+				'callback'            => array( $this, 'update_category' ),
+				'permission_callback' => $can_manage,
+				'args'                => array_merge(
+					self::id_arg(),
+					array( 'order' => array( 'type' => 'integer', 'required' => true ) )
 				),
 			)
 		);
@@ -176,6 +191,7 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 			self::localized_args( 'description' ),
 			array(
 				'brand'            => array( 'type' => 'string' ),
+				'menu_order'       => array( 'type' => 'integer' ),
 				'unit_amount'      => array(
 					'type'             => 'number',
 					'exclusiveMinimum' => true,
@@ -224,6 +240,9 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 		if ( 'price' === $request['orderby'] ) {
 			$args['orderby']  = 'meta_value_num';
 			$args['meta_key'] = OPENBB_META_PREFIX . 'price';
+		}
+		if ( 'menu_order' === $request['orderby'] ) {
+			$args['orderby'] = array( 'menu_order' => $args['order'], 'title' => 'ASC', 'ID' => 'ASC' );
 		}
 
 		$active_key = OPENBB_META_PREFIX . 'active';
@@ -337,6 +356,7 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 		$category_ids     = $request->has_param( 'category_ids' ) ? array_values( array_unique( array_filter( array_map( 'intval', (array) $request['category_ids'] ) ) ) ) : $current->category_ids;
 		$supplier_id      = $request->has_param( 'supplier_id' ) ? (int) $request['supplier_id'] : $current->supplier_id;
 		$image_id         = $request->has_param( 'image_id' ) ? (int) $request['image_id'] : $current->image_id;
+		$menu_order       = $request->has_param( 'menu_order' ) ? (int) $request['menu_order'] : $current->menu_order;
 
 		foreach ( $category_ids as $term_id ) {
 			if ( ! term_exists( $term_id, OPENBB_PRODUCT_TAXONOMY ) ) {
@@ -365,6 +385,7 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 			'post_type'   => OPENBB_PRODUCT_POST_TYPE,
 			'post_status' => 'publish',
 			'post_title'  => $name['default'],
+			'menu_order'  => $menu_order,
 		);
 		if ( $existing ) {
 			$postarr['ID'] = $existing->id;
@@ -422,6 +443,7 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 			|| $saved->unit_amount !== $unit_amount
 			|| $saved->unit_type !== $unit_type
 			|| $saved->active !== $active
+			|| $saved->menu_order !== $menu_order
 		) {
 			return new WP_Error( 'openbb_product_save_incomplete', __( 'Some product changes could not be saved. Reload the product and check its details.', 'open-bulk-buying' ), array( 'status' => 500 ) );
 		}
@@ -484,15 +506,26 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 	}
 
 	public function get_terms( WP_REST_Request $request ) {
+		$taxonomy = self::TERM_TAXONOMIES[ $request['taxonomy'] ];
 		$terms = get_terms(
 			array(
-				'taxonomy'   => self::TERM_TAXONOMIES[ $request['taxonomy'] ],
+				'taxonomy'   => $taxonomy,
 				'hide_empty' => false,
 				'orderby'    => 'name',
 			)
 		);
 		if ( is_wp_error( $terms ) ) {
 			return $terms;
+		}
+
+		if ( OPENBB_PRODUCT_TAXONOMY === $taxonomy ) {
+			usort(
+				$terms,
+				static function ( $a, $b ) {
+					$order = (int) get_term_meta( $a->term_id, OPENBB_META_PREFIX . 'order', true ) <=> (int) get_term_meta( $b->term_id, OPENBB_META_PREFIX . 'order', true );
+					return $order ?: strnatcasecmp( $a->name, $b->name ) ?: $a->term_id <=> $b->term_id;
+				}
+			);
 		}
 
 		return rest_ensure_response( array_map( array( $this, 'prepare_term' ), $terms ) );
@@ -505,6 +538,9 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 			return self::invalid( __( 'Enter a name.', 'open-bulk-buying' ) );
 		}
 
+		if ( OPENBB_SUPPLIER_TAXONOMY === $taxonomy && $request->has_param( 'order' ) ) {
+			return self::invalid( __( 'Only categories have a display order.', 'open-bulk-buying' ) );
+		}
 		$existing = term_exists( $name, $taxonomy );
 		if ( $existing ) {
 			return rest_ensure_response( $this->prepare_term( get_term( (int) $existing['term_id'], $taxonomy ) ) );
@@ -515,6 +551,12 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 			$term->add_data( array( 'status' => 400 ) );
 			return $term;
 		}
+		if ( OPENBB_PRODUCT_TAXONOMY === $taxonomy && $request->has_param( 'order' ) ) {
+			$saved = $this->save_category_order( (int) $term['term_id'], (int) $request['order'] );
+			if ( is_wp_error( $saved ) ) {
+				return $saved;
+			}
+		}
 
 		$response = rest_ensure_response( $this->prepare_term( get_term( (int) $term['term_id'], $taxonomy ) ) );
 		$response->set_status( 201 );
@@ -522,12 +564,37 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 		return $response;
 	}
 
+	public function update_category( WP_REST_Request $request ) {
+		$term = get_term( (int) $request['id'], OPENBB_PRODUCT_TAXONOMY );
+		if ( ! $term || is_wp_error( $term ) ) {
+			return self::not_found( __( 'Category not found.', 'open-bulk-buying' ) );
+		}
+		$result = $this->save_category_order( $term->term_id, (int) $request['order'] );
+		return is_wp_error( $result ) ? $result : rest_ensure_response( $this->prepare_term( $term ) );
+	}
+
+	private function save_category_order( int $term_id, int $order ) {
+		$result = update_term_meta( $term_id, OPENBB_META_PREFIX . 'order', $order );
+		if ( is_wp_error( $result ) ) {
+			return self::with_status( $result, 500 );
+		}
+		if ( (int) get_term_meta( $term_id, OPENBB_META_PREFIX . 'order', true ) !== $order ) {
+			return new WP_Error( 'openbb_category_order_failed', __( 'The category order could not be saved.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+		}
+		return true;
+	}
+
 	private function prepare_term( WP_Term $term ): array {
-		return array(
-			'id'    => (int) $term->term_id,
-			'name'  => $term->name,
-			'count' => (int) $term->count,
+		$data = array(
+			'id'     => (int) $term->term_id,
+			'name'   => $term->name,
+			'count'  => (int) $term->count,
+			'parent' => (int) $term->parent,
 		);
+		if ( OPENBB_PRODUCT_TAXONOMY === $term->taxonomy ) {
+			$data['order'] = (int) get_term_meta( $term->term_id, OPENBB_META_PREFIX . 'order', true );
+		}
+		return $data;
 	}
 
 	/**
@@ -562,6 +629,7 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 			self::localized_out( 'description', $product->description ),
 			array(
 				'brand'            => $product->brand,
+				'menu_order'       => $product->menu_order,
 				'unit_amount'      => $product->unit_amount,
 				'unit_type'        => $product->unit_type,
 				'unit_label'       => $product->get_unit_label(),

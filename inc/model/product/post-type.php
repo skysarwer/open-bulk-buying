@@ -26,7 +26,7 @@ function openbb_register_product_post_type(): void {
 			'show_in_rest'    => false,
 			'rewrite'         => false,
 			'query_var'       => false,
-			'supports'        => array( 'title', 'thumbnail', 'custom-fields' ),
+			'supports'        => array( 'title', 'thumbnail', 'custom-fields', 'page-attributes' ),
 			'capability_type' => array( 'openbb_product', 'openbb_products' ),
 			'map_meta_cap'    => true,
 			'capabilities'    => openbb_product_capabilities(),
@@ -67,6 +67,23 @@ function openbb_register_product_post_type(): void {
 			'query_var'          => false,
 			'capabilities'       => openbb_product_term_capabilities(),
 			'openbb_single_term' => true,
+		)
+	);
+
+	register_term_meta(
+		OPENBB_PRODUCT_TAXONOMY,
+		OPENBB_META_PREFIX . 'order',
+		array(
+			'type'              => 'integer',
+			'single'            => true,
+			'default'           => 0,
+			'show_in_rest'      => false,
+			'sanitize_callback' => static function ( $value ) {
+				return (int) $value;
+			},
+			'auth_callback'     => static function () {
+				return current_user_can( 'openbb_manage_products' );
+			},
 		)
 	);
 

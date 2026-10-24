@@ -14,6 +14,7 @@ export const WRITABLE = [
 	'name',
 	'description',
 	'brand',
+	'menu_order',
 	'unit_amount',
 	'unit_type',
 	'price',
@@ -33,6 +34,7 @@ export const NEW_PRODUCT = {
 	name: '',
 	description: '',
 	brand: '',
+	menu_order: 0,
 	unit_amount: 1,
 	unit_type: 'unit',
 	price: 0,
@@ -192,6 +194,17 @@ export function buildProductFields( { categories, suppliers } ) {
 			type: 'text',
 			enableHiding: false,
 			isValid: { required: true },
+			filterBy: false,
+		},
+		{
+			id: 'menu_order',
+			label: __( 'Display order', 'open-bulk-buying' ),
+			type: 'integer',
+			isValid: { required: true },
+			description: __(
+				'Lower numbers appear first. Products with the same order sort by name.',
+				'open-bulk-buying'
+			),
 			filterBy: false,
 		},
 		{
@@ -375,6 +388,7 @@ export const productForm = {
 		},
 		'category_ids',
 		'supplier_id',
+		'menu_order',
 		'active',
 	],
 };

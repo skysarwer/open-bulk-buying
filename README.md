@@ -74,6 +74,18 @@ will display a notice explaining how to build them.
    When changing a submitted order or cancelling it, staff are asked to provide
    a reason.
 
+## Catalog display order
+
+In **Co-op > Products**, set a product's **Display order** in its details.
+This uses WordPress's native `menu_order` column, not product meta. The product
+table also supports sorting by Display order; its default name sorting is unchanged.
+Use **Categories and suppliers > Edit category order** to update an existing
+category, or set its order when adding it. Category order is stored in
+`openbb_order` term meta because WordPress has no native taxonomy display-order
+field. Lower integers sort first (including negative values); missing values
+default to zero. Ties sort by name, then ID. The categories API returns `parent`
+along with `order` so a future order form can preserve the category hierarchy.
+
 ## Order payment and fulfillment
 
 Orders start as **Draft**, then become **Submitted** when committed. Submitted

@@ -34,7 +34,7 @@ const pick = ( data, keys ) =>
 	);
 
 const LIST_MAPPING = {
-	orderby: { name: 'title', price: 'price' },
+	orderby: { name: 'title', price: 'price', menu_order: 'menu_order' },
 	filters: {
 		active: ( filter ) => ( { active: filter.value ? 'active' : 'inactive' } ),
 		category_ids: ( filter ) => ( { category: filter.value } ),
@@ -58,6 +58,7 @@ const DEFAULT_VIEW = {
 		'on_hand_units',
 		'reserved_units',
 		'category_ids',
+		'menu_order',
 		'active',
 	],
 	filters: [],
@@ -79,9 +80,11 @@ function useTerms() {
 	return [ terms, load ];
 }
 
-function AddTermModal( { onClose, onAdded } ) {
+function AddTermModal( { categories, onClose, onAdded } ) {
 	const [ taxonomy, setTaxonomy ] = useState( 'categories' );
 	const [ name, setName ] = useState( '' );
+	const [ categoryId, setCategoryId ] = useState( '' );
+	const [ order, setOrder ] = useState( '0' );
 	const [ isBusy, setIsBusy ] = useState( false );
 	const [ error, setError ] = useState( null );
 
@@ -89,10 +92,23 @@ function AddTermModal( { onClose, onAdded } ) {
 		event.preventDefault();
 		setIsBusy( true );
 		try {
-			await request( `/product-terms/${ taxonomy }`, {
-				method: 'POST',
-				data: { name },
-			} );
+			const editing = taxonomy === 'category-order';
+			await request(
+				editing
+					? `/product-terms/categories/${ categoryId }`
+					: `/product-terms/${ taxonomy }`,
+				{
+					method: editing ? 'PUT' : 'POST',
+					data: editing
+						? { order: Number( order ) }
+						: {
+								name,
+								...( taxonomy === 'categories'
+									? { order: Number( order ) }
+									: {} ),
+						  },
+				}
+			);
 			onAdded();
 		} catch ( err ) {
 			setError( err );
@@ -102,7 +118,7 @@ function AddTermModal( { onClose, onAdded } ) {
 
 	return (
 		<Modal
-			title={ __( 'Add a category or supplier', 'open-bulk-buying' ) }
+			title={ __( 'Categories and suppliers', 'open-bulk-buying' ) }
 			onRequestClose={ onClose }
 			size="small"
 		>
@@ -117,17 +133,67 @@ function AddTermModal( { onClose, onAdded } ) {
 						options={ [
 							{ value: 'categories', label: __( 'Category', 'open-bulk-buying' ) },
 							{ value: 'suppliers', label: __( 'Supplier', 'open-bulk-buying' ) },
+							{
+								value: 'category-order',
+								label: __( 'Edit category order', 'open-bulk-buying' ),
+							},
 						] }
-						onChange={ setTaxonomy }
+						onChange={ ( value ) => {
+							setTaxonomy( value );
+							setCategoryId( '' );
+							setOrder( '0' );
+						} }
 					/>
-					<TextControl
-						__next40pxDefaultSize
-						__nextHasNoMarginBottom
-						label={ __( 'Name', 'open-bulk-buying' ) }
-						value={ name }
-						onChange={ setName }
-						required
-					/>
+					{ taxonomy === 'category-order' ? (
+						<SelectControl
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+							label={ __( 'Category', 'open-bulk-buying' ) }
+							value={ categoryId }
+							options={ [
+								{
+									value: '',
+									label: __( 'Choose a category', 'open-bulk-buying' ),
+								},
+								...categories.map( ( term ) => ( {
+									value: String( term.id ),
+									label: term.name,
+								} ) ),
+							] }
+							onChange={ ( value ) => {
+								setCategoryId( value );
+								const category = categories.find(
+									( term ) => String( term.id ) === value
+								);
+								setOrder( String( category?.order ?? 0 ) );
+							} }
+						/>
+					) : (
+						<TextControl
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+							label={ __( 'Name', 'open-bulk-buying' ) }
+							value={ name }
+							onChange={ setName }
+							required
+						/>
+					) }
+					{ taxonomy !== 'suppliers' && (
+						<TextControl
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+							label={ __( 'Display order', 'open-bulk-buying' ) }
+							help={ __(
+								'Lower numbers appear first. Categories with the same order sort by name.',
+								'open-bulk-buying'
+							) }
+							type="number"
+							step="1"
+							value={ order }
+							onChange={ setOrder }
+							required
+						/>
+					) }
 					<HStack justify="flex-end">
 						<Button variant="tertiary" onClick={ onClose }>
 							{ __( 'Cancel', 'open-bulk-buying' ) }
@@ -136,9 +202,14 @@ function AddTermModal( { onClose, onAdded } ) {
 							variant="primary"
 							type="submit"
 							isBusy={ isBusy }
-							disabled={ isBusy || ! name.trim() }
+							disabled={
+								isBusy ||
+								( taxonomy === 'category-order' ? ! categoryId : ! name.trim() )
+							}
 						>
-							{ __( 'Add', 'open-bulk-buying' ) }
+							{ taxonomy === 'category-order'
+								? __( 'Save', 'open-bulk-buying' )
+								: __( 'Add', 'open-bulk-buying' ) }
 						</Button>
 					</HStack>
 				</VStack>
@@ -364,7 +435,7 @@ export default function ProductsScreen() {
 			actions={
 				<>
 					<Button variant="secondary" onClick={ () => setIsAddingTerm( true ) }>
-						{ __( 'Add category or supplier', 'open-bulk-buying' ) }
+						{ __( 'Categories and suppliers', 'open-bulk-buying' ) }
 					</Button>
 					<Button
 						variant="primary"
@@ -427,11 +498,12 @@ export default function ProductsScreen() {
 			) }
 			{ isAddingTerm && (
 				<AddTermModal
+					categories={ terms.categories }
 					onClose={ () => setIsAddingTerm( false ) }
 					onAdded={ () => {
 						setIsAddingTerm( false );
 						reloadTerms();
-						notify.success( __( 'Added.', 'open-bulk-buying' ) );
+						notify.success( __( 'Saved.', 'open-bulk-buying' ) );
 					} }
 				/>
 			) }

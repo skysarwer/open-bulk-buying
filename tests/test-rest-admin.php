@@ -55,6 +55,53 @@ class Test_OPENBB_REST_Admin extends OPENBB_TestCase {
 		return $product_id;
 	}
 
+	public function test_product_display_order_uses_native_field_and_sorts_with_name_ties(): void {
+		$ids = array();
+		foreach ( array( array( 'Zucchini', 20 ), array( 'Beans', -5 ), array( 'Apples', 20 ) ) as $row ) {
+			$response = $this->api( 'POST', '/products', array( 'name' => $row[0], 'menu_order' => $row[1] ) );
+			$this->assertSame( 201, $response->get_status() );
+			$item = $response->get_data();
+			$ids[] = $item['id'];
+			$this->assertSame( $row[1], $item['menu_order'] );
+			$this->assertSame( $row[1], (int) get_post( $item['id'] )->menu_order );
+			$this->assertSame( $row[1], OPENBB_Product::get( $item['id'] )->menu_order );
+			$this->assertFalse( metadata_exists( 'post', $item['id'], OPENBB_META_PREFIX . 'menu_order' ) );
+		}
+		$items = $this->api( 'GET', '/products', array( 'orderby' => 'menu_order' ) )->get_data();
+		$this->assertSame( array( $ids[1], $ids[2], $ids[0] ), wp_list_pluck( $items, 'id' ) );
+		$items = $this->api( 'GET', '/products', array( 'orderby' => 'menu_order', 'order' => 'desc' ) )->get_data();
+		$this->assertSame( array( $ids[2], $ids[0], $ids[1] ), wp_list_pluck( $items, 'id' ) );
+		$updated = $this->api( 'PUT', "/products/{$ids[0]}", array( 'menu_order' => 7 ) );
+		$this->assertSame( 7, $updated->get_data()['menu_order'] );
+		$this->assertSame( 7, $this->api( 'PUT', "/products/{$ids[0]}", array( 'brand' => 'New brand' ) )->get_data()['menu_order'] );
+		$this->assertSame( 400, $this->api( 'PUT', "/products/{$ids[0]}", array( 'menu_order' => 1.5 ) )->get_status() );
+	}
+
+	public function test_category_order_defaults_sorts_updates_and_checks_access(): void {
+		$ids = array();
+		foreach ( array( array( 'Zucchini', 20 ), array( 'Beans', -5 ), array( 'Apples', 20 ) ) as $row ) {
+			$response = $this->api( 'POST', '/product-terms/categories', array( 'name' => $row[0], 'order' => $row[1] ) );
+			$this->assertSame( 201, $response->get_status() );
+			$ids[] = $response->get_data()['id'];
+			$this->assertSame( $row[1], $response->get_data()['order'] );
+		}
+		$legacy = wp_insert_term( 'Legacy category', OPENBB_PRODUCT_TAXONOMY );
+		$items  = $this->api( 'GET', '/product-terms/categories' )->get_data();
+		$this->assertSame( array( $ids[1], $legacy['term_id'], $ids[2], $ids[0] ), wp_list_pluck( $items, 'id' ) );
+		$this->assertSame( 0, $items[1]['order'] );
+		$response = $this->api( 'PUT', "/product-terms/categories/{$ids[0]}", array( 'order' => -10 ) );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( -10, $response->get_data()['order'] );
+		$this->assertSame( -10, (int) get_term_meta( $ids[0], OPENBB_META_PREFIX . 'order', true ) );
+		$this->assertSame( 400, $this->api( 'PUT', "/product-terms/categories/{$ids[0]}", array( 'order' => 0.5 ) )->get_status() );
+		$this->assertSame( 400, $this->api( 'PUT', "/product-terms/categories/{$ids[0]}" )->get_status() );
+		$supplier = $this->api( 'POST', '/product-terms/suppliers', array( 'name' => 'Supplier' ) )->get_data();
+		$this->assertArrayNotHasKey( 'order', $supplier );
+		$this->assertSame( 404, $this->api( 'PUT', "/product-terms/categories/{$supplier['id']}", array( 'order' => 1 ) )->get_status() );
+		wp_set_current_user( $this->make_user( 'member' ) );
+		$this->assertSame( 403, $this->api( 'PUT', "/product-terms/categories/{$ids[0]}", array( 'order' => 1 ) )->get_status() );
+	}
+
 	private function make_open_cycle(): int {
 		$cycle = new OPENBB_Cycle(
 			array(

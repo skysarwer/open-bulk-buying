@@ -23,6 +23,7 @@ class OPENBB_Product extends OPENBB_Entity {
 	public $category_ids     = array();
 	public $supplier_id      = 0;
 	public $image_id         = 0;
+	public $menu_order       = 0;
 
 	public static function get( int $id ): ?self {
 		$post = get_post( $id );
@@ -30,7 +31,7 @@ class OPENBB_Product extends OPENBB_Entity {
 			return null;
 		}
 
-		$data = array( 'id' => $post->ID );
+		$data = array( 'id' => $post->ID, 'menu_order' => $post->menu_order );
 		foreach ( array_keys( openbb_product_meta_fields() ) as $field ) {
 			$data[ $field ] = get_post_meta( $post->ID, OPENBB_META_PREFIX . $field, true );
 		}
@@ -62,6 +63,7 @@ class OPENBB_Product extends OPENBB_Entity {
 		$this->category_ids     = array_map( 'intval', (array) $this->category_ids );
 		$this->supplier_id      = (int) $this->supplier_id;
 		$this->image_id         = (int) $this->image_id;
+		$this->menu_order       = (int) $this->menu_order;
 	}
 
 	public function get_name( ?string $language = null ): string {
