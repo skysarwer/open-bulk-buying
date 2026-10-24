@@ -16,6 +16,8 @@ final class OPENBB_Settings {
 			array(
 				'allow_signups'                 => false,
 				'allow_login_links'             => false,
+				'captcha_provider'              => 'none',
+				'turnstile_site_key'            => '',
 				'require_member_approval'       => true,
 				'membership_fee_type'           => 'one_time',
 				'membership_fee_amount'         => 0,

@@ -114,6 +114,10 @@ Turn on **Allow login links** to let people log in with a single-use link sent
 by email instead of their password (see [Member login](#member-login)). Login
 links are off by default.
 
+Under **Bot protection**, choose **Cloudflare Turnstile** to make the public
+signup and login forms check that visitors are human (see
+[Bot protection](#bot-protection)). Bot protection is off by default.
+
 Configure whether new signups need staff approval (Applicants) or are
 automatically approved as Members. Approval is required by default. This
 setting does not change existing members or accounts created by staff.
@@ -197,6 +201,55 @@ like the signup routes.
 
 Themes and other plugins can show the same view with
 `openbb_render_login( array( 'title' => ..., 'intro' => ..., 'login_redirect' => ... ) )`.
+
+## Bot protection
+
+The signup and login forms can use [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/),
+a free check that is usually invisible to people. The site doesn't need to use
+Cloudflare otherwise.
+
+1. In the Cloudflare dashboard, open **Turnstile** and add a widget for the
+   site's domain. Cloudflare gives a site key and a secret key.
+2. In **Co-op > Settings > General > Bot protection**, choose **Cloudflare
+   Turnstile** and enter both keys. Both keys are required.
+
+The secret key is never sent back to the browser; leave the field empty to
+keep the saved one. To keep it out of the database, define it in
+`wp-config.php` instead, which overrides the saved one:
+
+```php
+define( 'OPENBB_TURNSTILE_SECRET', 'your-secret-key' );
+```
+
+When it's on, the check is required to:
+
+- start a signup (visitors only; logged-in people joining aren't asked),
+- log in with a password,
+- send or resend a login link.
+
+Entering the emailed signup code and opening a login link aren't checked;
+they rely on the emailed code or link and the rate limits. If Cloudflare
+can't be reached, or rejects the secret key, the forms show an error and the
+problem is written to the PHP error log. For local testing, Cloudflare's
+test keys (site key `1x00000000000000000000AA`, secret key
+`1x0000000000000000000000000000000AA`) always pass.
+
+Other providers (for example reCAPTCHA or hCaptcha) can plug in with two
+filters, leaving the built-in provider set to **None**:
+
+- `openbb_captcha_field( $html, $action )` returns the widget markup for the
+  `signup` or `login` form. The plugin wraps it, and the browser sends every
+  named form control inside it to the REST route as the `captcha` object.
+  After each attempt, the browser dispatches an `openbb:captcha-reset` event on
+  the wrapper (`[data-openbb-captcha]`), so the widget can reset itself.
+- `openbb_captcha_verify( $result, $fields, $action, $request )` returns
+  `true` to accept, a `WP_Error` to refuse, or `null` to use the built-in
+  check. `$fields` holds the widget's form controls, name => value.
+
+Password logins go through `wp_signon()`, so a separate captcha plugin that
+hooks WordPress authentication (`authenticate`) for wp-login.php may also
+block these logins, because their form doesn't include its widget. Use this
+plugin's bot protection instead, or exclude REST requests in that plugin.
 
 ## Co-op rules
 

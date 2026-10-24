@@ -472,6 +472,11 @@ $openbb-wide-sidebar-width: 640px;
 		font-size: 14px;
 	}
 
+	&__note {
+		margin: 0;
+		color: $openbb-gray;
+	}
+
 	&__section.is-danger {
 		border-color: $openbb-danger;
 

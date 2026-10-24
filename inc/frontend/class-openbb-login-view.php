@@ -165,6 +165,9 @@ final class OPENBB_Login_View {
 				'heading_tag'  => '' !== $args['title'] ? 'h3' : 'h2',
 				'can_switch'   => $can_switch,
 				'links'        => OPENBB_Login_Link::enabled(),
+				'captcha'      => OPENBB_Captcha::field( OPENBB_Captcha::ACTION_LOGIN ),
+				// Resending a link is a new request, so the sent step has its own widget.
+				'captcha_sent' => OPENBB_Login_Link::enabled() ? OPENBB_Captcha::field( OPENBB_Captcha::ACTION_LOGIN ) : '',
 				'link_email'   => $link_user ? $link_user->user_email : '',
 				'link_minutes' => (int) ( OPENBB_Login_Link::TTL / MINUTE_IN_SECONDS ),
 				'lost_url'     => wp_lostpassword_url( (string) $args['login_redirect'] ),

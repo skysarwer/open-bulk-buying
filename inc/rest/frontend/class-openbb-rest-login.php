@@ -8,7 +8,8 @@
  *                          the same whether or not the account exists.
  * POST /login/link/verify  Use a link's token and log in.
  *
- * Visitors call these, so every route is rate-limited per IP.
+ * Visitors call these, so every route is rate-limited per IP. Logging in and asking for a
+ * link also pass bot protection (OPENBB_Captcha) when it's on.
  *
  * @package Open_Bulk_Buying
  */
@@ -21,6 +22,11 @@ class OPENBB_REST_Login extends OPENBB_REST_Controller {
 		$redirect = array(
 			'type'    => 'string',
 			'default' => '',
+		);
+		// Bot protection widget response (OPENBB_Captcha).
+		$captcha = array(
+			'type'    => 'object',
+			'default' => array(),
 		);
 
 		register_rest_route(
@@ -44,6 +50,7 @@ class OPENBB_REST_Login extends OPENBB_REST_Controller {
 						'default' => false,
 					),
 					'redirect_to' => $redirect,
+					'captcha'     => $captcha,
 				),
 			)
 		);
@@ -62,6 +69,7 @@ class OPENBB_REST_Login extends OPENBB_REST_Controller {
 					),
 					'redirect_to' => $redirect,
 					'page'        => $redirect,
+					'captcha'     => $captcha,
 				),
 			)
 		);
@@ -116,6 +124,11 @@ class OPENBB_REST_Login extends OPENBB_REST_Controller {
 			);
 		}
 
+		$human = OPENBB_Captcha::verify( $request, OPENBB_Captcha::ACTION_LOGIN );
+		if ( is_wp_error( $human ) ) {
+			return $human;
+		}
+
 		$user = wp_signon(
 			array(
 				'user_login'    => $login,
@@ -157,6 +170,11 @@ class OPENBB_REST_Login extends OPENBB_REST_Controller {
 					'errors' => array( 'login' => __( 'This field is required.', 'open-bulk-buying' ) ),
 				)
 			);
+		}
+
+		$human = OPENBB_Captcha::verify( $request, OPENBB_Captcha::ACTION_LOGIN );
+		if ( is_wp_error( $human ) ) {
+			return $human;
 		}
 
 		$user = is_email( $login ) ? get_user_by( 'email', $login ) : get_user_by( 'login', $login );

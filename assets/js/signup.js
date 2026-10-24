@@ -14,6 +14,7 @@ import {
 	setErrors,
 	validate,
 } from '@open-bulk-buying/forms';
+import { captchaFields, resetCaptcha } from '@open-bulk-buying/captcha';
 
 const { store, getContext, getElement } = interactivity;
 // Added in WordPress 6.8; on older versions handlers already run synchronously.
@@ -89,6 +90,7 @@ function signupBody( values, ctx, form ) {
 		profile,
 		rules_version: values[ state.rulesField ] ? ctx.rulesVersion : 0,
 		[ state.honeypot ]: form.elements[ state.honeypot ]?.value || '',
+		captcha: captchaFields( form ),
 	};
 }
 
@@ -167,6 +169,7 @@ const { state } = store( 'openbb/signup', {
 				}
 			} finally {
 				ctx.busy = false;
+				resetCaptcha( form );
 			}
 		} ),
 

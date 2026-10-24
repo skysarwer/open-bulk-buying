@@ -28,6 +28,8 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 			array(
 				'allow_signups'                 => false,
 				'allow_login_links'             => false,
+				'captcha_provider'              => 'none',
+				'turnstile_site_key'            => '',
 				'require_member_approval'       => true,
 				'membership_fee_type'           => 'one_time',
 				'membership_fee_amount'         => 0,
@@ -44,6 +46,8 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 			$general = array(
 				'allow_signups'                 => true,
 				'allow_login_links'             => true,
+				'captcha_provider'              => 'none',
+				'turnstile_site_key'            => '0x4AAAAAAA_test-key',
 				'require_member_approval'       => false,
 				'membership_fee_type'           => $type,
 				'membership_fee_amount'         => 1250,
@@ -74,6 +78,9 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 			array( 'require_member_approval' => 'maybe' ),
 			array( 'allow_signups' => 'yes' ),
 			array( 'allow_login_links' => 'yes' ),
+			array( 'captcha_provider' => 'recaptcha' ),
+			array( 'turnstile_site_key' => 'has spaces' ),
+			array( 'captcha_provider' => 'turnstile' ),
 			array( 'unexpected' => true ),
 		);
 		foreach ( $invalid as $changes ) {

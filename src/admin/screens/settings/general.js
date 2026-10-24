@@ -5,7 +5,7 @@ import {
 	ToggleControl,
 	__experimentalVStack as VStack,
 } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import { ErrorNotice, Loading } from '../../components';
@@ -16,7 +16,7 @@ import { minorFactor, toMajor, toMinor } from '../../utils/format';
 import Section from './section';
 import SettingsPage from './settings-page';
 
-function GeneralForm( { settings, onSaved } ) {
+function GeneralForm( { settings, captcha, onSaved } ) {
 	const [ draft, setDraft ] = useState( {
 		...settings,
 		membership_fee_amount: String(
@@ -28,6 +28,8 @@ function GeneralForm( { settings, onSaved } ) {
 	} );
 	const [ isBusy, setIsBusy ] = useState( false );
 	const [ error, setError ] = useState( null );
+	// Write-only: the saved secret is never sent to the browser.
+	const [ secret, setSecret ] = useState( '' );
 	const notify = useNotify();
 	const general = {
 		...draft,
@@ -40,6 +42,9 @@ function GeneralForm( { settings, onSaved } ) {
 	const isDirty =
 		draft.allow_signups !== settings.allow_signups ||
 		draft.allow_login_links !== settings.allow_login_links ||
+		draft.captcha_provider !== settings.captcha_provider ||
+		draft.turnstile_site_key !== settings.turnstile_site_key ||
+		secret !== '' ||
 		draft.require_member_approval !== settings.require_member_approval ||
 		draft.membership_fee_type !== settings.membership_fee_type ||
 		draft.membership_fee_amount !==
@@ -59,7 +64,9 @@ function GeneralForm( { settings, onSaved } ) {
 			onSaved(
 				await request( '/settings', {
 					method: 'POST',
-					data: { general },
+					data: secret
+						? { general, captcha_secret: secret }
+						: { general },
 				} )
 			);
 			notify.success(
@@ -118,6 +125,99 @@ function GeneralForm( { settings, onSaved } ) {
 						onChange={ change( 'allow_login_links' ) }
 						disabled={ isBusy }
 					/>
+				</Section>
+				<Section title={ __( 'Bot protection', 'open-bulk-buying' ) }>
+					<SelectControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						label={ __( 'Provider', 'open-bulk-buying' ) }
+						help={
+							draft.captcha_provider === 'turnstile'
+								? __(
+										'Signup and login forms ask Cloudflare Turnstile to check that visitors are human before sending email or checking a password.',
+										'open-bulk-buying'
+								  )
+								: __(
+										'Signup and login forms rely on rate limits and a hidden honeypot field only.',
+										'open-bulk-buying'
+								  )
+						}
+						value={ draft.captcha_provider }
+						options={ [
+							{
+								label: __( 'None', 'open-bulk-buying' ),
+								value: 'none',
+							},
+							{
+								label: __(
+									'Cloudflare Turnstile',
+									'open-bulk-buying'
+								),
+								value: 'turnstile',
+							},
+						] }
+						onChange={ change( 'captcha_provider' ) }
+						disabled={ isBusy }
+					/>
+					{ draft.captcha_provider === 'turnstile' && (
+						<>
+							<p className="openbb-settings__note">
+								{ createInterpolateElement(
+									__(
+										'Add this site in the <a>Cloudflare dashboard</a> under Turnstile to get a site key and secret key. Your site doesn’t need to use Cloudflare otherwise.',
+										'open-bulk-buying'
+									),
+									{
+										a: (
+											// eslint-disable-next-line jsx-a11y/anchor-has-content
+											<a
+												href="https://dash.cloudflare.com/?to=/:account/turnstile"
+												target="_blank"
+												rel="noreferrer"
+											/>
+										),
+									}
+								) }
+							</p>
+							<TextControl
+								__next40pxDefaultSize
+								__nextHasNoMarginBottom
+								label={ __( 'Site key', 'open-bulk-buying' ) }
+								required
+								value={ draft.turnstile_site_key }
+								onChange={ change( 'turnstile_site_key' ) }
+								disabled={ isBusy }
+								autoComplete="off"
+								spellCheck={ false }
+							/>
+							<TextControl
+								__next40pxDefaultSize
+								__nextHasNoMarginBottom
+								label={ __( 'Secret key', 'open-bulk-buying' ) }
+								help={
+									captcha.secret_from_constant
+										? __(
+												'Set in wp-config.php with OPENBB_TURNSTILE_SECRET.',
+												'open-bulk-buying'
+										  )
+										: captcha.secret_set &&
+										  __(
+												'A secret key is saved. Leave this empty to keep it.',
+												'open-bulk-buying'
+										  )
+								}
+								type="password"
+								required={ ! captcha.secret_set }
+								value={ secret }
+								onChange={ setSecret }
+								disabled={
+									isBusy || captcha.secret_from_constant
+								}
+								autoComplete="new-password"
+								spellCheck={ false }
+							/>
+						</>
+					) }
 				</Section>
 				<Section title={ __( 'Member approval', 'open-bulk-buying' ) }>
 					<ToggleControl
@@ -236,6 +336,7 @@ export default function GeneralTab( { nav } ) {
 				<GeneralForm
 					key={ saveCount }
 					settings={ settings.general }
+					captcha={ settings.captcha }
 					onSaved={ ( saved ) => {
 						setRecord( saved );
 						setSaveCount( ( count ) => count + 1 );

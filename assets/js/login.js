@@ -15,6 +15,7 @@ import {
 	setErrors,
 	validate,
 } from '@open-bulk-buying/forms';
+import { captchaFields, resetCaptcha } from '@open-bulk-buying/captcha';
 
 const { store, getContext, getElement } = interactivity;
 // Added in WordPress 6.8; on older versions handlers already run synchronously.
@@ -61,10 +62,11 @@ async function post( path, body ) {
 	return { ok: response.ok, data };
 }
 
-const linkBody = ( ctx, login ) => ( {
+const linkBody = ( ctx, login, root ) => ( {
 	login,
 	redirect_to: ctx.redirect,
 	page: ctx.page,
+	captcha: captchaFields( root ),
 } );
 
 const { state } = store( 'openbb/login', {
@@ -99,7 +101,7 @@ const { state } = store( 'openbb/login', {
 				if ( ctx.link ) {
 					const { ok, data } = yield post(
 						'/link',
-						linkBody( ctx, login )
+						linkBody( ctx, login, form )
 					);
 					if ( ok ) {
 						ctx.login = login;
@@ -119,6 +121,7 @@ const { state } = store( 'openbb/login', {
 					password: formCtx.values.password,
 					remember: !! formCtx.values.remember,
 					redirect_to: ctx.redirect,
+					captcha: captchaFields( form ),
 				} );
 				if ( ok ) {
 					// Stay busy while the next page loads.
@@ -144,6 +147,7 @@ const { state } = store( 'openbb/login', {
 			} finally {
 				if ( ! leaving ) {
 					ctx.busy = false;
+					resetCaptcha( form );
 				}
 			}
 		} ),
@@ -172,10 +176,11 @@ const { state } = store( 'openbb/login', {
 			ctx.busy = true;
 			ctx.notice = '';
 			ctx.status = '';
+			const step = getElement().ref.closest( '[data-step]' );
 			try {
 				const { ok, data } = yield post(
 					'/link',
-					linkBody( ctx, ctx.login )
+					linkBody( ctx, ctx.login, step )
 				);
 				if ( ok ) {
 					startCountdown( ctx, data.resend_after );
@@ -185,6 +190,7 @@ const { state } = store( 'openbb/login', {
 				ctx.notice = data?.message || state.messages.network;
 			} finally {
 				ctx.busy = false;
+				resetCaptcha( step );
 			}
 		},
 

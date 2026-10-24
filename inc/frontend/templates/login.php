@@ -77,6 +77,8 @@ $openbb_section = static function ( string $step ) use ( $openbb_id ): string {
 				<?php echo openbb_render_field( $view['fields']['remember'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</div>
 
+			<?php echo $view['captcha']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped by OPENBB_Captcha::field(). ?>
+
 			<div class="openbb-actions">
 				<button type="submit" class="openbb-button openbb-button--primary" data-wp-bind--disabled="context.busy">
 					<span data-wp-bind--hidden="context.link"><?php esc_html_e( 'Log in', 'open-bulk-buying' ); ?></span>
@@ -120,6 +122,7 @@ $openbb_section = static function ( string $step ) use ( $openbb_id ): string {
 			);
 			?>
 		</p>
+		<?php echo $view['captcha_sent']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped by OPENBB_Captcha::field(). ?>
 		<div class="openbb-actions">
 			<button type="button" class="openbb-button openbb-button--secondary" data-wp-on--click="actions.resend" data-wp-bind--disabled="!context.canResend">
 				<?php esc_html_e( 'Send a new link', 'open-bulk-buying' ); ?>

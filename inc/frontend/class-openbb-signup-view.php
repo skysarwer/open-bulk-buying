@@ -183,6 +183,8 @@ final class OPENBB_Signup_View {
 			'code_length'    => OPENBB_Email_Code::LENGTH,
 			'code_minutes'   => (int) ( OPENBB_Email_Code::TTL / MINUTE_IN_SECONDS ),
 			'honeypot'       => OPENBB_REST_Signup::HONEYPOT,
+			// Logged-in people joining don't get an email code, so they skip bot protection.
+			'captcha'        => $user_id ? '' : OPENBB_Captcha::field( OPENBB_Captcha::ACTION_SIGNUP ),
 			'context'        => $context,
 			'form_context'   => array(
 				'values' => $values,

@@ -12,6 +12,7 @@
  * - @open-bulk-buying/signup  Store `openbb/signup`: the signup flow.
  * - @open-bulk-buying/login   Store `openbb/login`: password and email-link login.
  * - @open-bulk-buying/auth    Store `openbb/auth`: switches between the login and signup panels.
+ * - @open-bulk-buying/captcha Bot protection widgets: renders Turnstile, collects and resets responses.
  *
  * @package Open_Bulk_Buying
  */
@@ -22,10 +23,11 @@ final class OPENBB_Frontend {
 
 	const STYLE = 'openbb-frontend';
 
-	const MODULE_FORMS  = '@open-bulk-buying/forms';
-	const MODULE_SIGNUP = '@open-bulk-buying/signup';
-	const MODULE_LOGIN  = '@open-bulk-buying/login';
-	const MODULE_AUTH   = '@open-bulk-buying/auth';
+	const MODULE_FORMS   = '@open-bulk-buying/forms';
+	const MODULE_SIGNUP  = '@open-bulk-buying/signup';
+	const MODULE_LOGIN   = '@open-bulk-buying/login';
+	const MODULE_AUTH    = '@open-bulk-buying/auth';
+	const MODULE_CAPTCHA = '@open-bulk-buying/captcha';
 
 	/** Shortcode tag => view class with a static render( array $args ): string. */
 	const SHORTCODES = array(
@@ -41,10 +43,11 @@ final class OPENBB_Frontend {
 
 	public static function register_assets(): void {
 		$modules = array(
-			self::MODULE_FORMS  => array( 'forms.js', array( '@wordpress/interactivity' ) ),
-			self::MODULE_SIGNUP => array( 'signup.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
-			self::MODULE_LOGIN  => array( 'login.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
-			self::MODULE_AUTH   => array( 'auth.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
+			self::MODULE_FORMS   => array( 'forms.js', array( '@wordpress/interactivity' ) ),
+			self::MODULE_CAPTCHA => array( 'captcha.js', array( '@wordpress/interactivity' ) ),
+			self::MODULE_SIGNUP  => array( 'signup.js', array( '@wordpress/interactivity', self::MODULE_FORMS, self::MODULE_CAPTCHA ) ),
+			self::MODULE_LOGIN   => array( 'login.js', array( '@wordpress/interactivity', self::MODULE_FORMS, self::MODULE_CAPTCHA ) ),
+			self::MODULE_AUTH    => array( 'auth.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
 		);
 		foreach ( $modules as $id => list( $file, $deps ) ) {
 			wp_register_script_module( $id, OPENBB_PLUGIN_URL . 'assets/js/' . $file, $deps, self::version( 'assets/js/' . $file ) );

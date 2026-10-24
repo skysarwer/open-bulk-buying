@@ -32,14 +32,29 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 					'callback'            => array( $this, 'update_settings' ),
 					'permission_callback' => $can_manage,
 					'args'                => array(
-						'test_mode' => array( 'type' => 'boolean' ),
-						'general'   => array(
+						'test_mode'      => array( 'type' => 'boolean' ),
+						// Write-only: '' keeps the saved secret.
+						'captcha_secret' => array(
+							'type'      => 'string',
+							'maxLength' => 200,
+							'pattern'   => '^[A-Za-z0-9_.\-]*$',
+						),
+						'general'        => array(
 							'type'                 => 'object',
 							'additionalProperties' => false,
-							'required'             => array( 'allow_signups', 'allow_login_links', 'require_member_approval', 'membership_fee_type', 'membership_fee_amount', 'membership_fee_order_interval' ),
+							'required'             => array( 'allow_signups', 'allow_login_links', 'captcha_provider', 'turnstile_site_key', 'require_member_approval', 'membership_fee_type', 'membership_fee_amount', 'membership_fee_order_interval' ),
 							'properties'           => array(
 								'allow_signups'                 => array( 'type' => 'boolean' ),
 								'allow_login_links'             => array( 'type' => 'boolean' ),
+								'captcha_provider'              => array(
+									'type' => 'string',
+									'enum' => OPENBB_Captcha::PROVIDERS,
+								),
+								'turnstile_site_key'            => array(
+									'type'      => 'string',
+									'maxLength' => 200,
+									'pattern'   => '^[A-Za-z0-9_.\-]*$',
+								),
 								'require_member_approval'       => array( 'type' => 'boolean' ),
 								'membership_fee_type'           => array(
 									'type' => 'string',
@@ -342,8 +357,38 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function update_settings( WP_REST_Request $request ) {
+		$secret = trim( (string) $request->get_param( 'captcha_secret' ) );
+
 		if ( $request->has_param( 'general' ) ) {
 			$general = array_merge( OPENBB_Settings::get_general(), $request->get_param( 'general' ) );
+			$general['turnstile_site_key'] = trim( (string) $general['turnstile_site_key'] );
+			if ( OPENBB_Captcha::PROVIDER_TURNSTILE === $general['captcha_provider'] ) {
+				$errors = array();
+				if ( '' === $general['turnstile_site_key'] ) {
+					$errors['turnstile_site_key'] = __( 'Enter the Turnstile site key.', 'open-bulk-buying' );
+				}
+				if ( '' === $secret && '' === OPENBB_Captcha::secret() ) {
+					$errors['captcha_secret'] = __( 'Enter the Turnstile secret key.', 'open-bulk-buying' );
+				}
+				if ( $errors ) {
+					return new WP_Error(
+						'openbb_captcha_incomplete',
+						implode( ' ', $errors ),
+						array(
+							'status' => 400,
+							'errors' => $errors,
+						)
+					);
+				}
+			}
+		}
+
+		if ( '' !== $secret && ! OPENBB_Captcha::secret_from_constant() && OPENBB_Captcha::secret() !== $secret
+			&& ! update_option( OPENBB_Captcha::SECRET_OPTION, $secret, false ) ) {
+			return new WP_Error( 'openbb_settings_save_failed', __( 'The settings could not be saved.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+		}
+
+		if ( isset( $general ) ) {
 			if ( OPENBB_Settings::get_general() !== $general
 				&& ! update_option( OPENBB_Settings::GENERAL_OPTION, $general, false ) ) {
 				return new WP_Error( 'openbb_settings_save_failed', __( 'The settings could not be saved.', 'open-bulk-buying' ), array( 'status' => 500 ) );
@@ -502,6 +547,11 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 		return array(
 			'test_mode' => OPENBB_Maintenance::is_test_mode(),
 			'general'   => OPENBB_Settings::get_general(),
+			// The secret itself is never sent back.
+			'captcha'   => array(
+				'secret_set'           => '' !== OPENBB_Captcha::secret(),
+				'secret_from_constant' => OPENBB_Captcha::secret_from_constant(),
+			),
 		);
 	}
 

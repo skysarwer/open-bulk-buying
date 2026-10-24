@@ -229,3 +229,9 @@ textarea.openbb-input {
 		outline-offset: 2px;
 	}
 }
+
+// Bot protection widget (OPENBB_Captcha::field()), above a form's buttons.
+.openbb-captcha {
+	margin-top: var(--openbb-gap);
+	min-height: 65px;
+}

@@ -33,6 +33,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/i18n/localized-text.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/i18n/currency.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/class-openbb-settings.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/class-openbb-rate-limit.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/class-openbb-captcha.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/class-openbb-entity.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/user-meta.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-member.php';

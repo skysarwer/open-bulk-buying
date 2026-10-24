@@ -38,6 +38,9 @@ $openbb_section = static function ( string $step ) use ( $openbb_id ): string {
 
 $openbb_actions = static function ( string $step ) use ( $view, $openbb_last ): string {
 	$html = '<div class="openbb-actions">';
+	if ( $step === $openbb_last ) {
+		$html = $view['captcha'] . $html;
+	}
 	if ( $step === $openbb_last && '' !== $view['fee'] ) {
 		$html = '<p class="openbb-notice openbb-notice--info openbb-signup__fee">' . esc_html( $view['fee'] ) . '</p>' . $html;
 	}

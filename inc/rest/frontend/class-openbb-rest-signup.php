@@ -50,6 +50,10 @@ class OPENBB_REST_Signup extends OPENBB_REST_Controller {
 						'type'    => 'string',
 						'default' => '',
 					),
+					'captcha'       => array(
+						'type'    => 'object',
+						'default' => array(),
+					),
 				),
 			)
 		);
@@ -120,6 +124,11 @@ class OPENBB_REST_Signup extends OPENBB_REST_Controller {
 			return $signup;
 		}
 		$email = $signup['account']['email'];
+
+		$human = OPENBB_Captcha::verify( $request, OPENBB_Captcha::ACTION_SIGNUP );
+		if ( is_wp_error( $human ) ) {
+			return $human;
+		}
 
 		// Bots that fill every field get the normal response, and nothing is sent.
 		if ( '' !== trim( (string) $request[ self::HONEYPOT ] ) ) {
