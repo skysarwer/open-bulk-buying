@@ -45,6 +45,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-login-code.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/product/units.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/product/post-type.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/product/class-openbb-product.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/model/product/class-openbb-catalog.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/cycle/class-openbb-cycle.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/cycle/class-openbb-cycles.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order.php';
@@ -55,6 +56,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/model/inventory/class-openbb-inventory.php
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-policy.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-editor.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-lifecycle.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-member-orders.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/rules/class-openbb-rules-version.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/rules/class-openbb-rules.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/access/class-openbb-roles.php';
@@ -75,10 +77,12 @@ require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-orders.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-settings.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/frontend/class-openbb-rest-signup.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/frontend/class-openbb-rest-login.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/rest/frontend/class-openbb-rest-order.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-frontend.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/frontend/fields.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-signup-view.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-login-view.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-order-form-view.php';
 
 register_activation_hook( __FILE__, array( 'OPENBB_Installer', 'install' ) );
 add_action( 'plugins_loaded', array( 'OPENBB_Installer', 'maybe_upgrade' ) );

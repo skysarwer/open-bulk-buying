@@ -1,0 +1,9 @@
+// Order form: shared Sass settings.
+// Keep $wide in sync with WIDE in assets/js/order.js, which decides between
+// the sidebar (show()) and the sheet (showModal()).
+
+$wide: 64em;
+
+// Media query helpers.
+$mq-wide: "(min-width: #{$wide})";
+$mq-narrow: "(max-width: #{$wide - 0.001em})";

@@ -1,0 +1,45 @@
+// Order form: category sections and the product grid.
+// One column, or two once the catalog is wide enough and the sidebar is closed.
+
+.openbb-catalog {
+	--openbb-catalog-gap: 0.75rem;
+
+	&__section {
+		margin-bottom: 2rem;
+
+		// Subcategories sit inside their parent's flow.
+		&--depth-1,
+		&--depth-2 {
+			margin-bottom: 1.5rem;
+		}
+	}
+
+	&__heading {
+		margin: 0 0 0.75rem;
+
+		&:focus {
+			outline: none;
+		}
+
+		.openbb-catalog__section--depth-1 &,
+		.openbb-catalog__section--depth-2 & {
+			color: var(--openbb-muted);
+			font-size: 1rem;
+		}
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--openbb-catalog-gap);
+	}
+}
+
+// Two columns from this catalog width.
+// Container queries can't use custom properties, so it's set here.
+@container openbb-catalog (min-width: 40rem) {
+
+	.openbb-order:not(.has-sidebar) .openbb-catalog__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}

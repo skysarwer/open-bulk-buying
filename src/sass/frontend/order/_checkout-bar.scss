@@ -1,0 +1,38 @@
+// Order form: the bar stuck to the bottom of narrow screens once the basket
+// has items. Wide screens have the sidebar instead.
+
+@use "config" as *;
+
+.openbb-checkout-bar {
+	position: sticky;
+	bottom: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--openbb-gap);
+	margin-top: 1.5rem;
+	padding: 0.75rem 0;
+	padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+	border-top: 1px solid var(--openbb-border);
+	background: var(--openbb-order-surface);
+
+	&__summary {
+		display: grid;
+		margin: 0;
+		font-size: 0.875em;
+		font-variant-numeric: tabular-nums;
+
+		strong {
+			font-size: 1.15em;
+		}
+	}
+
+	&__button {
+		flex: none;
+	}
+
+	@media #{$mq-wide} {
+		display: none;
+	}
+}

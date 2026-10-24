@@ -1,0 +1,222 @@
+// Order form: the basket panel, a <dialog>, and its lines.
+// Wide: a sticky sidebar column (non-modal, show()).
+// Narrow: a modal bottom sheet (showModal()), --openbb-order-sheet-height.
+
+@use "config" as *;
+
+.openbb-basket {
+	--openbb-basket-padding: 1rem;
+
+	// Reset the UA dialog styles; the layout places it.
+	position: static;
+	width: auto;
+	max-width: none;
+	height: auto;
+	max-height: none;
+	margin: 0;
+	padding: 0;
+	border: 1px solid var(--openbb-border);
+	border-radius: var(--openbb-radius);
+	background: var(--openbb-order-surface);
+	color: inherit;
+
+	&__inner {
+		display: flex;
+		flex-direction: column;
+		gap: var(--openbb-gap);
+		padding: var(--openbb-basket-padding);
+	}
+
+	&__header {
+		position: sticky;
+		top: 0;
+		z-index: 1;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.25rem 0.75rem;
+		margin: calc(-1 * var(--openbb-basket-padding)) calc(-1 * var(--openbb-basket-padding)) 0;
+		padding: var(--openbb-basket-padding);
+		border-bottom: 1px solid var(--openbb-border);
+		background: var(--openbb-order-surface);
+	}
+
+	&__title {
+		flex: 1;
+		margin: 0;
+		font-size: 1.15rem;
+
+		&:focus {
+			outline: none;
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--openbb-accent);
+			outline-offset: 4px;
+		}
+	}
+
+	&__save {
+		order: 3;
+		flex-basis: 100%;
+		margin: 0;
+		color: var(--openbb-muted);
+		font-size: 0.8125em;
+
+		&:empty {
+			display: none;
+		}
+	}
+
+	&__close {
+		display: inline-grid;
+		place-items: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		padding: 0;
+		border: 0;
+		border-radius: var(--openbb-radius);
+		background: transparent;
+		color: inherit;
+		cursor: pointer;
+
+		&:hover {
+			background: var(--openbb-surface);
+		}
+
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--openbb-focus);
+		}
+	}
+
+	&__notice .openbb-notice {
+		margin: 0;
+	}
+
+	&__step {
+		display: flex;
+		flex-direction: column;
+		gap: var(--openbb-gap);
+	}
+
+	&__empty {
+		margin: 0;
+		color: var(--openbb-muted);
+	}
+
+	&__lines {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__actions {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+
+		.openbb-button {
+			width: 100%;
+		}
+	}
+
+	// Wide: sticky sidebar that scrolls on its own.
+	@media #{$mq-wide} {
+		position: sticky;
+		top: calc(var(--openbb-order-sticky-top) + 1rem);
+		max-height: calc(100vh - var(--openbb-order-sticky-top) - 2rem);
+		overflow-y: auto;
+		overscroll-behavior: contain;
+	}
+
+	// Narrow: only ever shown as a modal sheet.
+	@media #{$mq-narrow} {
+
+		&:not(:modal) {
+			display: none;
+		}
+
+		&:modal {
+			position: fixed;
+			inset: auto 0 0;
+			width: 100%;
+			height: var(--openbb-order-sheet-height);
+			max-height: var(--openbb-order-sheet-height);
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			border-width: 1px 0 0;
+			border-radius: calc(var(--openbb-radius) * 2) calc(var(--openbb-radius) * 2) 0 0;
+			box-shadow: var(--openbb-order-shadow);
+		}
+
+		&::backdrop {
+			background: rgb(0 0 0 / 45%);
+		}
+	}
+}
+
+// No page scrolling behind the sheet.
+html:has(.openbb-basket:modal) {
+	overflow: hidden;
+}
+
+// A basket line: name and price, then stepper and line total, then options.
+.openbb-line {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-template-areas:
+		"info info"
+		"stepper total"
+		"own own"
+		"remove remove";
+	gap: 0.5rem 0.75rem;
+	align-items: center;
+	padding-block: 0.875rem;
+	border-bottom: 1px solid var(--openbb-border);
+
+	&:first-child {
+		padding-top: 0;
+	}
+
+	&__info {
+		grid-area: info;
+		min-width: 0;
+	}
+
+	&__name {
+		margin: 0;
+		font-weight: 600;
+	}
+
+	&__price {
+		margin: 0;
+		color: var(--openbb-muted);
+		font-size: 0.875em;
+	}
+
+	.openbb-stepper {
+		grid-area: stepper;
+	}
+
+	&__total {
+		grid-area: total;
+		margin: 0;
+		font-variant-numeric: tabular-nums;
+		font-weight: 600;
+		text-align: end;
+	}
+
+	&__own {
+		grid-area: own;
+		font-size: 0.875em;
+	}
+
+	&__remove {
+		grid-area: remove;
+		justify-self: start;
+		min-height: 2rem;
+		padding-inline: 0;
+		font-size: 0.875em;
+	}
+}

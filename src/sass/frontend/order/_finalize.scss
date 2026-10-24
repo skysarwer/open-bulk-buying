@@ -1,0 +1,36 @@
+// Order form: the Finalize step (questions, donation, aid, note, commitment)
+// and the confirmation shown after submitting.
+
+.openbb-finalize {
+
+	&__back {
+		align-self: flex-start;
+		padding-inline: 0;
+	}
+
+	&__section {
+		display: grid;
+		gap: var(--openbb-gap);
+
+		> * {
+			margin: 0;
+		}
+	}
+
+	&__aid-details {
+		display: grid;
+		gap: var(--openbb-gap);
+		padding-inline-start: 1rem;
+		border-inline-start: 2px solid var(--openbb-border);
+	}
+
+	&__commit {
+		padding: 0.75rem;
+		border-radius: var(--openbb-radius);
+		background: var(--openbb-surface);
+	}
+}
+
+.openbb-done .openbb-notice {
+	margin: 0;
+}

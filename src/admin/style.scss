@@ -153,6 +153,7 @@ $openbb-wide-sidebar-width: 640px;
 }
 
 .openbb-profile-fields {
+
 	&__item {
 		display: flex;
 		flex-wrap: wrap;
@@ -202,6 +203,7 @@ $openbb-wide-sidebar-width: 640px;
 }
 
 .openbb-role-editor {
+
 	&__group {
 		margin: 0;
 		padding: 0;
@@ -284,6 +286,7 @@ $openbb-wide-sidebar-width: 640px;
 }
 
 .openbb-options-editor {
+
 	.openbb-sortable__item.is-group {
 		margin-top: 8px;
 		background: #f6f7f7;
@@ -312,6 +315,7 @@ $openbb-wide-sidebar-width: 640px;
 }
 
 .openbb-preview {
+
 	&__frame {
 		padding: 16px;
 		border: 1px dashed $openbb-border;
@@ -528,6 +532,7 @@ $openbb-wide-sidebar-width: 640px;
 	}
 
 	@media (max-width: 1100px) {
+
 		&.has-sidebar {
 			flex-direction: column;
 			align-items: stretch;
@@ -549,6 +554,7 @@ $openbb-wide-sidebar-width: 640px;
 }
 
 .openbb-panel {
+
 	&__header {
 		padding: 12px 16px;
 		border-bottom: 1px solid $openbb-border;
@@ -637,6 +643,7 @@ $openbb-wide-sidebar-width: 640px;
 		color: #2271b1;
 	}
 }
+
 .openbb-product-image {
 	display: block;
 	width: 40px;
@@ -701,6 +708,7 @@ $openbb-wide-sidebar-width: 640px;
 
 .openbb-inventory .dataviews-wrapper,
 .openbb-compact-table .dataviews-wrapper {
+
 	.dataviews__view-actions {
 		padding-left: 0;
 		padding-right: 0;
@@ -722,10 +730,7 @@ $openbb-wide-sidebar-width: 640px;
 	}
 
 	&--inline {
-		grid-template-columns: repeat(
-			auto-fill,
-			minmax(140px, max-content) minmax(120px, 1fr)
-		);
+		grid-template-columns: repeat(auto-fill, minmax(140px, max-content) minmax(120px, 1fr));
 	}
 }
 

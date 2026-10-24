@@ -39,6 +39,7 @@ function openbb_field_kinds(): array {
  *                                A group without label holds ungrouped options and comes first.
  *     @type mixed  $value        string, list of strings (multiple) or bool (checkbox).
  *     @type string $autocomplete
+ *     @type string $inputmode    Text inputs: virtual keyboard hint, e.g. decimal.
  *     @type int    $maxlength
  *     @type string $id_prefix    Prefix for element ids, unique per form on the page.
  * }
@@ -56,6 +57,7 @@ function openbb_render_field( array $field ): string {
 			'groups'       => array(),
 			'value'        => null,
 			'autocomplete' => '',
+			'inputmode'    => '',
 			'maxlength'    => 0,
 			'id_prefix'    => 'openbb',
 		),
@@ -161,6 +163,7 @@ function openbb_render_field( array $field ): string {
 					'required'          => $field['required'],
 					'readonly'          => $field['locked'],
 					'autocomplete'      => $field['autocomplete'],
+					'inputmode'         => $field['inputmode'],
 					'maxlength'         => $field['maxlength'] > 0 ? (string) $field['maxlength'] : '',
 					'data-wp-on--input' => 'openbb/forms::actions.change',
 				),

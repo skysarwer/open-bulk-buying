@@ -13,6 +13,7 @@
  * - @open-bulk-buying/login   Store `openbb/login`: password and email-link login.
  * - @open-bulk-buying/auth    Store `openbb/auth`: switches between the login and signup panels.
  * - @open-bulk-buying/captcha Bot protection widgets: renders Turnstile, collects and resets responses.
+ * - @open-bulk-buying/order   Store `openbb/order`: the member order form (basket, autosave, finalize).
  *
  * @package Open_Bulk_Buying
  */
@@ -28,11 +29,13 @@ final class OPENBB_Frontend {
 	const MODULE_LOGIN   = '@open-bulk-buying/login';
 	const MODULE_AUTH    = '@open-bulk-buying/auth';
 	const MODULE_CAPTCHA = '@open-bulk-buying/captcha';
+	const MODULE_ORDER   = '@open-bulk-buying/order';
 
 	/** Shortcode tag => view class with a static render( array $args ): string. */
 	const SHORTCODES = array(
-		'openbb_signup' => 'OPENBB_Signup_View',
-		'openbb_login'  => 'OPENBB_Login_View',
+		'openbb_signup'     => 'OPENBB_Signup_View',
+		'openbb_login'      => 'OPENBB_Login_View',
+		'openbb_order_form' => 'OPENBB_Order_Form_View',
 	);
 
 	public static function register_hooks(): void {
@@ -48,6 +51,7 @@ final class OPENBB_Frontend {
 			self::MODULE_SIGNUP  => array( 'signup.js', array( '@wordpress/interactivity', self::MODULE_FORMS, self::MODULE_CAPTCHA ) ),
 			self::MODULE_LOGIN   => array( 'login.js', array( '@wordpress/interactivity', self::MODULE_FORMS, self::MODULE_CAPTCHA ) ),
 			self::MODULE_AUTH    => array( 'auth.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
+			self::MODULE_ORDER   => array( 'order.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
 		);
 		foreach ( $modules as $id => list( $file, $deps ) ) {
 			wp_register_script_module( $id, OPENBB_PLUGIN_URL . 'assets/js/' . $file, $deps, self::version( 'assets/js/' . $file ) );

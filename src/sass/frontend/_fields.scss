@@ -36,8 +36,10 @@
 		font-size: 0.875em;
 		font-weight: 600;
 
+		// Decorative: the empty alt text keeps screen readers from announcing it.
 		&::before {
 			content: "⚠ ";
+			content: "⚠ " / "";
 		}
 	}
 
@@ -116,6 +118,7 @@ textarea.openbb-input {
 }
 
 .openbb-field--checkbox {
+
 	.openbb-field__help,
 	.openbb-field__error {
 		padding-inline-start: calc(1.25rem + 0.6em);
@@ -182,7 +185,7 @@ textarea.openbb-input {
 	}
 
 	&__input:hover + &__label {
-		border-color: currentColor;
+		border-color: currentcolor;
 	}
 
 	&__input:focus-visible + &__label {
@@ -220,6 +223,7 @@ textarea.openbb-input {
 }
 
 @media (forced-colors: active) {
+
 	.openbb-chip__input:checked + .openbb-chip__label {
 		outline: 3px solid Highlight;
 	}

@@ -1,0 +1,36 @@
+// Order form: links to the top-level categories.
+// Scrolls sideways when they don't fit.
+
+.openbb-catalog-nav {
+	margin-bottom: 1.5rem;
+
+	&__list {
+		display: flex;
+		gap: 0.5rem;
+		margin: 0;
+		padding: 0.25rem 0.25rem 0.5rem;
+		overflow-x: auto;
+		list-style: none;
+		scrollbar-width: thin;
+	}
+
+	&__link {
+		display: inline-block;
+		padding: 0.4em 0.9em;
+		border: 1px solid var(--openbb-border);
+		border-radius: 999px;
+		color: inherit;
+		font-size: 0.875em;
+		text-decoration: none;
+		white-space: nowrap;
+
+		&:hover {
+			border-color: currentcolor;
+		}
+
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--openbb-focus);
+		}
+	}
+}

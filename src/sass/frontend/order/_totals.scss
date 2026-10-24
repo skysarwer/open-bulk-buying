@@ -1,0 +1,40 @@
+// Order form: totals under the basket, in Finalize and after submitting.
+
+.openbb-totals {
+
+	&__list {
+		display: grid;
+		gap: 0.35rem;
+		margin: 0;
+	}
+
+	&__row {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+
+		dt,
+		dd {
+			margin: 0;
+		}
+
+		dd {
+			font-variant-numeric: tabular-nums;
+			text-align: end;
+		}
+
+		&--total {
+			margin-top: 0.35rem;
+			padding-top: 0.6rem;
+			border-top: 1px solid var(--openbb-border);
+			font-size: 1.1em;
+			font-weight: 700;
+		}
+	}
+
+	&__note {
+		margin: 0.5rem 0 0;
+		color: var(--openbb-muted);
+		font-size: 0.875em;
+	}
+}

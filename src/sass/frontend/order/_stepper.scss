@@ -1,0 +1,82 @@
+// Order form: quantity stepper, [-] [qty] [+] joined into one control.
+// The input is the keyboard target; the buttons are for pointers (tabindex -1).
+
+.openbb-stepper {
+	--openbb-stepper-size: 2.5rem;
+	--openbb-stepper-input: 3rem;
+
+	display: inline-flex;
+	align-items: stretch;
+	border: 1px solid var(--openbb-border);
+	border-radius: var(--openbb-radius);
+	overflow: hidden;
+
+	&.is-active {
+		border-color: var(--openbb-accent);
+	}
+
+	&:focus-within {
+		box-shadow: var(--openbb-focus);
+	}
+
+	&__button {
+		display: inline-grid;
+		flex: none;
+		place-items: center;
+		width: var(--openbb-stepper-size);
+		min-height: var(--openbb-stepper-size);
+		padding: 0;
+		border: 0;
+		background: var(--openbb-surface);
+		color: inherit;
+		cursor: pointer;
+		touch-action: manipulation;
+
+		&:disabled {
+			cursor: not-allowed;
+			opacity: 0.4;
+		}
+
+		&:hover:not(:disabled) {
+			background: color-mix(in srgb, currentcolor 12%, transparent);
+		}
+	}
+
+	&.is-active &__button--increment:not(:disabled) {
+		background: var(--openbb-accent);
+		color: var(--openbb-accent-contrast);
+	}
+
+	// `.openbb` raises specificity above theme input rules.
+	.openbb &__input {
+		width: var(--openbb-stepper-input);
+		min-height: var(--openbb-stepper-size);
+		margin: 0;
+		padding: 0 0.25rem;
+		border: 0;
+		border-inline: 1px solid var(--openbb-border);
+		border-radius: 0;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		font-variant-numeric: tabular-nums;
+		font-weight: 600;
+		text-align: center;
+		appearance: textfield;
+
+		&:focus {
+			outline: none;
+		}
+
+		&[readonly] {
+			color: var(--openbb-muted);
+		}
+	}
+}
+
+@media (forced-colors: active) {
+
+	.openbb-stepper:focus-within {
+		outline: 2px solid CanvasText;
+	}
+}

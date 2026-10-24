@@ -26,19 +26,34 @@ function openbb_currency(): string {
  */
 function openbb_format_money( int $minor, ?string $currency = null ): string {
 	$currency = $currency ?? openbb_currency();
+	$digits   = openbb_currency_digits( $currency );
 
 	if ( class_exists( 'NumberFormatter' ) ) {
 		$formatter = new NumberFormatter( determine_locale(), NumberFormatter::CURRENCY );
 		$formatter->setTextAttribute( NumberFormatter::CURRENCY_CODE, $currency );
-		$digits    = (int) $formatter->getAttribute( NumberFormatter::FRACTION_DIGITS );
 		$formatted = $formatter->formatCurrency( $minor / ( 10 ** $digits ), $currency );
 		if ( false !== $formatted ) {
 			return $formatted;
 		}
 	}
 
-	$zero_decimal = array( 'BIF', 'CLP', 'DJF', 'GNF', 'ISK', 'JPY', 'KMF', 'KRW', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF' );
-	$digits       = in_array( $currency, $zero_decimal, true ) ? 0 : 2;
-
 	return number_format_i18n( $minor / ( 10 ** $digits ), $digits ) . ' ' . $currency;
+}
+
+/**
+ * Minor-unit digits of $currency, e.g. 2 for CAD (cents), 0 for JPY.
+ */
+function openbb_currency_digits( ?string $currency = null ): int {
+	$currency = $currency ?? openbb_currency();
+
+	if ( class_exists( 'NumberFormatter' ) ) {
+		$formatter = new NumberFormatter( determine_locale(), NumberFormatter::CURRENCY );
+		$formatter->setTextAttribute( NumberFormatter::CURRENCY_CODE, $currency );
+
+		return (int) $formatter->getAttribute( NumberFormatter::FRACTION_DIGITS );
+	}
+
+	$zero_decimal = array( 'BIF', 'CLP', 'DJF', 'GNF', 'ISK', 'JPY', 'KMF', 'KRW', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF' );
+
+	return in_array( $currency, $zero_decimal, true ) ? 0 : 2;
 }

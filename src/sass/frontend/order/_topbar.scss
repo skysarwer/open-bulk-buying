@@ -1,0 +1,125 @@
+// Order form: top bar with the welcome, the cycle and the basket toggle.
+// Sticky on narrow screens so the basket count stays in reach.
+
+@use "config" as *;
+
+.openbb-order {
+
+	&__topbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--openbb-gap);
+		margin-bottom: 1.5rem;
+		padding-block: 0.75rem;
+		border-bottom: 1px solid var(--openbb-border);
+		background: var(--openbb-order-surface);
+
+		@media #{$mq-narrow} {
+			position: sticky;
+			top: var(--openbb-order-sticky-top);
+			z-index: 20;
+		}
+	}
+
+	&__welcome {
+		min-width: 0;
+	}
+
+	&__title {
+		margin: 0;
+		font-size: clamp(1.15rem, 1rem + 1vw, 1.6rem);
+		line-height: 1.2;
+	}
+
+	&__cycle {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 0.75em;
+		margin: 0.2rem 0 0;
+		color: var(--openbb-muted);
+		font-size: 0.875em;
+	}
+
+	&__basket-toggle {
+		position: relative;
+		display: inline-flex;
+		flex: none;
+		align-items: center;
+		gap: 0.5em;
+		min-height: 2.75rem;
+		padding: 0.5em 0.9em;
+		border: 1px solid var(--openbb-border);
+		border-radius: var(--openbb-radius);
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
+
+		&:hover {
+			border-color: currentcolor;
+		}
+
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--openbb-focus);
+		}
+
+		&[aria-expanded="true"] {
+			border-color: var(--openbb-accent);
+		}
+	}
+
+	&__basket-count {
+		display: inline-grid;
+		place-items: center;
+		min-width: 1.5em;
+		height: 1.5em;
+		padding-inline: 0.35em;
+		border-radius: 999px;
+		background: var(--openbb-accent);
+		color: var(--openbb-accent-contrast);
+		font-size: 0.8em;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__basket-total {
+		font-variant-numeric: tabular-nums;
+	}
+
+	// Narrow: icon and count only; label and total stay for screen readers.
+	@media #{$mq-narrow} {
+
+		&__basket-label,
+		&__basket-total {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
+
+		&__basket-count {
+			position: absolute;
+			top: -0.5em;
+			right: -0.5em;
+		}
+	}
+
+	&__cycles ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1rem;
+		margin: -0.75rem 0 1.5rem;
+		padding: 0;
+		list-style: none;
+		font-size: 0.875em;
+
+		[aria-current="page"] {
+			font-weight: 600;
+			text-decoration: none;
+		}
+	}
+}

@@ -1,16 +1,16 @@
 <?php
 /**
- * Staff order editing: the rules for starting an order for a member and for
- * changing an existing one, independent of how the request arrived (REST, CLI,
- * a future checkout).
+ * Order editing: the rules for starting an order for a member and for changing an
+ * existing one, independent of how the request arrived (staff REST, CLI, or the
+ * member order form through OPENBB_Member_Orders).
  *
  * Line quantities are in each line's selling unit. Increasing what an order holds
  * is capped by available stock (on hand minus other orders' reservations); what an
  * order already reserves stays available to it, so reductions are always allowed.
  * The check and the write run under OPENBB_Inventory::lock().
  *
- * Callers authorize first (openbb_edit_order). Errors are WP_Errors whose data
- * includes an HTTP-style 'status', like OPENBB_Inventory's.
+ * Callers authorize first (openbb_edit_order, or openbb_edit_own_order for members).
+ * Errors are WP_Errors whose data includes an HTTP-style 'status', like OPENBB_Inventory's.
  *
  * @package Open_Bulk_Buying
  */
@@ -65,7 +65,7 @@ class OPENBB_Order_Editor {
 	}
 
 	/**
-	 * Applies staff changes to $order (saved or from start()) and saves it.
+	 * Applies changes to $order (saved or from start()) and saves it.
 	 *
 	 * Every key of $changes is optional:
 	 * - status              One of OPENBB_Order_Policy::EDITABLE_STATUSES.
@@ -73,20 +73,29 @@ class OPENBB_Order_Editor {
 	 *                       Existing lines missing from the list are removed.
 	 * - donation            Minor units.
 	 * - staff_note          Replaces the note.
+	 * - member_note         Replaces the member's note.
+	 * - aid_request         Whether the member asks for financial aid; false withdraws it.
+	 *                       The amount is set by staff when deciding, from the donations
+	 *                       available. Can't change once aid is decided.
+	 * - aid_reason          Why aid is requested.
 	 * - reason              Required when a non-draft order (or a cancellation) changes;
 	 *                       appended to the staff note with the actor's name.
 	 * - expected_updated_at UTC "Y-m-d H:i:s" the caller last saw; rejects the save if
 	 *                       someone else changed the order since.
+	 * - expected_revision   Same, by the order's revision counter.
+	 *
+	 * With $by_member the member who owns the order is saving it from the order form:
+	 * no reason is asked for and the events say so. Callers check the cycle is taking orders.
 	 *
 	 * @return OPENBB_Order|WP_Error The saved order, re-read.
 	 */
-	public static function apply( OPENBB_Order $order, array $changes, int $actor_id ) {
+	public static function apply( OPENBB_Order $order, array $changes, int $actor_id, bool $by_member = false ) {
 		if ( ! OPENBB_Inventory::lock() ) {
 			return new WP_Error( 'openbb_busy', __( 'Stock is being updated by someone else. Please try again.', 'open-bulk-buying' ), array( 'status' => 503 ) );
 		}
 
 		try {
-			return self::apply_locked( $order, $changes, $actor_id );
+			return self::apply_locked( $order, $changes, $actor_id, $by_member );
 		} finally {
 			OPENBB_Inventory::unlock();
 		}
@@ -124,7 +133,7 @@ class OPENBB_Order_Editor {
 	/**
 	 * @return OPENBB_Order|WP_Error
 	 */
-	private static function apply_locked( OPENBB_Order $order, array $changes, int $actor_id ) {
+	private static function apply_locked( OPENBB_Order $order, array $changes, int $actor_id, bool $by_member ) {
 		$is_new = ! $order->id;
 
 		// Re-read under the lock so the checks below see the latest saved state.
@@ -134,7 +143,9 @@ class OPENBB_Order_Editor {
 				return new WP_Error( 'openbb_order_not_found', __( 'Order not found.', 'open-bulk-buying' ), array( 'status' => 404 ) );
 			}
 			$expected = (string) ( $changes['expected_updated_at'] ?? '' );
-			if ( '' !== $expected && (string) $order->updated_at !== $expected ) {
+			$revision = isset( $changes['expected_revision'] ) ? (int) $changes['expected_revision'] : null;
+			if ( ( '' !== $expected && (string) $order->updated_at !== $expected )
+				|| ( null !== $revision && $revision !== $order->revision ) ) {
 				return new WP_Error( 'openbb_order_changed', __( 'This order was changed by someone else. Reload it and try again.', 'open-bulk-buying' ), array( 'status' => 409 ) );
 			}
 		}
@@ -177,6 +188,13 @@ class OPENBB_Order_Editor {
 		if ( isset( $changes['staff_note'] ) ) {
 			$order->staff_note = (string) $changes['staff_note'];
 		}
+		if ( isset( $changes['member_note'] ) ) {
+			$order->member_note = (string) $changes['member_note'];
+		}
+		$aid = self::apply_aid_request( $order, $changes );
+		if ( is_wp_error( $aid ) ) {
+			return $aid;
+		}
 		$order->status = $new_status;
 		if ( OPENBB_Order::STATUS_SUBMITTED === $new_status && ! $order->submitted_at ) {
 			$order->submitted_at = current_time( 'mysql', true );
@@ -186,7 +204,7 @@ class OPENBB_Order_Editor {
 			|| $new_status !== $old_status
 			|| $order->donation !== $before->donation;
 		$reason  = trim( (string) ( $changes['reason'] ?? '' ) );
-		if ( ! $is_new && $changed && OPENBB_Order_Policy::needs_reason( $before, $new_status ) ) {
+		if ( ! $by_member && ! $is_new && $changed && OPENBB_Order_Policy::needs_reason( $before, $new_status ) ) {
 			if ( '' === $reason ) {
 				return self::invalid( __( 'Explain why this order is being changed.', 'open-bulk-buying' ), 'openbb_reason_required' );
 			}
@@ -202,14 +220,31 @@ class OPENBB_Order_Editor {
 			);
 		}
 
+		$event_type = $is_new ? 'created' : 'edited';
+		if ( $by_member ) {
+			$event_type = OPENBB_Order::STATUS_SUBMITTED === $new_status && $new_status !== $old_status ? 'submitted' : 'member_' . $event_type;
+		}
 		$event = ( $is_new || $changed ) ? array(
 			'actor_id'    => $actor_id,
-			'event_type'  => $is_new ? 'created' : 'edited',
+			'event_type'  => $event_type,
 			'from_status' => $is_new ? '' : $old_status,
 			'reason'      => $reason,
 		) : null;
 		if ( ! $order->save_with_lines( $lines, $delete_ids, $event ) ) {
 			return new WP_Error( 'openbb_order_save_failed', __( 'The order could not be saved.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+		}
+
+		if ( $by_member ) {
+			$saved = OPENBB_Orders::get( $order->id ) ?? $order;
+			if ( OPENBB_Order::STATUS_SUBMITTED === $new_status && $new_status !== $old_status ) {
+				/**
+				 * Fires after a member submits their order from the order form.
+				 *
+				 * @param OPENBB_Order $order The saved order.
+				 */
+				do_action( 'openbb_order_submitted', $saved );
+			}
+			return $saved;
 		}
 
 		if ( ! $is_new && $changed ) {
@@ -342,14 +377,13 @@ class OPENBB_Order_Editor {
 	}
 
 	/**
-	 * Compares what each product's lines will hold after saving with what the
-	 * order may hold.
+	 * The lines $order will hold once $writes are written and $delete_ids removed.
 	 *
 	 * @param OPENBB_Order_Line[] $writes
 	 * @param int[]               $delete_ids
-	 * @return true|WP_Error
+	 * @return OPENBB_Order_Line[]
 	 */
-	private static function check_stock( OPENBB_Order $order, array $writes, array $delete_ids ) {
+	private static function final_lines( OPENBB_Order $order, array $writes, array $delete_ids ): array {
 		$final = array();
 		foreach ( $order->get_lines() as $line ) {
 			$final[ $line->id ] = $line;
@@ -362,9 +396,48 @@ class OPENBB_Order_Editor {
 			$final[ $line->id ? $line->id : 'new' . ( $new_index++ ) ] = $line;
 		}
 
+		return array_values( $final );
+	}
+
+	/**
+	 * Applies aid_request / aid_reason from $changes: a request is pending until staff
+	 * decide it.
+	 *
+	 * @return true|WP_Error
+	 */
+	private static function apply_aid_request( OPENBB_Order $order, array $changes ) {
+		if ( ! isset( $changes['aid_request'] ) && ! isset( $changes['aid_reason'] ) ) {
+			return true;
+		}
+
+		$decided   = in_array( $order->aid_status, array( OPENBB_Order::AID_APPROVED, OPENBB_Order::AID_DECLINED ), true );
+		$requested = isset( $changes['aid_request'] ) ? (bool) $changes['aid_request'] : OPENBB_Order::AID_NONE !== $order->aid_status;
+		$reason    = $requested ? ( isset( $changes['aid_reason'] ) ? (string) $changes['aid_reason'] : $order->aid_reason ) : '';
+		if ( $decided ) {
+			if ( ! $requested || $reason !== $order->aid_reason ) {
+				return new WP_Error( 'openbb_aid_decided', __( 'Your financial aid request has already been decided and can no longer be changed.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+			}
+			return true;
+		}
+
+		$order->aid_status = $requested ? OPENBB_Order::AID_PENDING : OPENBB_Order::AID_NONE;
+		$order->aid_reason = $reason;
+
+		return true;
+	}
+
+	/**
+	 * Compares what each product's lines will hold after saving with what the
+	 * order may hold.
+	 *
+	 * @param OPENBB_Order_Line[] $writes
+	 * @param int[]               $delete_ids
+	 * @return true|WP_Error
+	 */
+	private static function check_stock( OPENBB_Order $order, array $writes, array $delete_ids ) {
 		$wanted = array();
 		$names  = array();
-		foreach ( $final as $line ) {
+		foreach ( self::final_lines( $order, $writes, $delete_ids ) as $line ) {
 			$wanted[ $line->product_id ] = ( $wanted[ $line->product_id ] ?? 0.0 ) + $line->get_base_quantity();
 			$names[ $line->product_id ]  = $line;
 		}

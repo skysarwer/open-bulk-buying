@@ -1,0 +1,37 @@
+// Order form: root, tuning variables and the two-column layout.
+// Wide screens: catalog + basket sidebar (.has-sidebar while it's open).
+// Narrow screens: catalog only; the basket is a modal sheet (see _basket.scss).
+
+@use "config" as *;
+
+.openbb-order {
+	// Tuning.
+	--openbb-order-sidebar-width: 24rem;
+	--openbb-order-column-gap: 2rem;
+	--openbb-order-sticky-top: var(--wp-admin--admin-bar--height, 0);
+	--openbb-order-sheet-height: 90dvh;
+	--openbb-order-surface: var(--wp--preset--color--base, #fff);
+	--openbb-order-shadow: 0 0.25rem 1.5rem rgb(0 0 0 / 15%);
+	--openbb-scroll-offset: calc(var(--openbb-order-sticky-top) + 6rem);
+
+	max-width: none;
+
+	&__layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--openbb-order-column-gap);
+		align-items: start;
+	}
+
+	&__main {
+		min-width: 0;
+		container: openbb-catalog / inline-size;
+	}
+
+	@media #{$mq-wide} {
+
+		&.has-sidebar &__layout {
+			grid-template-columns: minmax(0, 1fr) var(--openbb-order-sidebar-width);
+		}
+	}
+}

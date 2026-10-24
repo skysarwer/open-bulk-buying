@@ -1,0 +1,142 @@
+// Order form: one product. A compact row: thumbnail, name and price, then the
+// stepper. "More info" is a native <details>.
+
+.openbb-product {
+	--openbb-product-image: 4.5rem;
+	--openbb-product-padding: 0.75rem;
+
+	display: grid;
+	grid-template-columns: var(--openbb-product-image) minmax(0, 1fr);
+	grid-template-areas:
+		"media body"
+		"media actions";
+	gap: 0.5rem 0.875rem;
+	padding: var(--openbb-product-padding);
+	border: 1px solid var(--openbb-border);
+	border-radius: var(--openbb-radius);
+	transition: border-color 0.15s, background-color 0.15s;
+
+	&.is-in-basket {
+		border-color: var(--openbb-accent);
+		background: color-mix(in srgb, var(--openbb-accent) 5%, transparent);
+	}
+
+
+	&__media {
+		grid-area: media;
+		align-self: start;
+		aspect-ratio: 1;
+		overflow: hidden;
+		border-radius: calc(var(--openbb-radius) - 2px);
+		background: var(--openbb-surface);
+	}
+
+	&__image {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	&__placeholder {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	&__body {
+		grid-area: body;
+		min-width: 0;
+	}
+
+	&__name {
+		margin: 0;
+		font-size: 1rem;
+		line-height: 1.3;
+	}
+
+	&__meta {
+		margin: 0.1rem 0 0;
+		color: var(--openbb-muted);
+		font-size: 0.8125em;
+	}
+
+	&__price {
+		margin: 0.25rem 0 0;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__amount {
+		font-weight: 700;
+	}
+
+	&__unit {
+		color: var(--openbb-muted);
+		font-size: 0.875em;
+	}
+
+	&__details {
+		margin-top: 0.25rem;
+		font-size: 0.875em;
+	}
+
+	&__summary {
+		display: inline-block;
+		color: var(--openbb-muted);
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+		cursor: pointer;
+
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--openbb-focus);
+		}
+	}
+
+	&__description {
+		margin-top: 0.5rem;
+
+		> :first-child {
+			margin-top: 0;
+		}
+
+		> :last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	&__charge {
+		color: var(--openbb-muted);
+	}
+
+	&__actions {
+		grid-area: actions;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.75rem;
+	}
+
+	&__stock {
+		flex-basis: 100%;
+		margin: 0;
+		color: var(--openbb-error);
+		font-size: 0.8125em;
+		font-weight: 600;
+	}
+
+	&__total {
+		margin: 0 0 0 auto;
+		font-variant-numeric: tabular-nums;
+		font-weight: 600;
+	}
+
+	&.is-sold-out {
+
+		.openbb-product__media,
+		.openbb-product__name,
+		.openbb-product__price {
+			opacity: 0.6;
+		}
+	}
+}

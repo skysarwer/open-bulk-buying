@@ -1,0 +1,24 @@
+// Order form ([openbb_order_form], OPENBB_Order_Form_View).
+// One partial per piece of the page, each scoped to its own block class:
+//   layout        .openbb-order          root, tuning variables, columns
+//   topbar        .openbb-order__topbar  welcome, cycle, basket toggle
+//   catalog-nav   .openbb-catalog-nav    category links
+//   catalog       .openbb-catalog        sections and the product grid
+//   product       .openbb-product        one product row
+//   stepper       .openbb-stepper        [-] [qty] [+]
+//   basket        .openbb-basket         the panel and its lines
+//   totals        .openbb-totals         subtotal … total
+//   finalize      .openbb-finalize       the Finalize step
+//   checkout-bar  .openbb-checkout-bar   sticky bottom bar on narrow screens
+// Tuning variables are set on .openbb-order in _layout.scss.
+
+@forward "layout";
+@forward "topbar";
+@forward "catalog-nav";
+@forward "catalog";
+@forward "product";
+@forward "stepper";
+@forward "basket";
+@forward "totals";
+@forward "finalize";
+@forward "checkout-bar";
