@@ -413,7 +413,8 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 	public function populate_demo_data() {
 		$result = OPENBB_Maintenance::populate_test_data();
 		if ( is_wp_error( $result ) ) {
-			return self::with_status( $result, 'openbb_test_mode_disabled' === $result->get_error_code() || 'openbb_demo_product_conflict' === $result->get_error_code() ? 409 : 500 );
+			$conflict = in_array( $result->get_error_code(), array( 'openbb_test_mode_disabled', 'openbb_demo_product_conflict', 'openbb_demo_term_conflict' ), true );
+			return self::with_status( $result, $conflict ? 409 : 500 );
 		}
 
 		return rest_ensure_response( array( 'populated' => true ) );

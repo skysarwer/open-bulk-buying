@@ -168,7 +168,7 @@ export default function MaintenanceTab( { nav } ) {
 					<Section title={ __( 'Demo data', 'open-bulk-buying' ) }>
 						<Text as="p">
 							{ __(
-								'Adds one clearly marked demo product, setup cycle, draft order and stock receipt. It does not create WordPress users or publish demo rules.',
+								'Adds 41 marked demo products, 11 categories (including nested and empty categories), 4 suppliers, varied stock levels, a setup cycle and a draft order. Includes long names, varied units, container charges and inactive products. Repeating adds missing fixtures without duplicating stock. It does not create WordPress users or publish demo rules.',
 								'open-bulk-buying'
 							) }
 						</Text>

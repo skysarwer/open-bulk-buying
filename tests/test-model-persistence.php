@@ -139,6 +139,46 @@ class Test_OPENBB_Model_Persistence extends OPENBB_TestCase {
 		$this->assertTrue( OPENBB_Maintenance::populate_test_data() );
 		$this->assertTrue( OPENBB_Maintenance::populate_test_data() );
 
+		$products = get_posts( array(
+			'post_type' => OPENBB_PRODUCT_POST_TYPE,
+			'posts_per_page' => -1,
+			'meta_key' => '_openbb_demo_data',
+			'meta_value' => '1',
+		) );
+		$this->assertCount( 41, $products );
+		$this->assertCount( 11, get_terms( array( 'taxonomy' => OPENBB_PRODUCT_TAXONOMY, 'hide_empty' => false ) ) );
+		$this->assertCount( 4, get_terms( array( 'taxonomy' => OPENBB_SUPPLIER_TAXONOMY, 'hide_empty' => false ) ) );
+		$this->assertSame( 33, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->openbb_stock_moves}" ) );
+		$rice = get_page_by_path( 'openbb-demo-brown-rice', OBJECT, OPENBB_PRODUCT_POST_TYPE );
+		$this->assertSame( 500.0, OPENBB_Inventory::get_on_hand( $rice->ID ) );
+		$this->assertSame( 10, OPENBB_Product::get( $rice->ID )->menu_order );
+		$pantry = get_term_by( 'slug', 'openbb-demo-pantry', OPENBB_PRODUCT_TAXONOMY );
+		$beans = get_term_by( 'slug', 'openbb-demo-beans', OPENBB_PRODUCT_TAXONOMY );
+		$this->assertSame( $pantry->term_id, $beans->parent );
+		$empty = get_term_by( 'slug', 'openbb-demo-seasonal', OPENBB_PRODUCT_TAXONOMY );
+		$this->assertSame( 0, $empty->count );
+		$units = array();
+		$inactive = $out_of_stock = $container = 0;
+		foreach ( $products as $post ) {
+			$item = OPENBB_Product::get( $post->ID );
+			$units[] = $item->unit_type;
+			$inactive += ! $item->active;
+			$out_of_stock += 0.0 === OPENBB_Inventory::get_on_hand( $post->ID );
+			$container += $item->container_charge > 0;
+		}
+		$this->assertCount( 5, array_unique( $units ) );
+		$this->assertSame( 4, $inactive );
+		$this->assertSame( 8, $out_of_stock );
+		$this->assertGreaterThan( 0, $container );
+		wp_update_post( array( 'ID' => $rice->ID, 'menu_order' => 99 ) );
+		update_post_meta( $rice->ID, OPENBB_META_PREFIX . 'price', 123 );
+		update_term_meta( $pantry->term_id, OPENBB_META_PREFIX . 'order', 99 );
+		$this->assertTrue( OPENBB_Maintenance::populate_test_data() );
+		$this->assertSame( 99, OPENBB_Product::get( $rice->ID )->menu_order );
+		$this->assertSame( 123, OPENBB_Product::get( $rice->ID )->price );
+		$this->assertSame( 99, (int) get_term_meta( $pantry->term_id, OPENBB_META_PREFIX . 'order', true ) );
+		$this->assertSame( 33, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->openbb_stock_moves}" ) );
+
 		$product = get_page_by_path( OPENBB_Maintenance::DEMO_PRODUCT_SLUG, OBJECT, OPENBB_PRODUCT_POST_TYPE );
 		$this->assertInstanceOf( WP_Post::class, $product );
 		$this->assertSame( '1', get_post_meta( $product->ID, '_openbb_demo_data', true ) );
@@ -152,6 +192,17 @@ class Test_OPENBB_Model_Persistence extends OPENBB_TestCase {
 			)
 		);
 		$this->assertSame( 1, count( OPENBB_Inventory::get_moves( $product->ID ) ) );
+	}
+
+	public function test_demo_catalog_does_not_modify_unmarked_terms(): void {
+		wp_set_current_user( $this->make_user( 'manager' ) );
+		update_option( OPENBB_Maintenance::TEST_MODE_OPTION, true );
+		$term = wp_insert_term( 'Real pantry', OPENBB_PRODUCT_TAXONOMY, array( 'slug' => 'openbb-demo-pantry' ) );
+		$result = OPENBB_Maintenance::populate_test_data();
+		$this->assertWPError( $result );
+		$this->assertSame( 'openbb_demo_term_conflict', $result->get_error_code() );
+		$this->assertSame( 'Real pantry', get_term( $term['term_id'] )->name );
+		$this->assertFalse( metadata_exists( 'term', $term['term_id'], '_openbb_demo_data' ) );
 	}
 
 	public function test_delete_all_site_data_preserves_schema_and_wordpress_accounts(): void {

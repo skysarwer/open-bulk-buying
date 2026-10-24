@@ -22,7 +22,7 @@ class OPENBB_Maintenance {
 	}
 
 	/**
-	 * Creates one repeatable, clearly marked product, cycle, draft order and stock receipt.
+	 * Creates a repeatable demo catalog, setup cycle, draft order and stock receipts.
 	 *
 	 * @return true|WP_Error
 	 */
@@ -151,7 +151,7 @@ class OPENBB_Maintenance {
 			}
 		}
 
-		return true;
+		return OPENBB_Demo_Catalog::populate( $user_id );
 	}
 
 	/**

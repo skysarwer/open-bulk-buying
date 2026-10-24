@@ -62,6 +62,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/access/class-openbb-access.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/access/user-profile.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/class-openbb-installer.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/class-openbb-maintenance.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/class-openbb-demo-catalog.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/privacy/class-openbb-privacy-provider.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/privacy/class-openbb-privacy-profile-fields.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/privacy/class-openbb-privacy.php';
