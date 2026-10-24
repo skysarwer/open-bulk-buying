@@ -42,10 +42,10 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 						'general'        => array(
 							'type'                 => 'object',
 							'additionalProperties' => false,
-							'required'             => array( 'allow_signups', 'allow_login_links', 'captcha_provider', 'turnstile_site_key', 'require_member_approval', 'membership_fee_type', 'membership_fee_amount', 'membership_fee_order_interval' ),
+							'required'             => array( 'allow_signups', 'allow_login_codes', 'captcha_provider', 'turnstile_site_key', 'require_member_approval', 'membership_fee_type', 'membership_fee_amount', 'membership_fee_order_interval' ),
 							'properties'           => array(
 								'allow_signups'                 => array( 'type' => 'boolean' ),
-								'allow_login_links'             => array( 'type' => 'boolean' ),
+								'allow_login_codes'             => array( 'type' => 'boolean' ),
 								'captcha_provider'              => array(
 									'type' => 'string',
 									'enum' => OPENBB_Captcha::PROVIDERS,
@@ -389,7 +389,7 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 		}
 
 		if ( isset( $general ) ) {
-			if ( OPENBB_Settings::get_general() !== $general
+			if ( get_option( OPENBB_Settings::GENERAL_OPTION, array() ) != $general
 				&& ! update_option( OPENBB_Settings::GENERAL_OPTION, $general, false ) ) {
 				return new WP_Error( 'openbb_settings_save_failed', __( 'The settings could not be saved.', 'open-bulk-buying' ), array( 'status' => 500 ) );
 			}

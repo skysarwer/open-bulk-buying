@@ -1,8 +1,7 @@
 <?php
 /**
  * Short-lived, single-use codes sent by email to prove someone controls an address.
- * Signup uses them now; a passwordless "email me a login code" can reuse the same purpose-
- * scoped challenges later.
+ * Signup and passwordless login share purpose-scoped challenges.
  *
  * A challenge is identified by a random token that the REST layer keeps in an HttpOnly
  * cookie, so a code is only accepted from the browser that requested it. Only an HMAC of
@@ -31,8 +30,8 @@ final class OPENBB_Email_Code {
 	/**
 	 * Starts a challenge for $email. $payload is kept server-side with it (e.g. the
 	 * validated signup form) and returned by verify(). With $deliverable false a code is
-	 * still generated, but it isn't meant to be sent, so the challenge can never be
-	 * verified; the response looks the same either way.
+	 * still generated, but it isn't meant to be sent and cannot be verified.
+	 * The response looks the same either way.
 	 *
 	 * @return array{token: string, code: string, resend_after: int}|WP_Error
 	 */
@@ -86,11 +85,12 @@ final class OPENBB_Email_Code {
 
 	/**
 	 * A new code for the same challenge, after the cooldown. Resets the attempt count but
-	 * not the expiry, so the challenge can't be kept alive forever.
+	 * not the expiry, so the challenge can't be kept alive forever. Login may recheck
+	 * delivery eligibility (e.g. after an account-wide cooldown); signup leaves it unchanged.
 	 *
 	 * @return array{code: string, email: string, deliverable: bool, payload: array, resend_after: int}|WP_Error
 	 */
-	public static function resend( string $purpose, string $token ) {
+	public static function resend( string $purpose, string $token, ?bool $deliverable = null ) {
 		$challenge = self::load( $purpose, $token );
 		if ( ! $challenge ) {
 			return self::expired();
@@ -116,6 +116,9 @@ final class OPENBB_Email_Code {
 		$challenge['attempts']  = 0;
 		$challenge['sends']    += 1;
 		$challenge['sent_at']   = time();
+		if ( null !== $deliverable ) {
+			$challenge['deliverable'] = $deliverable;
+		}
 		if ( ! self::save( $token, $challenge ) ) {
 			return self::failed();
 		}
@@ -146,7 +149,9 @@ final class OPENBB_Email_Code {
 		$code = preg_replace( '/\D/', '', $code );
 		if ( ! $challenge['deliverable'] || ! hash_equals( $challenge['code_hash'], self::hash_code( $code, $token ) ) ) {
 			$challenge['attempts'] += 1;
-			self::save( $token, $challenge );
+			if ( ! self::save( $token, $challenge ) ) {
+				return self::failed();
+			}
 			if ( $challenge['attempts'] >= self::MAX_ATTEMPTS ) {
 				return self::too_many_attempts();
 			}
@@ -172,6 +177,43 @@ final class OPENBB_Email_Code {
 		if ( '' !== $token ) {
 			delete_transient( self::key( $token ) );
 		}
+	}
+
+	public static function token( string $purpose, ?WP_REST_Request $request = null ): string {
+		$cookie = 'openbb_' . $purpose;
+		if ( isset( $_COOKIE[ $cookie ] ) ) {
+			return sanitize_text_field( wp_unslash( $_COOKIE[ $cookie ] ) );
+		}
+		// Internal requests (e.g. tests) have no superglobal cookie.
+		$cookies = $request ? $request->get_header( 'cookie' ) : '';
+		if ( $cookies && preg_match( '/(?:^|;\s*)' . preg_quote( $cookie, '/' ) . '=([A-Za-z0-9]+)/', $cookies, $match ) ) {
+			return $match[1];
+		}
+		return '';
+	}
+
+	public static function set_cookie( string $purpose, string $token, int $ttl ): void {
+		$cookie = 'openbb_' . $purpose;
+		if ( '' === $token ) {
+			unset( $_COOKIE[ $cookie ] );
+		} else {
+			$_COOKIE[ $cookie ] = $token;
+		}
+		if ( headers_sent() ) {
+			return;
+		}
+		setcookie(
+			$cookie,
+			$token,
+			array(
+				'expires'  => $ttl > 0 ? time() + $ttl : 1,
+				'path'     => COOKIEPATH ? COOKIEPATH : '/',
+				'domain'   => COOKIE_DOMAIN ? COOKIE_DOMAIN : '',
+				'secure'   => is_ssl(),
+				'httponly' => true,
+				'samesite' => 'Lax',
+			)
+		);
 	}
 
 	/**

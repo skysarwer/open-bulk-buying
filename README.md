@@ -110,9 +110,9 @@ In **Co-op > Settings > General**, turn on **Allow signups** to let people
 join from the website (see [Member signup](#member-signup)). Signups are off
 by default.
 
-Turn on **Allow login links** to let people log in with a single-use link sent
-by email instead of their password (see [Member login](#member-login)). Login
-links are off by default.
+Turn on **Allow members to log in with an email code** to offer a one-time
+email code instead of a password (see [Member login](#member-login)). Email-code
+login is off by default. This is passwordless login, not enforced two-factor authentication.
 
 Under **Bot protection**, choose **Cloudflare Turnstile** to make the public
 signup and login forms check that visitors are human (see
@@ -174,7 +174,7 @@ emails (code, account exists, welcome) can be changed with the
 
 All plugin-authored email subjects and bodies live in `inc/emails/`: signup
 codes, existing-account notices, application/welcome messages (including
-approval), login links and password-required notices. Services still handle
+approval), login codes and password-required notices. Services still handle
 recipients, eligibility, sending and the existing `openbb_signup_email` and
 `openbb_login_email` filters. Staff-created accounts continue to use WordPress's
 standard set-your-password notification, whose template is owned by WordPress.
@@ -192,27 +192,40 @@ signup shortcode.
 [openbb_login title="Welcome back" login_redirect="/shop/"]
 ```
 
-People log in with their username or email and password. When **Allow login
-links** is on in the general settings, they can ask for a login link by email
-instead. Links work once, expire after 15 minutes, and
-only the most recent link sent to an account works. Turning the setting off
-also stops links that were already sent from working. Opening a link shows a
-"Log in" confirmation button, so email scanners that open links can't use
-them up. The login form links to the signup form, and the signup form links
+People log in with their username or email and password. When **Allow members
+to log in with an email code** is on, they can request a six-digit code instead.
+They enter or paste it in the same tab, even when checking email on another device.
+Codes work once, expire after 15 minutes, and are bound to the requesting browser
+by an HttpOnly cookie. Reloading restores the pending code screen. Resending has
+a 60-second cooldown, replaces the previous code without extending the expiry,
+and is limited to five sends per challenge; five incorrect attempts lock a code.
+Turning the setting off also stops pending codes from working.
+The login form links to the signup form, and the signup form links
 back, on the same page. People who are already logged in see who they are
 logged in as, with a link to continue and a log-out link.
 
 Password logins go through `wp_signon()`, so plugins that hook WordPress
-authentication (for example two-factor plugins) still apply. Login links skip
+authentication (for example two-factor plugins) still apply. Email-code logins skip
 that step, so by default editors and administrators (anyone who can edit
 others' posts, plus network super admins) can't use them. When one of them
-asks for a link, the form responds as usual, but the email tells them to log
+asks for a code, the form responds as usual, but the email tells them to log
 in with their password instead, with a password reset link. The
-`openbb_login_link_allowed` filter can change who may use links. The core
+`openbb_login_code_allowed` filter can change who may use codes. Sites requiring
+additional authentication for other accounts must exclude those accounts using
+this filter, or leave email-code login disabled; it does not enforce 2FA. The core
 `login_redirect` filter is
-applied to the redirect, and the login link email can be changed with the
-`openbb_login_email` filter. The login routes are rate-limited per IP address
+applied to the redirect, and the login email can be changed with the
+`openbb_login_email` filter (its third argument is now the code, or the login page
+for password-required notices). The login routes are rate-limited per IP address
 like the signup routes.
+
+The former `allow_login_links` preference is read as `allow_login_codes` until
+settings are next saved, preserving whether passwordless login was enabled.
+The link routes, URL tokens and confirmation screen have been removed.
+The old `openbb_login_link_allowed` policy filter remains a compatibility input
+to `openbb_login_code_allowed` so existing account restrictions aren't silently lost.
+New integrations should use `openbb_login_code_allowed`.
+Previously emailed login links no longer work; request a code instead.
 
 Themes and other plugins can show the same view with
 `openbb_render_login( array( 'title' => ..., 'intro' => ..., 'login_redirect' => ... ) )`.
@@ -240,10 +253,10 @@ When it's on, the check is required to:
 
 - start a signup (visitors only; logged-in people joining aren't asked),
 - log in with a password,
-- send or resend a login link.
+- send or resend a login code.
 
-Entering the emailed signup code and opening a login link aren't checked;
-they rely on the emailed code or link and the rate limits. If Cloudflare
+Entering emailed signup and login codes isn't checked;
+verification relies on the browser-bound code and rate limits. If Cloudflare
 can't be reached, or rejects the secret key, the forms show an error and the
 problem is written to the PHP error log. For local testing, Cloudflare's
 test keys (site key `1x00000000000000000000AA`, secret key

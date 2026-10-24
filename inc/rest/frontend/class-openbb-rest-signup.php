@@ -229,45 +229,15 @@ class OPENBB_REST_Signup extends OPENBB_REST_Controller {
 	}
 
 	private static function token( WP_REST_Request $request ): string {
-		$cookies = $request->get_header( 'cookie' );
-		if ( isset( $_COOKIE[ self::COOKIE ] ) ) {
-			return sanitize_text_field( wp_unslash( $_COOKIE[ self::COOKIE ] ) );
-		}
-
-		// Internal requests (e.g. tests) have no superglobal cookie.
-		if ( $cookies && preg_match( '/(?:^|;\s*)' . self::COOKIE . '=([A-Za-z0-9]+)/', $cookies, $match ) ) {
-			return $match[1];
-		}
-
-		return '';
+		return OPENBB_Email_Code::token( OPENBB_Email_Code::PURPOSE_SIGNUP, $request );
 	}
 
 	private static function set_cookie( string $token, int $ttl ): void {
-		// Mirrored for the rest of this request (and for tests, where headers are already sent).
-		if ( '' === $token ) {
-			unset( $_COOKIE[ self::COOKIE ] );
-		} else {
-			$_COOKIE[ self::COOKIE ] = $token;
-		}
-		if ( headers_sent() ) {
-			return;
-		}
-		setcookie(
-			self::COOKIE,
-			$token,
-			array(
-				'expires'  => $ttl > 0 ? time() + $ttl : 1,
-				'path'     => COOKIEPATH ? COOKIEPATH : '/',
-				'domain'   => COOKIE_DOMAIN ? COOKIE_DOMAIN : '',
-				'secure'   => is_ssl(),
-				'httponly' => true,
-				'samesite' => 'Lax',
-			)
-		);
+		OPENBB_Email_Code::set_cookie( OPENBB_Email_Code::PURPOSE_SIGNUP, $token, $ttl );
 	}
 
 	/**
-	 * Logs a user in (a new member here, or a login link in OPENBB_REST_Login). The nonce in
+	 * Logs a user in (a new member here, or a login code in OPENBB_REST_Login). The nonce in
 	 * the response must belong to the new session, which wp_create_nonce() reads from the
 	 * logged-in cookie, so it's mirrored into $_COOKIE.
 	 */

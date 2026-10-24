@@ -41,7 +41,7 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 	};
 	const isDirty =
 		draft.allow_signups !== settings.allow_signups ||
-		draft.allow_login_links !== settings.allow_login_links ||
+		draft.allow_login_codes !== settings.allow_login_codes ||
 		draft.captcha_provider !== settings.captcha_provider ||
 		draft.turnstile_site_key !== settings.turnstile_site_key ||
 		secret !== '' ||
@@ -109,11 +109,14 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 				<Section title={ __( 'Login', 'open-bulk-buying' ) }>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'Allow login links', 'open-bulk-buying' ) }
+						label={ __(
+							'Allow members to log in with an email code',
+							'open-bulk-buying'
+						) }
 						help={
-							draft.allow_login_links
+							draft.allow_login_codes
 								? __(
-										'The [openbb_login] form also lets people log in with a single-use link sent by email. Editors and administrators must still use their password.',
+										'Members can use a one-time email code instead of their password. Editors and administrators must still use their password. This is passwordless login, not two-factor authentication.',
 										'open-bulk-buying'
 								  )
 								: __(
@@ -121,8 +124,8 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 										'open-bulk-buying'
 								  )
 						}
-						checked={ draft.allow_login_links }
-						onChange={ change( 'allow_login_links' ) }
+						checked={ draft.allow_login_codes }
+						onChange={ change( 'allow_login_codes' ) }
 						disabled={ isBusy }
 					/>
 				</Section>

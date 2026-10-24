@@ -41,7 +41,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-profile-fields.p
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-email-code.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/emails/class-openbb-emails.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-signup.php';
-require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-login-link.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-login-code.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/product/units.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/product/post-type.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/product/class-openbb-product.php';

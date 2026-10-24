@@ -9,6 +9,7 @@
 import * as interactivity from '@wordpress/interactivity';
 import {
 	afterRender,
+	codeInput,
 	findField,
 	focusField,
 	setErrors,
@@ -182,20 +183,12 @@ const { state } = store( 'openbb/signup', {
 		},
 
 		codeInput( event ) {
-			const ctx = getContext();
-			const formCtx = getContext( FORMS );
-			const input = event.target;
-			const digits = input.value
-				.replace( /\D/g, '' )
-				.slice( 0, state.codeLength );
-			if ( input.value !== digits ) {
-				input.value = digits;
-			}
-			formCtx.values.code = digits;
-			delete formCtx.errors.code;
-			if ( digits.length === state.codeLength && ! ctx.busy ) {
-				input.form.requestSubmit();
-			}
+			codeInput(
+				event,
+				getContext( FORMS ),
+				state.codeLength,
+				getContext().busy
+			);
 		},
 
 		verify: withSyncEvent( function* ( event ) {

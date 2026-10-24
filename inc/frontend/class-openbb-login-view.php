@@ -2,9 +2,8 @@
 /**
  * The login view: [openbb_login], and the login panel of the signup view.
  *
- * Visitors log in with their email or username and password, or ask for a single-use
- * login link by email (OPENBB_Login_Link). A link opens the page it was asked from, which
- * shows a "Log in" button to confirm. Signed-in users see who they're logged in as.
+ * Visitors log in with their email or username and password, or enter a single-use
+ * emailed code in the requesting browser. Signed-in users see who they're logged in as.
  *
  * Both shortcodes render the same two panels in an `openbb/auth` region (see auth()):
  * [openbb_login] starts on the login form and [openbb_signup] on the signup form, and
@@ -63,14 +62,14 @@ final class OPENBB_Login_View {
 
 	/**
 	 * The login and signup panels, $default shown first, with switching between them.
-	 * A login link always opens on the login panel. Returns processed markup.
+	 * A pending login code reopens on the login panel. Returns processed markup.
 	 *
 	 * @param string   $default login or signup.
 	 * @param string[] $panels  Unprocessed markup keyed by login and signup; either may be missing.
 	 */
 	public static function auth( string $default, array $panels ): string {
 		$panels = array_filter( array_intersect_key( $panels, array_flip( array( 'login', 'signup' ) ) ) );
-		if ( isset( $panels['login'] ) && '' !== self::link_token() ) {
+		if ( isset( $panels['login'] ) && OPENBB_REST_Login::pending() ) {
 			$default = 'login';
 		}
 		if ( ! isset( $panels[ $default ] ) ) {
@@ -117,23 +116,21 @@ final class OPENBB_Login_View {
 
 		OPENBB_Frontend::enqueue( array( OPENBB_Frontend::MODULE_LOGIN ) );
 
-		$token = self::link_token();
-		$link  = '' !== $token ? OPENBB_Login_Link::peek( $token ) : null;
+		$pending = OPENBB_REST_Login::pending();
+		$wait    = $pending ? $pending['resend_after'] : 0;
 
 		$context = array(
 			'current'   => array(
-				'form'    => ! $link,
-				'sent'    => false,
-				'confirm' => (bool) $link,
+				'form' => ! $pending,
+				'code' => (bool) $pending,
 			),
-			'link'      => '' !== $token,
+			'useCode'   => (bool) $pending,
 			'busy'      => false,
-			'notice'    => '' !== $token && ! $link ? __( 'This login link has expired or was already used. Ask for a new one below.', 'open-bulk-buying' ) : '',
+			'notice'    => '',
 			'status'    => '',
-			'login'     => '',
-			'token'     => $link ? $token : '',
-			'resendIn'  => 0,
-			'canResend' => true,
+			'login'     => $pending ? $pending['payload']['login'] : '',
+			'resendIn'  => $wait,
+			'canResend' => 0 === $wait,
 			'focus'     => false,
 			'redirect'  => (string) $args['login_redirect'],
 			'page'      => OPENBB_Frontend::current_url(),
@@ -143,18 +140,18 @@ final class OPENBB_Login_View {
 		wp_interactivity_state(
 			'openbb/login',
 			array(
-				'restUrl'   => rest_url( OPENBB_REST_Controller::API_NAMESPACE . '/login' ),
-				'nonce'     => wp_create_nonce( 'wp_rest' ),
-				'queryArg'  => OPENBB_Login_Link::QUERY_ARG,
-				'messages'  => array(
-					'fixErrors'  => __( 'Some details need attention.', 'open-bulk-buying' ),
-					'network'    => __( 'Something went wrong. Check your connection and try again.', 'open-bulk-buying' ),
-					'linkResent' => __( 'We sent you a new link.', 'open-bulk-buying' ),
+				'restUrl'    => rest_url( OPENBB_REST_Controller::API_NAMESPACE . '/login' ),
+				'nonce'      => wp_create_nonce( 'wp_rest' ),
+				'codeLength' => OPENBB_Email_Code::LENGTH,
+				'messages'   => array(
+					'fixErrors'    => __( 'Some details need attention.', 'open-bulk-buying' ),
+					'network'      => __( 'Something went wrong. Check your connection and try again.', 'open-bulk-buying' ),
+					'codeResent'   => __( 'We sent you a new code. Use the newest email.', 'open-bulk-buying' ),
+					/* translators: %d: number of digits. */
+					'codeRequired' => sprintf( __( 'Enter the %d-digit code from your email.', 'open-bulk-buying' ), OPENBB_Email_Code::LENGTH ),
 				),
 			)
 		);
-
-		$link_user = $link ? get_userdata( $link['user_id'] ) : false;
 
 		return OPENBB_Frontend::template(
 			'login',
@@ -164,12 +161,11 @@ final class OPENBB_Login_View {
 				'intro'        => (string) $args['intro'],
 				'heading_tag'  => '' !== $args['title'] ? 'h3' : 'h2',
 				'can_switch'   => $can_switch,
-				'links'        => OPENBB_Login_Link::enabled(),
+				'codes'        => OPENBB_Login_Code::enabled(),
 				'captcha'      => OPENBB_Captcha::field( OPENBB_Captcha::ACTION_LOGIN ),
-				// Resending a link is a new request, so the sent step has its own widget.
-				'captcha_sent' => OPENBB_Login_Link::enabled() ? OPENBB_Captcha::field( OPENBB_Captcha::ACTION_LOGIN ) : '',
-				'link_email'   => $link_user ? $link_user->user_email : '',
-				'link_minutes' => (int) ( OPENBB_Login_Link::TTL / MINUTE_IN_SECONDS ),
+				'captcha_code' => OPENBB_Login_Code::enabled() ? OPENBB_Captcha::field( OPENBB_Captcha::ACTION_LOGIN ) : '',
+				'code_length'  => OPENBB_Email_Code::LENGTH,
+				'code_minutes' => (int) ( OPENBB_Email_Code::TTL / MINUTE_IN_SECONDS ),
 				'lost_url'     => wp_lostpassword_url( (string) $args['login_redirect'] ),
 				'context'      => $context,
 				'fields'       => array(
@@ -180,6 +176,7 @@ final class OPENBB_Login_View {
 						'required'     => true,
 						'autocomplete' => 'username',
 						'maxlength'    => 100,
+						'value'        => $pending ? $pending['payload']['login'] : '',
 						'id_prefix'    => self::ID,
 					),
 					'password' => array(
@@ -200,7 +197,7 @@ final class OPENBB_Login_View {
 				),
 				'form_context' => array(
 					'values' => array(
-						'login'    => '',
+						'login'    => $pending ? $pending['payload']['login'] : '',
 						'password' => '',
 						'remember' => false,
 					),
@@ -208,19 +205,6 @@ final class OPENBB_Login_View {
 				),
 			)
 		);
-	}
-
-	/**
-	 * The login link token in the current request, if any (ignored when links are off).
-	 */
-	private static function link_token(): string {
-		if ( ! OPENBB_Login_Link::enabled() ) {
-			return '';
-		}
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- the token is its own proof; it's only used after the person confirms.
-		$token = isset( $_GET[ OPENBB_Login_Link::QUERY_ARG ] ) ? sanitize_text_field( wp_unslash( $_GET[ OPENBB_Login_Link::QUERY_ARG ] ) ) : '';
-
-		return is_string( $token ) ? $token : '';
 	}
 }
 

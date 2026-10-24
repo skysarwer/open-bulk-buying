@@ -11,6 +11,27 @@ import { store, getContext, getElement } from '@wordpress/interactivity';
 
 const FIELD = '[data-openbb-field]';
 
+/**
+ * Normalizes a typed/pasted email code and submits once all digits are present.
+ *
+ * @param {Event}   event
+ * @param {Object}  ctx    Field values and errors.
+ * @param {number}  length
+ * @param {boolean} busy
+ */
+export function codeInput( event, ctx, length, busy ) {
+	const input = event.target;
+	const digits = input.value.replace( /\D/g, '' ).slice( 0, length );
+	if ( input.value !== digits ) {
+		input.value = digits;
+	}
+	ctx.values.code = digits;
+	delete ctx.errors.code;
+	if ( digits.length === length && ! busy ) {
+		input.form.requestSubmit();
+	}
+}
+
 const { state } = store( 'openbb/forms', {
 	actions: {
 		change( event ) {
@@ -19,7 +40,10 @@ const { state } = store( 'openbb/forms', {
 				return;
 			}
 			const ctx = getContext();
-			ctx.values[ wrapper.dataset.name ] = readValue( wrapper, event.target );
+			ctx.values[ wrapper.dataset.name ] = readValue(
+				wrapper,
+				event.target
+			);
 			delete ctx.errors[ wrapper.dataset.name ];
 		},
 	},
@@ -54,7 +78,9 @@ function readValue( wrapper, target ) {
 		}
 		case 'select':
 			return target.multiple
-				? [ ...target.selectedOptions ].map( ( option ) => option.value )
+				? [ ...target.selectedOptions ].map(
+						( option ) => option.value
+				  )
 				: target.value;
 		default:
 			return target.value;
@@ -86,7 +112,9 @@ export const afterRender = () =>
  * @return {Element|null} Wrapper element.
  */
 export const findField = ( container, name ) =>
-	container.querySelector( `${ FIELD }[data-name="${ CSS.escape( name ) }"]` );
+	container.querySelector(
+		`${ FIELD }[data-name="${ CSS.escape( name ) }"]`
+	);
 
 /**
  * Checks the editable fields inside `container` against the values in `ctx` (an
@@ -167,7 +195,11 @@ export async function focusField( container, name ) {
 	}
 	await afterRender();
 	control.focus();
-	if ( typeof control.select === 'function' && control.type !== 'checkbox' && control.type !== 'radio' ) {
+	if (
+		typeof control.select === 'function' &&
+		control.type !== 'checkbox' &&
+		control.type !== 'radio'
+	) {
 		control.select();
 	}
 }

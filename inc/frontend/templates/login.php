@@ -3,8 +3,8 @@
  * The login form. Rendered by OPENBB_Login_View, then run through the Interactivity API's
  * server-side processing as part of the login/signup view.
  *
- * Steps (context.current): form (password, or email-link with context.link), sent (check
- * your email), confirm (a login link was opened: confirm to log in).
+ * Steps (context.current): form (password, or email-code with context.useCode),
+ * code (enter the emailed code without leaving this browser).
  *
  * @var array $view See OPENBB_Login_View::panel().
  *
@@ -39,7 +39,6 @@ $openbb_section = static function ( string $step ) use ( $openbb_id ): string {
 	id="<?php echo esc_attr( $openbb_id ); ?>"
 	data-wp-interactive="openbb/login"
 	<?php echo wp_interactivity_data_wp_context( $view['context'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-	data-wp-init="callbacks.cleanUrl"
 	data-wp-watch="callbacks.countdown"
 >
 	<?php if ( '' !== $view['title'] ) : ?>
@@ -66,13 +65,13 @@ $openbb_section = static function ( string $step ) use ( $openbb_id ): string {
 			data-wp-on--submit="actions.submit"
 			data-wp-bind--aria-busy="context.busy"
 		>
-			<p class="openbb-form__hint" data-wp-bind--hidden="!context.link"><?php esc_html_e( 'We\'ll email you a link that logs you in, so you don\'t need a password.', 'open-bulk-buying' ); ?></p>
+			<p class="openbb-form__hint" data-wp-bind--hidden="!context.useCode"><?php esc_html_e( 'We\'ll email you a code to enter here, so you don\'t need a password.', 'open-bulk-buying' ); ?></p>
 
 			<div class="openbb-fields" data-login-fields>
 				<?php echo openbb_render_field( $view['fields']['login'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</div>
 
-			<div class="openbb-fields openbb-login__password" data-wp-bind--hidden="context.link">
+			<div class="openbb-fields openbb-login__password" data-wp-bind--hidden="context.useCode">
 				<?php echo openbb_render_field( $view['fields']['password'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php echo openbb_render_field( $view['fields']['remember'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</div>
@@ -81,17 +80,17 @@ $openbb_section = static function ( string $step ) use ( $openbb_id ): string {
 
 			<div class="openbb-actions">
 				<button type="submit" class="openbb-button openbb-button--primary" data-wp-bind--disabled="context.busy">
-					<span data-wp-bind--hidden="context.link"><?php esc_html_e( 'Log in', 'open-bulk-buying' ); ?></span>
-					<span data-wp-bind--hidden="!context.link"><?php esc_html_e( 'Email me a login link', 'open-bulk-buying' ); ?></span>
+					<span data-wp-bind--hidden="context.useCode"><?php esc_html_e( 'Log in', 'open-bulk-buying' ); ?></span>
+					<span data-wp-bind--hidden="!context.useCode"><?php esc_html_e( 'Email me a code', 'open-bulk-buying' ); ?></span>
 				</button>
-				<a class="openbb-login__lost" href="<?php echo esc_url( $view['lost_url'] ); ?>" data-wp-bind--hidden="context.link"><?php esc_html_e( 'Forgot your password?', 'open-bulk-buying' ); ?></a>
+				<a class="openbb-login__lost" href="<?php echo esc_url( $view['lost_url'] ); ?>" data-wp-bind--hidden="context.useCode"><?php esc_html_e( 'Forgot your password?', 'open-bulk-buying' ); ?></a>
 			</div>
 
-			<?php if ( $view['links'] ) : ?>
+			<?php if ( $view['codes'] ) : ?>
 				<p class="openbb-login__method">
 					<button type="button" class="openbb-button openbb-button--link" data-wp-on--click="actions.toggleMethod" data-wp-bind--disabled="context.busy">
-						<span data-wp-bind--hidden="context.link"><?php esc_html_e( 'Email me a login link instead', 'open-bulk-buying' ); ?></span>
-						<span data-wp-bind--hidden="!context.link"><?php esc_html_e( 'Log in with a password instead', 'open-bulk-buying' ); ?></span>
+						<span data-wp-bind--hidden="context.useCode"><?php esc_html_e( 'Email me a code instead', 'open-bulk-buying' ); ?></span>
+						<span data-wp-bind--hidden="!context.useCode"><?php esc_html_e( 'Log in with a password instead', 'open-bulk-buying' ); ?></span>
 					</button>
 				</p>
 			<?php endif; ?>
@@ -105,27 +104,35 @@ $openbb_section = static function ( string $step ) use ( $openbb_id ): string {
 		<?php endif; ?>
 	</section>
 
-	<?php echo $openbb_section( 'sent' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-		<?php echo $openbb_heading( 'sent', __( 'Check your email', 'open-bulk-buying' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-		<p>
+	<?php if ( $view['codes'] ) : ?>
+	<?php echo $openbb_section( 'code' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<?php echo $openbb_heading( 'code', __( 'Check your email', 'open-bulk-buying' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<p id="<?php echo esc_attr( $openbb_id ); ?>-code-intro">
 			<?php
 			printf(
 				/* translators: %s: the email address or username entered. */
-				esc_html__( 'If there\'s an account for %s, we\'ve emailed it a login link.', 'open-bulk-buying' ),
+				esc_html__( 'If there\'s an eligible account for %s, we\'ve emailed it a login code. Enter it here to continue.', 'open-bulk-buying' ),
 				'<strong data-wp-text="context.login"></strong>'
 			);
 			echo ' ';
 			printf(
 				/* translators: %d: minutes. */
-				esc_html( _n( 'The link works once and expires in %d minute.', 'The link works once and expires in %d minutes.', $view['link_minutes'], 'open-bulk-buying' ) ),
-				(int) $view['link_minutes']
+				esc_html( _n( 'The code works once and expires in %d minute.', 'The code works once and expires in %d minutes.', $view['code_minutes'], 'open-bulk-buying' ) ),
+				(int) $view['code_minutes']
 			);
 			?>
 		</p>
-		<?php echo $view['captcha_sent']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped by OPENBB_Captcha::field(). ?>
+		<form class="openbb-form" novalidate
+			<?php echo wp_interactivity_data_wp_context( array( 'values' => array( 'code' => '' ), 'errors' => new stdClass() ), 'openbb/forms' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			data-wp-on--submit="actions.verify" data-wp-bind--aria-busy="context.busy"
+			data-wp-watch="callbacks.resetCode"
+		>
+		<?php echo OPENBB_Frontend::template( 'code-field', array( 'id' => $openbb_id, 'code_length' => $view['code_length'] ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<?php echo $view['captcha_code']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- required only when resending. ?>
 		<div class="openbb-actions">
+			<button type="submit" class="openbb-button openbb-button--primary" data-wp-bind--disabled="context.busy"><?php esc_html_e( 'Log in', 'open-bulk-buying' ); ?></button>
 			<button type="button" class="openbb-button openbb-button--secondary" data-wp-on--click="actions.resend" data-wp-bind--disabled="!context.canResend">
-				<?php esc_html_e( 'Send a new link', 'open-bulk-buying' ); ?>
+				<?php esc_html_e( 'Send a new code', 'open-bulk-buying' ); ?>
 				<span class="openbb-countdown" data-wp-bind--hidden="context.canResend">
 					<?php
 					/* translators: %s: number of seconds, updated live. */
@@ -133,24 +140,10 @@ $openbb_section = static function ( string $step ) use ( $openbb_id ): string {
 					?>
 				</span>
 			</button>
-			<button type="button" class="openbb-button openbb-button--link" data-wp-on--click="actions.back" data-wp-bind--disabled="context.busy"><?php esc_html_e( 'Back', 'open-bulk-buying' ); ?></button>
+			<button type="button" class="openbb-button openbb-button--link" data-wp-on--click="actions.back" data-wp-bind--disabled="context.busy"><?php esc_html_e( 'Change email or login method', 'open-bulk-buying' ); ?></button>
 		</div>
-		<p class="openbb-form__hint"><?php esc_html_e( 'No email? Check your spam folder, or send a new link.', 'open-bulk-buying' ); ?></p>
+		<p class="openbb-form__hint"><?php esc_html_e( 'No email? Check your spam folder, or send a new code.', 'open-bulk-buying' ); ?></p>
+		</form>
 	</section>
-
-	<?php echo $openbb_section( 'confirm' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-		<?php echo $openbb_heading( 'confirm', __( 'Log in', 'open-bulk-buying' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-		<?php if ( '' !== $view['link_email'] ) : ?>
-			<p>
-				<?php
-				/* translators: %s: email address. */
-				printf( esc_html__( 'Log in as %s?', 'open-bulk-buying' ), '<strong>' . esc_html( $view['link_email'] ) . '</strong>' );
-				?>
-			</p>
-		<?php endif; ?>
-		<div class="openbb-actions">
-			<button type="button" class="openbb-button openbb-button--primary" data-autofocus data-wp-on--click="actions.confirm" data-wp-bind--disabled="context.busy"><?php esc_html_e( 'Log in', 'open-bulk-buying' ); ?></button>
-			<button type="button" class="openbb-button openbb-button--link" data-wp-on--click="actions.back" data-wp-bind--disabled="context.busy"><?php esc_html_e( 'Cancel', 'open-bulk-buying' ); ?></button>
-		</div>
-	</section>
+	<?php endif; ?>
 </div>

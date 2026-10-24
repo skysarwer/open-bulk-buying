@@ -10,7 +10,6 @@ class Test_OPENBB_Email_Templates extends OPENBB_TestCase {
 	public function test_all_template_subjects_and_bodies(): void {
 		update_option( 'blogname', 'Food &amp; Friends' );
 		$site = 'Food & Friends';
-		$url = home_url( '/login/?token=example' );
 		$page = home_url( '/login/' );
 		$cases = array(
 			array(
@@ -38,16 +37,16 @@ class Test_OPENBB_Email_Templates extends OPENBB_TestCase {
 				"Hi Jane,\n\nWelcome to $site! You can place an order whenever an order cycle is open." . $this->welcome_footer(),
 			),
 			array(
-				'login-link',
-				array( 'url' => $url, 'minutes' => 15 ),
-				"[$site] Your login link",
-				"Use this link to log in to $site:\n\n$url\n\nThe link works once and expires in 15 minutes.\n\nIf you didn't ask to log in, you can ignore this email.",
+				'login-code',
+				array( 'code' => '123 456', 'minutes' => 15 ),
+				"[$site] Your login code: 123 456",
+				"Enter this code in the browser where you asked to log in to $site:\n\n123 456\n\nThe code works once and expires in 15 minutes. Don't share it with anyone.\n\nIf you didn't ask to log in, you can ignore this email.",
 			),
 			array(
 				'password-required',
 				array( 'page' => $page ),
 				"[$site] Log in with your password",
-				"Someone asked for a login link for your account on $site.\n\nAccounts that can manage the site can't log in with an emailed link. Please log in with your password instead:\n\n$page\n\nIf you've forgotten your password, you can reset it here:\n\n" . wp_lostpassword_url( $page ) . "\n\nIf you didn't ask to log in, you can ignore this email.",
+				"Someone asked for a login code for your account on $site.\n\nEmail-code login isn't available for this account. Please log in with your password instead:\n\n$page\n\nIf you've forgotten your password, you can reset it here:\n\n" . wp_lostpassword_url( $page ) . "\n\nIf you didn't ask to log in, you can ignore this email.",
 			),
 		);
 

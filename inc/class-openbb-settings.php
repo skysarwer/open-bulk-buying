@@ -12,10 +12,17 @@ final class OPENBB_Settings {
 	const GENERAL_OPTION = 'openbb_general_settings';
 
 	public static function get_general(): array {
+		$settings = get_option( self::GENERAL_OPTION, array() );
+		// Preserve the passwordless preference until the renamed setting is next saved.
+		if ( ! array_key_exists( 'allow_login_codes', $settings ) && array_key_exists( 'allow_login_links', $settings ) ) {
+			$settings['allow_login_codes'] = $settings['allow_login_links'];
+		}
+		unset( $settings['allow_login_links'] );
+
 		return array_merge(
 			array(
 				'allow_signups'                 => false,
-				'allow_login_links'             => false,
+				'allow_login_codes'             => false,
 				'captcha_provider'              => 'none',
 				'turnstile_site_key'            => '',
 				'require_member_approval'       => true,
@@ -23,7 +30,7 @@ final class OPENBB_Settings {
 				'membership_fee_amount'         => 0,
 				'membership_fee_order_interval' => 1,
 			),
-			get_option( self::GENERAL_OPTION, array() )
+			$settings
 		);
 	}
 }

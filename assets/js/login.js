@@ -1,15 +1,16 @@
 /**
  * Store `openbb/login`: the login form rendered by OPENBB_Login_View (no build step).
  *
- * Steps are switched in place (context.current). With context.link the form asks for an
- * emailed login link instead of a password. Field values and errors live in the
+ * Steps are switched in place (context.current). With context.useCode the form asks for an
+ * emailed login code instead of a password. Field values and errors live in the
  * `openbb/forms` context of the <form>.
  *
- * REST: POST login, login/link, login/link/verify (inc/rest/frontend/class-openbb-rest-login.php).
+ * REST: POST login, login/code, login/code/resend, login/code/verify.
  */
 import * as interactivity from '@wordpress/interactivity';
 import {
 	afterRender,
+	codeInput,
 	findField,
 	focusField,
 	setErrors,
@@ -62,7 +63,7 @@ async function post( path, body ) {
 	return { ok: response.ok, data };
 }
 
-const linkBody = ( ctx, login, root ) => ( {
+const codeBody = ( ctx, login, root ) => ( {
 	login,
 	redirect_to: ctx.redirect,
 	page: ctx.page,
@@ -81,10 +82,10 @@ const { state } = store( 'openbb/login', {
 			}
 
 			ctx.notice = '';
-			const container = ctx.link
+			const container = ctx.useCode
 				? form.querySelector( '[data-login-fields]' )
 				: form;
-			if ( ctx.link ) {
+			if ( ctx.useCode ) {
 				delete formCtx.errors.password;
 			}
 			const invalid = Object.keys( validate( container, formCtx ) );
@@ -98,15 +99,15 @@ const { state } = store( 'openbb/login', {
 			ctx.busy = true;
 			let leaving = false;
 			try {
-				if ( ctx.link ) {
+				if ( ctx.useCode ) {
 					const { ok, data } = yield post(
-						'/link',
-						linkBody( ctx, login, form )
+						'/code',
+						codeBody( ctx, login, form )
 					);
 					if ( ok ) {
 						ctx.login = login;
 						startCountdown( ctx, data.resend_after );
-						go( ctx, 'sent' );
+						go( ctx, 'code' );
 						return;
 					}
 					if ( data?.data?.errors ) {
@@ -154,21 +155,23 @@ const { state } = store( 'openbb/login', {
 
 		toggleMethod() {
 			const ctx = getContext();
-			ctx.link = ! ctx.link;
+			ctx.useCode = ! ctx.useCode;
 			ctx.notice = '';
 			const { ref } = getElement();
 			const field = findField( ref.closest( 'form' ), 'login' );
-			afterRender().then( () => field?.querySelector( 'input' )?.focus() );
+			afterRender().then( () =>
+				field?.querySelector( 'input' )?.focus()
+			);
 		},
 
 		back() {
 			const ctx = getContext();
-			ctx.token = '';
 			go( ctx, 'form' );
 		},
 
 		*resend() {
 			const ctx = getContext();
+			const formCtx = getContext( FORMS );
 			if ( ctx.busy || ! ctx.canResend ) {
 				return;
 			}
@@ -178,14 +181,21 @@ const { state } = store( 'openbb/login', {
 			ctx.status = '';
 			const step = getElement().ref.closest( '[data-step]' );
 			try {
-				const { ok, data } = yield post(
-					'/link',
-					linkBody( ctx, ctx.login, step )
-				);
+				const { ok, data } = yield post( '/code/resend', {
+					captcha: captchaFields( step ),
+				} );
 				if ( ok ) {
 					startCountdown( ctx, data.resend_after );
-					ctx.status = state.messages.linkResent;
+					formCtx.values.code = '';
+					delete formCtx.errors.code;
+					const input = step.querySelector( 'input[name="code"]' );
+					input.value = '';
+					input.focus();
+					ctx.status = state.messages.codeResent;
 					return;
+				}
+				if ( data?.data?.resend_after ) {
+					startCountdown( ctx, data.data.resend_after );
 				}
 				ctx.notice = data?.message || state.messages.network;
 			} finally {
@@ -194,37 +204,68 @@ const { state } = store( 'openbb/login', {
 			}
 		},
 
-		*confirm() {
+		codeInput( event ) {
+			codeInput(
+				event,
+				getContext( FORMS ),
+				state.codeLength,
+				getContext().busy
+			);
+		},
+
+		verify: withSyncEvent( function* ( event ) {
+			event.preventDefault();
 			const ctx = getContext();
+			const formCtx = getContext( FORMS );
+			const form = event.target;
 			if ( ctx.busy ) {
 				return;
 			}
 
+			const code = formCtx.values.code || '';
+			if ( code.length !== state.codeLength ) {
+				formCtx.errors.code = state.messages.codeRequired;
+				focusField( form, 'code' );
+				return;
+			}
 			ctx.busy = true;
 			ctx.notice = '';
+			ctx.status = '';
 			let leaving = false;
 			try {
-				const { ok, data } = yield post( '/link/verify', {
-					token: ctx.token,
+				const { ok, data } = yield post( '/code/verify', {
+					code,
 				} );
 				if ( ok ) {
 					leaving = true;
 					window.location.assign( data.redirect );
 					return;
 				}
-				ctx.token = '';
-				ctx.link = true;
-				go( ctx, 'form' );
-				ctx.notice = data?.message || state.messages.network;
+				if ( data?.code === 'openbb_code_invalid' ) {
+					formCtx.errors.code = data.message;
+					focusField( form, 'code' );
+				} else {
+					ctx.notice = data?.message || state.messages.network;
+				}
 			} finally {
 				if ( ! leaving ) {
 					ctx.busy = false;
 				}
 			}
-		},
+		} ),
 	},
 
 	callbacks: {
+		resetCode() {
+			if ( ! getContext().current.code ) {
+				return;
+			}
+			const formCtx = getContext( FORMS );
+			formCtx.values.code = '';
+			delete formCtx.errors.code;
+			getElement().ref.elements.code.value = '';
+		},
+
 		// Moves focus to a step when the flow switches to it (not on page load).
 		focusStep() {
 			const ctx = getContext();
@@ -251,16 +292,6 @@ const { state } = store( 'openbb/login', {
 				1000
 			);
 			return () => clearTimeout( timer );
-		},
-
-		// The login link token stays in the context; drop it from the address bar so it
-		// isn't bookmarked, shared or kept in history.
-		cleanUrl() {
-			const url = new URL( window.location.href );
-			if ( url.searchParams.has( state.queryArg ) ) {
-				url.searchParams.delete( state.queryArg );
-				window.history.replaceState( window.history.state, '', url );
-			}
 		},
 	},
 } );

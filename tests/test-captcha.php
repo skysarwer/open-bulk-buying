@@ -34,7 +34,7 @@ class Test_OPENBB_Captcha extends OPENBB_TestCase {
 		add_filter( 'pre_wp_mail', '__return_true' );
 		add_filter( 'send_auth_cookies', '__return_false' );
 		add_filter( 'openbb_rate_limit', '__return_zero' );
-		unset( $_COOKIE[ OPENBB_REST_Signup::COOKIE ] );
+		unset( $_COOKIE[ OPENBB_REST_Signup::COOKIE ], $_COOKIE[ OPENBB_REST_Login::COOKIE ] );
 		wp_set_current_user( 0 );
 		// Keep the verification failure log out of the test output.
 		$this->error_log = (string) ini_set( 'error_log', wp_tempnam( 'openbb-captcha-log' ) );
@@ -52,7 +52,7 @@ class Test_OPENBB_Captcha extends OPENBB_TestCase {
 		$this->set_general(
 			array(
 				'allow_signups'      => true,
-				'allow_login_links'  => true,
+				'allow_login_codes'  => true,
 				'captcha_provider'   => OPENBB_Captcha::PROVIDER_TURNSTILE,
 				'turnstile_site_key' => self::SITE_KEY,
 			)
@@ -67,7 +67,7 @@ class Test_OPENBB_Captcha extends OPENBB_TestCase {
 		remove_filter( 'openbb_rate_limit', '__return_zero' );
 		remove_all_filters( 'openbb_captcha_verify' );
 		remove_all_filters( 'openbb_captcha_field' );
-		unset( $_COOKIE[ OPENBB_REST_Signup::COOKIE ] );
+		unset( $_COOKIE[ OPENBB_REST_Signup::COOKIE ], $_COOKIE[ OPENBB_REST_Login::COOKIE ] );
 		ini_set( 'error_log', $this->error_log );
 		parent::tear_down();
 	}
@@ -124,9 +124,9 @@ class Test_OPENBB_Captcha extends OPENBB_TestCase {
 		);
 	}
 
-	private function send_link( array $extra = array() ): WP_REST_Response {
+	private function send_code( array $extra = array() ): WP_REST_Response {
 		return $this->post(
-			'/login/link',
+			'/login/code',
 			array_merge(
 				array(
 					'login' => 'jane@example.com',
@@ -186,7 +186,7 @@ class Test_OPENBB_Captcha extends OPENBB_TestCase {
 
 		$this->assertSame( 200, $this->login()->get_status() );
 		wp_set_current_user( 0 );
-		$this->assertSame( 200, $this->send_link()->get_status() );
+		$this->assertSame( 200, $this->send_code()->get_status() );
 		$this->assertSame( 200, $this->signup()->get_status() );
 		$this->assertSame( '', OPENBB_Captcha::field( OPENBB_Captcha::ACTION_LOGIN ) );
 	}
@@ -199,7 +199,7 @@ class Test_OPENBB_Captcha extends OPENBB_TestCase {
 		$this->siteverify = null;
 
 		$this->assertError( 'openbb_captcha_failed', 403, $this->login() );
-		$this->assertError( 'openbb_captcha_failed', 403, $this->send_link() );
+		$this->assertError( 'openbb_captcha_failed', 403, $this->send_code() );
 		$this->assertError( 'openbb_captcha_failed', 403, $this->signup() );
 		$this->assertError( 'openbb_captcha_failed', 403, $this->login( $this->captcha( str_repeat( 'a', 2049 ) ) ) );
 		$this->assertSame( 0, get_current_user_id() );
@@ -216,10 +216,18 @@ class Test_OPENBB_Captcha extends OPENBB_TestCase {
 		$this->assertSame( self::TOKEN, $this->verified[0]['response'] );
 	}
 
-	public function test_link_and_signup_with_a_valid_token(): void {
-		$this->assertSame( 200, $this->send_link( $this->captcha() )->get_status() );
+	public function test_code_and_signup_with_a_valid_token(): void {
+		$this->assertSame( 200, $this->send_code( $this->captcha() )->get_status() );
 		$this->assertSame( 200, $this->signup( $this->captcha() )->get_status() );
 		$this->assertCount( 2, $this->verified );
+	}
+
+	public function test_resending_requires_captcha_but_verification_does_not(): void {
+		$this->assertSame( 200, $this->send_code( $this->captcha() )->get_status() );
+		$this->siteverify = null;
+		$this->assertError( 'openbb_captcha_failed', 403, $this->post( '/login/code/resend' ) );
+		$this->assertError( 'openbb_code_invalid', 400, $this->post( '/login/code/verify', array( 'code' => 'not a code' ) ) );
+		$this->assertCount( 1, $this->verified );
 	}
 
 	public function test_the_token_is_checked_before_the_password(): void {

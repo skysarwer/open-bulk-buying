@@ -21,13 +21,13 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 		return rest_do_request( $request );
 	}
 
-	public function test_defaults_close_signups_and_login_links_require_approval_and_have_no_fee(): void {
+	public function test_defaults_close_signups_and_login_codes_require_approval_and_have_no_fee(): void {
 		$response = $this->api( 'GET' );
 		$this->assertSame( 200, $response->get_status() );
 		$this->assertSame(
 			array(
 				'allow_signups'                 => false,
-				'allow_login_links'             => false,
+				'allow_login_codes'             => false,
 				'captcha_provider'              => 'none',
 				'turnstile_site_key'            => '',
 				'require_member_approval'       => true,
@@ -45,7 +45,7 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 		foreach ( array( 'recurring', 'one_time' ) as $type ) {
 			$general = array(
 				'allow_signups'                 => true,
-				'allow_login_links'             => true,
+				'allow_login_codes'             => true,
 				'captcha_provider'              => 'none',
 				'turnstile_site_key'            => '0x4AAAAAAA_test-key',
 				'require_member_approval'       => false,
@@ -77,7 +77,7 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 			array( 'membership_fee_order_interval' => 'many' ),
 			array( 'require_member_approval' => 'maybe' ),
 			array( 'allow_signups' => 'yes' ),
-			array( 'allow_login_links' => 'yes' ),
+			array( 'allow_login_codes' => 'yes' ),
 			array( 'captcha_provider' => 'recaptcha' ),
 			array( 'turnstile_site_key' => 'has spaces' ),
 			array( 'captcha_provider' => 'turnstile' ),
@@ -100,6 +100,23 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 		$this->assertTrue( $response->get_data()['test_mode'] );
 		$this->assertSame( 200, $this->api( 'POST', array( 'general' => $general ) )->get_status() );
 		$this->assertTrue( OPENBB_Maintenance::is_test_mode() );
+	}
+
+	public function test_legacy_passwordless_preference_is_preserved_and_saved_under_new_name(): void {
+		foreach ( array( true, false ) as $enabled ) {
+			update_option( OPENBB_Settings::GENERAL_OPTION, array( 'allow_login_links' => $enabled ) );
+			$general = $this->api( 'GET' )->get_data()['general'];
+			$this->assertSame( $enabled, $general['allow_login_codes'] );
+			$this->assertArrayNotHasKey( 'allow_login_links', $general );
+			$this->assertSame( 200, $this->api( 'POST', array( 'general' => $general ) )->get_status() );
+			$this->assertSame( $general, get_option( OPENBB_Settings::GENERAL_OPTION ) );
+		}
+	}
+
+	public function test_new_setting_takes_precedence_over_legacy_preference(): void {
+		update_option( OPENBB_Settings::GENERAL_OPTION, array( 'allow_login_links' => true, 'allow_login_codes' => false ) );
+		$this->assertFalse( OPENBB_Settings::get_general()['allow_login_codes'] );
+		$this->assertFalse( OPENBB_Login_Code::enabled() );
 	}
 
 	public function test_save_failures_are_reported(): void {
