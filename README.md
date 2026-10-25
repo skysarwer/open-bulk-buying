@@ -74,6 +74,32 @@ will display a notice explaining how to build them.
    When changing a submitted order or cancelling it, staff are asked to provide
    a reason.
 
+## Cycle management
+
+In **Co-op > Cycles**, click a cycle title for its quick-view/edit panel. The
+prominent **Manage cycle** button near the top opens its full-page workspace;
+the list's **Manage** action does too. **Details** and **Financial Aid** have
+bookmarkable URLs. Creation and duplication remain in the side panel.
+Navigation prompts before discarding unsaved edits.
+
+Financial Aid opens as a list. Click a member's name or **View request** to
+review the request reason, status, and decision date in a side panel. Approve
+and decline actions live in that panel and ask for confirmation. A table layout
+is also available. Refreshing requests closes the panel so stale details are
+not left visible.
+
+Cycle managers can edit details. Staff with **View aid requests** can access the
+workspace and its Financial Aid section without gaining cycle-editing access.
+**Decide aid** permits approving or declining another member's request. Decisions
+can be revised while the order is submitted and unpaid, before aid allocation,
+and before the cycle is complete. Draft requests are not shown; paid, fulfilled,
+cancelled, and already allocated requests are read-only. Decisions record the
+staff actor and date, reject stale revisions, and leave all order amounts unchanged.
+
+Approval means eligibility, not an allocated discount. Percentage-based allocation
+from available funding is not implemented here. Polls, packing, shifts, and a
+distribution-screen launcher are intentionally absent until those workflows ship.
+
 ## Catalog display order
 
 In **Co-op > Products**, set a product's **Display order** in its details.

@@ -25,7 +25,7 @@ class OPENBB_Admin {
 	const SCREENS = array(
 		'overview' => array( self::MENU_SLUG, 'openbb_access_admin' ),
 		'products' => array( 'openbb-products', 'openbb_manage_products' ),
-		'cycles'   => array( 'openbb-cycles', 'openbb_manage_cycles' ),
+		'cycles'   => array( 'openbb-cycles', 'openbb_access_cycles' ),
 		'orders'   => array( 'openbb-orders', 'openbb_view_orders' ),
 		'members'  => array( 'openbb-members', 'openbb_view_members' ),
 		'settings' => array( 'open-bulk-buying', 'openbb_access_settings' ),
@@ -161,6 +161,7 @@ class OPENBB_Admin {
 				'openbb_edit_members',
 				'openbb_create_members',
 				'openbb_view_aid',
+				'openbb_decide_aid',
 				'openbb_manage_access',
 				'openbb_manage_settings',
 				'openbb_manage_profile_fields',

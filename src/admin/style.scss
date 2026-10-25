@@ -118,6 +118,39 @@ $openbb-wide-sidebar-width: 640px;
 	}
 }
 
+.openbb-cycle-manage {
+	width: 100%;
+	justify-content: center;
+	margin-bottom: 24px;
+}
+
+.openbb-aid-reason {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+.openbb-cycle-workspace {
+	&__back,
+	&__intro {
+		padding: 16px 24px;
+	}
+
+	&__intro {
+		display: grid;
+		gap: 16px;
+		justify-items: start;
+
+		h3 {
+			margin: 0;
+		}
+	}
+
+	&__details {
+		max-width: 800px;
+		padding: 24px;
+	}
+}
+
 .openbb-sortable {
 	margin: 0;
 	padding: 0;

@@ -56,6 +56,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/model/inventory/class-openbb-inventory.php
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-policy.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-editor.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-lifecycle.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-aid.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-member-orders.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/rules/class-openbb-rules-version.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/rules/class-openbb-rules.php';

@@ -12,8 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 
 	public function register_routes(): void {
+		$this->register_aid_routes();
 		$can_read   = static function () {
-			return self::authorize_any( array( 'openbb_manage_cycles', 'openbb_view_orders' ) );
+			return self::authorize_any( array( 'openbb_manage_cycles', 'openbb_view_orders', 'openbb_view_aid' ) );
 		};
 		$can_manage = static function () {
 			return self::authorize( 'openbb_manage_cycles' );
@@ -73,6 +74,133 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 					'permission_callback' => $can_manage,
 				),
 			)
+		);
+	}
+
+	private function register_aid_routes(): void {
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/cycles/(?P<id>\d+)/aid',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_aid' ),
+				'permission_callback' => static function () {
+					return self::authorize( 'openbb_view_aid' );
+				},
+				'args'                => array_merge(
+					self::id_arg(),
+					self::collection_args(
+						array( 'id' ),
+						'desc',
+						array(
+							'aid_status' => array(
+								'type'    => 'array',
+								'items'   => array(
+									'type' => 'string',
+									'enum' => array( OPENBB_Order::AID_PENDING, OPENBB_Order::AID_APPROVED, OPENBB_Order::AID_DECLINED ),
+								),
+								'default' => array(),
+							),
+						)
+					)
+				),
+			)
+		);
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/cycles/(?P<id>\d+)/aid/(?P<order_id>\d+)',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'decide_aid' ),
+				'permission_callback' => static function ( WP_REST_Request $request ) {
+					return self::authorize( 'openbb_decide_order_aid', (int) $request['order_id'] );
+				},
+				'args'                => array_merge(
+					self::id_arg(),
+					array(
+						'order_id'          => array( 'type' => 'integer', 'minimum' => 1, 'required' => true ),
+						'decision'          => array( 'type' => 'string', 'enum' => array( 'approved', 'declined' ), 'required' => true ),
+						'expected_revision' => array( 'type' => 'integer', 'minimum' => 0, 'required' => true ),
+					)
+				),
+			)
+		);
+	}
+
+	public function get_aid( WP_REST_Request $request ) {
+		global $wpdb;
+
+		$cycle = OPENBB_Cycles::get( (int) $request['id'] );
+		if ( ! $cycle ) {
+			return self::not_found( __( 'Cycle not found.', 'open-bulk-buying' ) );
+		}
+		$where  = array( 'o.cycle_id = %d', "o.aid_status IN ('pending', 'approved', 'declined')", "o.status != 'draft'" );
+		$params = array( $cycle->id );
+		if ( $request['aid_status'] ) {
+			$statuses = (array) $request['aid_status'];
+			$where[]  = 'o.aid_status IN (' . implode( ',', array_fill( 0, count( $statuses ), '%s' ) ) . ')';
+			$params   = array_merge( $params, $statuses );
+		}
+		if ( '' !== $request['search'] ) {
+			$where[] = '(u.display_name LIKE %s OR o.id = %d)';
+			$params[] = '%' . $wpdb->esc_like( $request['search'] ) . '%';
+			$params[] = (int) $request['search'];
+		}
+		$sql = "FROM {$wpdb->openbb_orders} o LEFT JOIN {$wpdb->users} u ON u.ID = o.user_id WHERE " . implode( ' AND ', $where );
+		$total = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) {$sql}", ...$params ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		if ( $wpdb->last_error ) {
+			return new WP_Error( 'openbb_aid_load_failed', __( 'Aid requests could not be loaded.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+		}
+		$direction = 'asc' === $request['order'] ? 'ASC' : 'DESC';
+		$per_page = (int) $request['per_page'];
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT o.*, u.display_name AS member_name {$sql} ORDER BY o.id {$direction} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL
+				...array_merge( $params, array( $per_page, ( (int) $request['page'] - 1 ) * $per_page ) )
+			),
+			ARRAY_A
+		);
+		if ( $wpdb->last_error ) {
+			return new WP_Error( 'openbb_aid_load_failed', __( 'Aid requests could not be loaded.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+		}
+		return self::paginated(
+			array_map(
+				function ( array $row ) use ( $cycle ): array {
+					return $this->prepare_aid( new OPENBB_Order( $row ), $cycle, (string) $row['member_name'] );
+				},
+				$rows
+			),
+			$total,
+			$per_page
+		);
+	}
+
+	public function decide_aid( WP_REST_Request $request ) {
+		$order = OPENBB_Order_Aid::decide(
+			(int) $request['id'],
+			(int) $request['order_id'],
+			(string) $request['decision'],
+			(int) $request['expected_revision'],
+			get_current_user_id()
+		);
+		if ( is_wp_error( $order ) ) {
+			return $order;
+		}
+		$user = get_userdata( $order->user_id );
+		return rest_ensure_response( $this->prepare_aid( $order, OPENBB_Cycles::get( $order->cycle_id ), $user ? $user->display_name : '' ) );
+	}
+
+	private function prepare_aid( OPENBB_Order $order, ?OPENBB_Cycle $cycle, string $member_name ): array {
+		return array(
+			'id'               => $order->id,
+			'member_name'      => $member_name,
+			'status_label'     => OPENBB_Order::status_labels()[ $order->status ] ?? $order->status,
+			'aid_status'       => $order->aid_status,
+			'aid_status_label' => OPENBB_Order::aid_status_labels()[ $order->aid_status ] ?? $order->aid_status,
+			'aid_reason'       => $order->aid_reason,
+			'aid_decided_at'   => self::to_local_datetime( $order->aid_decided_at ),
+			'revision'         => $order->revision,
+			'can_decide'       => current_user_can( 'openbb_decide_order_aid', $order->id ) && OPENBB_Order_Aid::can_decide( $order, $cycle ),
 		);
 	}
 

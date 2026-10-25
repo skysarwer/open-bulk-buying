@@ -294,6 +294,14 @@ class OPENBB_Access {
 		$user_id = (int) $user_id;
 
 		switch ( $cap ) {
+			case 'openbb_access_cycles':
+				foreach ( array( 'openbb_manage_cycles', 'openbb_view_aid' ) as $cycle_cap ) {
+					if ( user_can( $user_id, $cycle_cap ) ) {
+						return array( $cycle_cap );
+					}
+				}
+				return array( 'openbb_manage_cycles' );
+
 			case 'openbb_access_settings':
 				// The Settings screen has a tab for each of these.
 				foreach ( array( 'openbb_manage_settings', 'openbb_manage_rules', 'openbb_manage_profile_fields', 'openbb_manage_access' ) as $tab_cap ) {
