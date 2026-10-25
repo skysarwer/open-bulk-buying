@@ -1,0 +1,1417 @@
+{
+    "translation-revision-date": "2026-10-25 16:10-0400",
+    "generator": "WP-CLI\/2.12.0",
+    "source": "build\/admin\/index.js",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_CA",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Active": [
+                "Actif"
+            ],
+            "Inactive": [
+                "Inactif"
+            ],
+            "Declined": [
+                "Refus\u00e9"
+            ],
+            "Orders": [
+                "Commandes"
+            ],
+            "Members": [
+                "Membres"
+            ],
+            "Aid": [
+                "Aide"
+            ],
+            "Overview": [
+                "Vue d\u2019ensemble"
+            ],
+            "Products": [
+                "Produits"
+            ],
+            "Cycles": [
+                "Cycles"
+            ],
+            "Settings": [
+                "R\u00e9glages"
+            ],
+            "This box must be checked.": [
+                "Cette case doit \u00eatre coch\u00e9e."
+            ],
+            "Order": [
+                "Commande"
+            ],
+            "First name": [
+                "Pr\u00e9nom"
+            ],
+            "Last name": [
+                "Nom"
+            ],
+            "Email": [
+                "Courriel"
+            ],
+            "Phone": [
+                "T\u00e9l\u00e9phone"
+            ],
+            "Choose\u2026": [
+                "Choisir\u2026"
+            ],
+            "Remove": [
+                "Retirer"
+            ],
+            "Donation": [
+                "Don"
+            ],
+            "Back": [
+                "Retour"
+            ],
+            "Confirm": [
+                "Confirmer"
+            ],
+            "Ordering must close after it opens.": [
+                "La fermeture des commandes doit \u00eatre post\u00e9rieure \u00e0 leur ouverture."
+            ],
+            "Pickup must end after it starts.": [
+                "La fin du ramassage doit \u00eatre post\u00e9rieure \u00e0 son d\u00e9but."
+            ],
+            "Submitted": [
+                "Soumis"
+            ],
+            "Prepaid": [
+                "Pay\u00e9 d\u2019avance"
+            ],
+            "Fulfilled": [
+                "Remis"
+            ],
+            "None": [
+                "Aucun"
+            ],
+            "Pending": [
+                "En attente"
+            ],
+            "Approved": [
+                "Approuv\u00e9"
+            ],
+            "Product": [
+                "Produit"
+            ],
+            "Supplier": [
+                "Fournisseur"
+            ],
+            "Yes": [
+                "Oui"
+            ],
+            "Ordering opens": [
+                "Ouverture des commandes"
+            ],
+            "Ordering closes": [
+                "Fermeture des commandes"
+            ],
+            "Pickup starts": [
+                "D\u00e9but du ramassage"
+            ],
+            "Pickup ends": [
+                "Fin du ramassage"
+            ],
+            "Explain why the stock is being adjusted.": [
+                "Expliquez pourquoi le stock est ajust\u00e9."
+            ],
+            "Co-op sections": [
+                "Sections de la coop\u00e9rative"
+            ],
+            "Cancel": [
+                "Annuler"
+            ],
+            "Save": [
+                "Enregistrer"
+            ],
+            "Discard changes": [
+                "Abandonner les modifications"
+            ],
+            "Back to %s": [
+                "Retour \u00e0 %s"
+            ],
+            "Close": [
+                "Fermer"
+            ],
+            "%1$s moved to position %2$d of %3$d.": [
+                "%1$s d\u00e9plac\u00e9 \u00e0 la position %2$d sur %3$d."
+            ],
+            "Move %s up": [
+                "Monter %s"
+            ],
+            "Move %s down": [
+                "Descendre %s"
+            ],
+            "Keep editing": [
+                "Continuer \u00e0 modifier"
+            ],
+            "You have unsaved changes. Discard them?": [
+                "Vous avez des modifications non enregistr\u00e9es. Les abandonner?"
+            ],
+            "Member": [
+                "Membre"
+            ],
+            "Aid status": [
+                "Statut de l\u2019aide"
+            ],
+            "Request reason": [
+                "Motif de la demande"
+            ],
+            "Order status": [
+                "Statut de la commande"
+            ],
+            "Decision date": [
+                "Date de la d\u00e9cision"
+            ],
+            "Not decided": [
+                "Aucune d\u00e9cision"
+            ],
+            "No reason provided.": [
+                "Aucun motif fourni."
+            ],
+            "This records eligibility only. No amount is allocated and the order total is unchanged.": [
+                "Cette action consigne uniquement l\u2019admissibilit\u00e9. Aucun montant n\u2019est attribu\u00e9 et le total de la commande reste inchang\u00e9."
+            ],
+            "Approve": [
+                "Approuver"
+            ],
+            "Decline": [
+                "Refuser"
+            ],
+            "This request is read-only. Decisions require permission to decide aid for another member, an unpaid submitted order, an unallocated request, and a cycle that is not complete.": [
+                "Cette demande est en lecture seule. Pour statuer, il faut l\u2019autorisation de d\u00e9cider de l\u2019aide pour un autre membre, une commande soumise non pay\u00e9e, une demande dont le montant n\u2019a pas \u00e9t\u00e9 attribu\u00e9 et un cycle non termin\u00e9."
+            ],
+            "Approve aid request": [
+                "Approuver la demande d\u2019aide"
+            ],
+            "Decline aid request": [
+                "Refuser la demande d\u2019aide"
+            ],
+            "Set the aid request for %1$s to %2$s? This records eligibility only; it does not allocate an amount or change the order total.": [
+                "D\u00e9finir la demande d\u2019aide de %1$s \u00e0 %2$s? Cette action consigne uniquement l\u2019admissibilit\u00e9; elle n\u2019attribue aucun montant et ne modifie pas le total de la commande."
+            ],
+            "View request": [
+                "Voir la demande"
+            ],
+            "Financial Aid": [
+                "Aide financi\u00e8re"
+            ],
+            "Approve or decline eligibility here. Aid amounts and percentage-based allocation will be calculated separately; decisions do not change order totals. Draft requests are not shown. Paid, fulfilled, cancelled, allocated, and completed-cycle requests are read-only. You cannot decide your own request.": [
+                "Approuvez ou refusez l\u2019admissibilit\u00e9 ici. Les montants d\u2019aide et leur r\u00e9partition en pourcentage seront calcul\u00e9s s\u00e9par\u00e9ment; les d\u00e9cisions ne modifient pas les totaux des commandes. Les demandes \u00e0 l\u2019\u00e9tat de brouillon ne sont pas affich\u00e9es. Les demandes des commandes pay\u00e9es, remises, annul\u00e9es ou d\u2019un cycle termin\u00e9, ainsi que celles dont le montant a \u00e9t\u00e9 attribu\u00e9, sont en lecture seule. Vous ne pouvez pas statuer sur votre propre demande."
+            ],
+            "Refresh requests": [
+                "Actualiser les demandes"
+            ],
+            "Search members or order IDs": [
+                "Rechercher des membres ou des num\u00e9ros de commande"
+            ],
+            "Aid decision saved.": [
+                "D\u00e9cision d\u2019aide enregistr\u00e9e."
+            ],
+            "Not set": [
+                "Non d\u00e9fini"
+            ],
+            "Name": [
+                "Nom"
+            ],
+            "Status": [
+                "Statut"
+            ],
+            "Members can order while the cycle is in \"Ordering\" and its ordering window is open.": [
+                "Les membres peuvent commander lorsque le cycle est \u00e0 l\u2019\u00e9tape \u00ab Prise de commandes \u00bb et que sa p\u00e9riode de commande est ouverte."
+            ],
+            "Pickup location": [
+                "Lieu de ramassage"
+            ],
+            "Pickup instructions": [
+                "Consignes de ramassage"
+            ],
+            "Pickup instructions (%s)": [
+                "Consignes de ramassage (%s)"
+            ],
+            "Unfulfilled": [
+                "Non remis"
+            ],
+            "Order total": [
+                "Total de la commande"
+            ],
+            "Ordering window": [
+                "P\u00e9riode de commande"
+            ],
+            "Opens": [
+                "Ouverture"
+            ],
+            "Closes": [
+                "Fermeture"
+            ],
+            "Pickup window": [
+                "P\u00e9riode de ramassage"
+            ],
+            "Starts": [
+                "D\u00e9but"
+            ],
+            "Ends": [
+                "Fin"
+            ],
+            "Set the ordering window before moving the cycle out of setup.": [
+                "D\u00e9finissez la p\u00e9riode de commande avant de faire passer le cycle \u00e0 une autre \u00e9tape que la configuration."
+            ],
+            "%d unfulfilled": [
+                "%d non remis"
+            ],
+            "Create cycle": [
+                "Cr\u00e9er un cycle"
+            ],
+            "New cycle": [
+                "Nouveau cycle"
+            ],
+            "Manage cycle": [
+                "G\u00e9rer le cycle"
+            ],
+            "Manage": [
+                "G\u00e9rer"
+            ],
+            "Edit details": [
+                "Modifier les d\u00e9tails"
+            ],
+            "Duplicate": [
+                "Dupliquer"
+            ],
+            "%s (copy)": [
+                "%s (copie)"
+            ],
+            "View orders": [
+                "Voir les commandes"
+            ],
+            "Delete": [
+                "Supprimer"
+            ],
+            "Delete cycle": [
+                "Supprimer le cycle"
+            ],
+            "Delete \"%s\"? This cannot be undone.": [
+                "Supprimer \u00ab %s \u00bb? Cette action est irr\u00e9versible."
+            ],
+            "Cycle deleted.": [
+                "Cycle supprim\u00e9."
+            ],
+            "Cycle created.": [
+                "Cycle cr\u00e9\u00e9."
+            ],
+            "Cycle saved.": [
+                "Cycle enregistr\u00e9."
+            ],
+            "Add cycle": [
+                "Ajouter un cycle"
+            ],
+            "Search cycles": [
+                "Rechercher des cycles"
+            ],
+            "Details": [
+                "D\u00e9tails"
+            ],
+            "Back to cycles": [
+                "Retour aux cycles"
+            ],
+            "Invalid cycle ID.": [
+                "Identifiant de cycle invalide."
+            ],
+            "Cycle sections": [
+                "Sections du cycle"
+            ],
+            "Cycle details": [
+                "D\u00e9tails du cycle"
+            ],
+            "You can review this cycle, but do not have permission to edit its details.": [
+                "Vous pouvez consulter ce cycle, mais vous n\u2019avez pas l\u2019autorisation de modifier ses d\u00e9tails."
+            ],
+            "Gives access to admin screens. Only applies while the member is active.": [
+                "Donne acc\u00e8s aux \u00e9crans d\u2019administration. S\u2019applique uniquement lorsque le membre est actif."
+            ],
+            "Language": [
+                "Langue"
+            ],
+            "Site default": [
+                "Langue par d\u00e9faut du site"
+            ],
+            "Team roles": [
+                "R\u00f4les de l\u2019\u00e9quipe"
+            ],
+            "Last order": [
+                "Derni\u00e8re commande"
+            ],
+            "Joined": [
+                "Date d\u2019adh\u00e9sion"
+            ],
+            "Rules": [
+                "R\u00e8gles"
+            ],
+            "Accepted": [
+                "Accept\u00e9es"
+            ],
+            "Not accepted": [
+                "Non accept\u00e9es"
+            ],
+            "Add member": [
+                "Ajouter un membre"
+            ],
+            "Who": [
+                "Personne"
+            ],
+            "Existing user": [
+                "Compte existant"
+            ],
+            "New user": [
+                "Nouveau compte"
+            ],
+            "No email address? Use a made-up one ending in .invalid, such as jane.doe.4821@noemail.invalid. It can be replaced later.": [
+                "Pas d\u2019adresse courriel? Utilisez une adresse fictive se terminant par .invalid, comme jane.doe.4821@noemail.invalid. Elle pourra \u00eatre remplac\u00e9e plus tard."
+            ],
+            "Send account email": [
+                "Envoyer le courriel de compte"
+            ],
+            "Placeholder addresses can\u2019t receive email.": [
+                "Les adresses fictives ne peuvent pas recevoir de courriels."
+            ],
+            "Emails them a link to set their password. Without it, they can use \u201cLost your password?\u201d on the login page later.": [
+                "Envoie un lien par courriel pour d\u00e9finir le mot de passe. Sans ce lien, la personne pourra utiliser \u00ab Mot de passe oubli\u00e9? \u00bb sur la page de connexion plus tard."
+            ],
+            "User": [
+                "Compte"
+            ],
+            "Search the site\u2019s users who are not members yet, by name or email.": [
+                "Recherchez par nom ou courriel les comptes du site qui ne sont pas encore membres."
+            ],
+            "Edit": [
+                "Modifier"
+            ],
+            "View": [
+                "Voir"
+            ],
+            "%s is now a member. They\u2019ve been emailed a link to set their password.": [
+                "%s est maintenant membre. Un lien pour d\u00e9finir son mot de passe lui a \u00e9t\u00e9 envoy\u00e9 par courriel."
+            ],
+            "%s is now a member.": [
+                "%s est maintenant membre."
+            ],
+            "Member saved.": [
+                "Membre enregistr\u00e9."
+            ],
+            "Search members": [
+                "Rechercher des membres"
+            ],
+            "Profile fields": [
+                "Champs de profil"
+            ],
+            "Archived fields": [
+                "Champs archiv\u00e9s"
+            ],
+            "Profile": [
+                "Profil"
+            ],
+            "Edit WordPress profile": [
+                "Modifier le profil WordPress"
+            ],
+            "(archived)": [
+                "(archiv\u00e9)"
+            ],
+            "No orders yet.": [
+                "Aucune commande pour le moment."
+            ],
+            "Cycle": [
+                "Cycle"
+            ],
+            "Total": [
+                "Total"
+            ],
+            "%s (archived)": [
+                "%s (archiv\u00e9)"
+            ],
+            "No": [
+                "Non"
+            ],
+            "No longer defined": [
+                "N\u2019est plus d\u00e9fini"
+            ],
+            "%s (required)": [
+                "%s (obligatoire)"
+            ],
+            "Clear choice": [
+                "Effacer le choix"
+            ],
+            "%1$s (%2$s) \u2014 %3$s \u2014 %4$s available": [
+                "%1$s (%2$s) \u2014 %3$s \u2014 %4$s de disponible"
+            ],
+            "Add a product": [
+                "Ajouter un produit"
+            ],
+            "Only active products with stock available can be added.": [
+                "Seuls les produits actifs dont le stock est disponible peuvent \u00eatre ajout\u00e9s."
+            ],
+            "container": [
+                "contenant"
+            ],
+            "Prepared: %s": [
+                "Quantit\u00e9 pr\u00e9par\u00e9e : %s"
+            ],
+            "Quantity": [
+                "Quantit\u00e9"
+            ],
+            "Max %s": [
+                "Maximum %s"
+            ],
+            "Own container": [
+                "Contenant personnel"
+            ],
+            "Enter a quantity for \"%s\".": [
+                "Saisissez une quantit\u00e9 pour \u00ab %s \u00bb."
+            ],
+            "Not enough stock for \"%1$s\": at most %2$s \u00d7 %3$s.": [
+                "Stock insuffisant pour \u00ab %1$s \u00bb : au plus %2$s \u00d7 %3$s."
+            ],
+            "Order #%1$d \u2014 %2$s": [
+                "Commande no %1$d \u2014 %2$s"
+            ],
+            "Payment settled": [
+                "Paiement r\u00e9gl\u00e9"
+            ],
+            "Collected": [
+                "R\u00e9cup\u00e9r\u00e9"
+            ],
+            "This order is locked against quantity, amount, and status edits. Staff can still update its note.": [
+                "Les quantit\u00e9s, les montants et le statut de cette commande sont verrouill\u00e9s. Le personnel peut encore modifier sa note."
+            ],
+            "This order was not collected before its hold expired. It is abandoned and no longer reserves stock. Its payment status is retained.": [
+                "Cette commande n\u2019a pas \u00e9t\u00e9 r\u00e9cup\u00e9r\u00e9e avant l\u2019expiration de sa r\u00e9servation. Elle est abandonn\u00e9e et ne r\u00e9serve plus de stock. Son statut de paiement est conserv\u00e9."
+            ],
+            "Member note:": [
+                "Note du membre :"
+            ],
+            "Container": [
+                "Contenant"
+            ],
+            "Actions": [
+                "Actions"
+            ],
+            "No products yet.": [
+                "Aucun produit pour le moment."
+            ],
+            "Subtotal": [
+                "Sous-total"
+            ],
+            "Container credit": [
+                "Cr\u00e9dit pour contenant"
+            ],
+            "Estimated total": [
+                "Total estim\u00e9"
+            ],
+            "Staff note": [
+                "Note du personnel"
+            ],
+            "Only visible to staff.": [
+                "Visible uniquement par le personnel."
+            ],
+            "Reason for the change (required)": [
+                "Motif de la modification (obligatoire)"
+            ],
+            "Added to the staff note with your name and the date.": [
+                "Ajout\u00e9 \u00e0 la note du personnel avec votre nom et la date."
+            ],
+            "Mark prepaid": [
+                "Marquer comme pay\u00e9 d\u2019avance"
+            ],
+            "Fulfill order": [
+                "Remettre la commande"
+            ],
+            "Save your changes before confirming payment or fulfillment.": [
+                "Enregistrez vos modifications avant de confirmer le paiement ou la remise."
+            ],
+            "Confirm that the full amount due (%s) is settled. Stock will remain reserved; no goods are handed over.": [
+                "Confirmez que le montant total d\u00fb (%s) est r\u00e9gl\u00e9. Le stock restera r\u00e9serv\u00e9; aucune marchandise n\u2019est remise."
+            ],
+            "Confirm that the full amount due (%s) is settled and the listed quantities have been handed over. This deducts stock and cannot be undone here.": [
+                "Confirmez que le montant total d\u00fb (%s) est r\u00e9gl\u00e9 et que les quantit\u00e9s indiqu\u00e9es ont \u00e9t\u00e9 remises. Cette action d\u00e9duit les stocks et ne peut pas \u00eatre annul\u00e9e ici."
+            ],
+            "Save order": [
+                "Enregistrer la commande"
+            ],
+            "Abandoned (uncollected)": [
+                "Abandonn\u00e9 (non r\u00e9cup\u00e9r\u00e9)"
+            ],
+            "Updated": [
+                "Mis \u00e0 jour"
+            ],
+            "New order": [
+                "Nouvelle commande"
+            ],
+            "There are no open cycles to add an order to.": [
+                "Aucun cycle ouvert ne permet d\u2019ajouter une commande."
+            ],
+            "The order starts as a draft. Add products, then submit it to reserve stock.": [
+                "La commande commence \u00e0 l\u2019\u00e9tat de brouillon. Ajoutez des produits, puis soumettez-la pour r\u00e9server les stocks."
+            ],
+            "Create order": [
+                "Cr\u00e9er une commande"
+            ],
+            "Delete order": [
+                "Supprimer la commande"
+            ],
+            "Delete order #%1$d for %2$s? Consider cancelling it instead to keep its history.": [
+                "Supprimer la commande no %1$d de %2$s? Envisagez plut\u00f4t de l\u2019annuler pour conserver son historique."
+            ],
+            "Order deleted.": [
+                "Commande supprim\u00e9e."
+            ],
+            "Order saved.": [
+                "Commande enregistr\u00e9e."
+            ],
+            "Add order": [
+                "Ajouter une commande"
+            ],
+            "Search by order number, name or email": [
+                "Rechercher par num\u00e9ro de commande, nom ou courriel"
+            ],
+            "Catalogue, prices and stock levels.": [
+                "Catalogue, prix et niveaux de stock."
+            ],
+            "Ordering windows, dates and pickup details.": [
+                "P\u00e9riodes de commande, dates et d\u00e9tails de ramassage."
+            ],
+            "Members' orders for each cycle.": [
+                "Commandes des membres pour chaque cycle."
+            ],
+            "Co-op members, roles and order history.": [
+                "Membres de la coop\u00e9rative, r\u00f4les et historique des commandes."
+            ],
+            "Test mode, demo data and data maintenance.": [
+                "Mode test, donn\u00e9es de d\u00e9monstration et entretien des donn\u00e9es."
+            ],
+            "There is nothing here for you to manage yet.": [
+                "Vous n\u2019avez encore rien \u00e0 g\u00e9rer ici."
+            ],
+            "Choose a product image": [
+                "Choisir une image de produit"
+            ],
+            "Use this image": [
+                "Utiliser cette image"
+            ],
+            "Replace": [
+                "Remplacer"
+            ],
+            "Choose image": [
+                "Choisir une image"
+            ],
+            "Deactivate the product to change its unit.": [
+                "D\u00e9sactivez le produit pour modifier son unit\u00e9."
+            ],
+            "Name (%s)": [
+                "Nom (%s)"
+            ],
+            "Description (%s)": [
+                "Description (%s)"
+            ],
+            "Image": [
+                "Image"
+            ],
+            "Display order": [
+                "Ordre d\u2019affichage"
+            ],
+            "Lower numbers appear first. Products with the same order sort by name.": [
+                "Les nombres les plus petits apparaissent en premier. Les produits ayant le m\u00eame ordre sont tri\u00e9s par nom."
+            ],
+            "Brand": [
+                "Marque"
+            ],
+            "Description": [
+                "Description"
+            ],
+            "Unit amount": [
+                "Quantit\u00e9 par unit\u00e9"
+            ],
+            "Unit type": [
+                "Type d\u2019unit\u00e9"
+            ],
+            "Sold per": [
+                "Vendu par"
+            ],
+            "Price": [
+                "Prix"
+            ],
+            "Price per selling unit.": [
+                "Prix par unit\u00e9 de vente."
+            ],
+            "Container charge": [
+                "Frais de contenant"
+            ],
+            "Charged per unit unless the member brings their own container.": [
+                "Factur\u00e9s par unit\u00e9, sauf si le membre apporte son propre contenant."
+            ],
+            "Available": [
+                "Disponible"
+            ],
+            "On hand": [
+                "En stock"
+            ],
+            "Reserved": [
+                "R\u00e9serv\u00e9"
+            ],
+            "Categories": [
+                "Cat\u00e9gories"
+            ],
+            "Only active products can be ordered.": [
+                "Seuls les produits actifs peuvent \u00eatre command\u00e9s."
+            ],
+            "Unit": [
+                "Unit\u00e9"
+            ],
+            "Pricing": [
+                "Tarification"
+            ],
+            "Categories and suppliers": [
+                "Cat\u00e9gories et fournisseurs"
+            ],
+            "Type": [
+                "Type"
+            ],
+            "Category": [
+                "Cat\u00e9gorie"
+            ],
+            "Edit category order": [
+                "Modifier l\u2019ordre des cat\u00e9gories"
+            ],
+            "Choose a category": [
+                "Choisir une cat\u00e9gorie"
+            ],
+            "Lower numbers appear first. Categories with the same order sort by name.": [
+                "Les nombres les plus petits apparaissent en premier. Les cat\u00e9gories ayant le m\u00eame ordre sont tri\u00e9es par nom."
+            ],
+            "Add": [
+                "Ajouter"
+            ],
+            "Inventory": [
+                "Stocks"
+            ],
+            "New product": [
+                "Nouveau produit"
+            ],
+            "Create product": [
+                "Cr\u00e9er un produit"
+            ],
+            "%d product activated.": [
+                "%d produit activ\u00e9.",
+                "%d produits activ\u00e9s."
+            ],
+            "%d product deactivated.": [
+                "%d produit d\u00e9sactiv\u00e9.",
+                "%d produits d\u00e9sactiv\u00e9s."
+            ],
+            "Update stock": [
+                "Mettre \u00e0 jour le stock"
+            ],
+            "Stock history": [
+                "Historique du stock"
+            ],
+            "Activate": [
+                "Activer"
+            ],
+            "Deactivate": [
+                "D\u00e9sactiver"
+            ],
+            "Delete product": [
+                "Supprimer le produit"
+            ],
+            "Delete \"%s\"? Products with orders or stock history can only be deactivated.": [
+                "Supprimer \u00ab %s \u00bb? Les produits ayant des commandes ou un historique de stock peuvent seulement \u00eatre d\u00e9sactiv\u00e9s."
+            ],
+            "Product deleted.": [
+                "Produit supprim\u00e9."
+            ],
+            "Add product": [
+                "Ajouter un produit"
+            ],
+            "Product created.": [
+                "Produit cr\u00e9\u00e9."
+            ],
+            "Product saved.": [
+                "Produit enregistr\u00e9."
+            ],
+            "Search products": [
+                "Rechercher des produits"
+            ],
+            "Stock updated.": [
+                "Stock mis \u00e0 jour."
+            ],
+            "Saved.": [
+                "Enregistr\u00e9."
+            ],
+            "Selling units (%s)": [
+                "Unit\u00e9s de vente (%s)"
+            ],
+            "Quantity received": [
+                "Quantit\u00e9 re\u00e7ue"
+            ],
+            "Quantity spoiled": [
+                "Quantit\u00e9 perdue"
+            ],
+            "Quantity distributed": [
+                "Quantit\u00e9 distribu\u00e9e"
+            ],
+            "Change (use a negative number to remove)": [
+                "Variation (utilisez un nombre n\u00e9gatif pour retirer)"
+            ],
+            "Reason": [
+                "Motif"
+            ],
+            "Note": [
+                "Note"
+            ],
+            "Note (required)": [
+                "Note (obligatoire)"
+            ],
+            "Enter a quantity other than zero.": [
+                "Saisissez une quantit\u00e9 diff\u00e9rente de z\u00e9ro."
+            ],
+            "Enter a positive quantity.": [
+                "Saisissez une quantit\u00e9 positive."
+            ],
+            "Update stock: %s": [
+                "Mettre \u00e0 jour le stock : %s"
+            ],
+            "Record": [
+                "Consigner"
+            ],
+            "\u00d7 %s": [
+                "\u00d7 %s"
+            ],
+            "Date": [
+                "Date"
+            ],
+            "Change": [
+                "Variation"
+            ],
+            "By": [
+                "Par"
+            ],
+            "Order #%d": [
+                "Commande no %d"
+            ],
+            "No stock changes yet.": [
+                "Aucune modification de stock pour le moment."
+            ],
+            "General settings saved.": [
+                "R\u00e9glages g\u00e9n\u00e9raux enregistr\u00e9s."
+            ],
+            "Signups": [
+                "Inscriptions"
+            ],
+            "Allow signups": [
+                "Autoriser les inscriptions"
+            ],
+            "People can sign up from any page with the [openbb_signup] shortcode.": [
+                "Les personnes peuvent s\u2019inscrire \u00e0 partir de toute page contenant le code court [openbb_signup]."
+            ],
+            "Signups are closed. The [openbb_signup] shortcode shows a \"signups are closed\" message.": [
+                "Les inscriptions sont ferm\u00e9es. Le code court [openbb_signup] affiche un message indiquant que les inscriptions sont ferm\u00e9es."
+            ],
+            "Login": [
+                "Connexion"
+            ],
+            "Allow members to log in with an email code": [
+                "Autoriser les membres \u00e0 se connecter avec un code courriel"
+            ],
+            "Members can use a one-time email code instead of their password. Editors and administrators must still use their password. This is passwordless login, not two-factor authentication.": [
+                "Les membres peuvent utiliser un code courriel \u00e0 usage unique plut\u00f4t que leur mot de passe. Les comptes de r\u00e9daction et d\u2019administration doivent toujours utiliser leur mot de passe. Il s\u2019agit d\u2019une connexion sans mot de passe, et non d\u2019une authentification \u00e0 deux facteurs."
+            ],
+            "People log in with their password only.": [
+                "Les personnes se connectent uniquement avec leur mot de passe."
+            ],
+            "Bot protection": [
+                "Protection contre les robots"
+            ],
+            "Provider": [
+                "Fournisseur"
+            ],
+            "Signup and login forms ask Cloudflare Turnstile to check that visitors are human before sending email or checking a password.": [
+                "Les formulaires d\u2019inscription et de connexion demandent \u00e0 Cloudflare Turnstile de v\u00e9rifier que les visiteurs sont humains avant d\u2019envoyer un courriel ou de v\u00e9rifier un mot de passe."
+            ],
+            "Signup and login forms rely on rate limits and a hidden honeypot field only.": [
+                "Les formulaires d\u2019inscription et de connexion reposent uniquement sur des limites de tentatives et un champ pi\u00e8ge invisible."
+            ],
+            "Cloudflare Turnstile": [
+                "Cloudflare Turnstile"
+            ],
+            "Add this site in the <a>Cloudflare dashboard<\/a> under Turnstile to get a site key and secret key. Your site doesn\u2019t need to use Cloudflare otherwise.": [
+                "Ajoutez ce site dans le <a>tableau de bord Cloudflare<\/a>, sous Turnstile, pour obtenir une cl\u00e9 de site et une cl\u00e9 secr\u00e8te. Votre site n\u2019a pas besoin d\u2019utiliser Cloudflare autrement."
+            ],
+            "Site key": [
+                "Cl\u00e9 de site"
+            ],
+            "Secret key": [
+                "Cl\u00e9 secr\u00e8te"
+            ],
+            "Set in wp-config.php with OPENBB_TURNSTILE_SECRET.": [
+                "D\u00e9finie dans wp-config.php avec OPENBB_TURNSTILE_SECRET."
+            ],
+            "A secret key is saved. Leave this empty to keep it.": [
+                "Une cl\u00e9 secr\u00e8te est enregistr\u00e9e. Laissez ce champ vide pour la conserver."
+            ],
+            "Member approval": [
+                "Approbation des membres"
+            ],
+            "Require member approval": [
+                "Exiger l\u2019approbation des membres"
+            ],
+            "After signup, new members remain Applicants until staff approve them.": [
+                "Apr\u00e8s l\u2019inscription, les nouvelles adh\u00e9sions restent en attente jusqu\u2019\u00e0 leur approbation par le personnel."
+            ],
+            "After signup, new members are automatically approved as Members.": [
+                "Apr\u00e8s l\u2019inscription, les nouvelles adh\u00e9sions sont automatiquement approuv\u00e9es."
+            ],
+            "Membership fees": [
+                "Frais d\u2019adh\u00e9sion"
+            ],
+            "Fee frequency": [
+                "Fr\u00e9quence des frais"
+            ],
+            "One time": [
+                "Une seule fois"
+            ],
+            "Recurring": [
+                "R\u00e9currents"
+            ],
+            "Fee amount (%s)": [
+                "Montant des frais (%s)"
+            ],
+            "Set to 0 for no membership fee.": [
+                "D\u00e9finissez \u00e0 0 pour ne pas facturer de frais d\u2019adh\u00e9sion."
+            ],
+            "Charge every X orders": [
+                "Facturer toutes les X commandes"
+            ],
+            "Number of orders between membership fees.": [
+                "Nombre de commandes entre les frais d\u2019adh\u00e9sion."
+            ],
+            "Save settings": [
+                "Enregistrer les r\u00e9glages"
+            ],
+            "General": [
+                "G\u00e9n\u00e9ral"
+            ],
+            "Co-op Rules": [
+                "R\u00e8gles de la coop\u00e9rative"
+            ],
+            "Profile Fields": [
+                "Champs de profil"
+            ],
+            "Data & Maintenance": [
+                "Donn\u00e9es et entretien"
+            ],
+            "Settings sections": [
+                "Sections des r\u00e9glages"
+            ],
+            "This site's Open Bulk Buying data has been deleted.": [
+                "Les donn\u00e9es d\u2019Open Bulk Buying de ce site ont \u00e9t\u00e9 supprim\u00e9es."
+            ],
+            "Danger zone": [
+                "Zone \u00e0 risque"
+            ],
+            "Permanently deletes this site's Open Bulk Buying records, products and terms, co-op user metadata, and plugin settings. WordPress users and roles, other plugins' data, and other sites on this network are not changed. The database schema is retained.": [
+                "Supprime d\u00e9finitivement les enregistrements, produits et termes d\u2019Open Bulk Buying de ce site, les m\u00e9tadonn\u00e9es des membres de la coop\u00e9rative et les r\u00e9glages de l\u2019extension. Les comptes et r\u00f4les WordPress, les donn\u00e9es des autres extensions et les autres sites de ce r\u00e9seau ne sont pas modifi\u00e9s. Le sch\u00e9ma de la base de donn\u00e9es est conserv\u00e9."
+            ],
+            "Type %s to confirm": [
+                "Saisissez %s pour confirmer"
+            ],
+            "Delete all Open Bulk Buying data": [
+                "Supprimer toutes les donn\u00e9es d\u2019Open Bulk Buying"
+            ],
+            "Test mode enabled.": [
+                "Mode test activ\u00e9."
+            ],
+            "Test mode disabled.": [
+                "Mode test d\u00e9sactiv\u00e9."
+            ],
+            "Demo data is ready. Populating again will not duplicate the demo records.": [
+                "Les donn\u00e9es de d\u00e9monstration sont pr\u00eates. Les g\u00e9n\u00e9rer \u00e0 nouveau ne cr\u00e9era pas de doublons."
+            ],
+            "Test mode": [
+                "Mode test"
+            ],
+            "Enable test mode": [
+                "Activer le mode test"
+            ],
+            "Test mode enables a repeatable demo-data action. Demo records are marked and use the current site only.": [
+                "Le mode test permet de g\u00e9n\u00e9rer des donn\u00e9es de d\u00e9monstration de fa\u00e7on r\u00e9p\u00e9table. Les enregistrements de d\u00e9monstration sont identifi\u00e9s et utilisent uniquement le site actuel."
+            ],
+            "Demo data": [
+                "Donn\u00e9es de d\u00e9monstration"
+            ],
+            "Adds 41 marked demo products, 11 categories (including nested and empty categories), 4 suppliers, varied stock levels, a setup cycle and a draft order. Includes long names, varied units, container charges and inactive products. Repeating adds missing fixtures without duplicating stock. It does not create WordPress users or publish demo rules.": [
+                "Ajoute 41 produits de d\u00e9monstration identifi\u00e9s, 11 cat\u00e9gories (dont des cat\u00e9gories imbriqu\u00e9es et vides), 4 fournisseurs, des niveaux de stock vari\u00e9s, un cycle en configuration et une commande brouillon. Comprend des noms longs, des unit\u00e9s vari\u00e9es, des frais de contenant et des produits inactifs. R\u00e9p\u00e9ter l\u2019action ajoute les donn\u00e9es manquantes sans dupliquer les stocks. Aucun compte WordPress n\u2019est cr\u00e9\u00e9 et aucune r\u00e8gle de d\u00e9monstration n\u2019est publi\u00e9e."
+            ],
+            "Populate demo data": [
+                "G\u00e9n\u00e9rer les donn\u00e9es de d\u00e9monstration"
+            ],
+            "Text": [
+                "Texte"
+            ],
+            "True\/false": [
+                "Vrai\/faux"
+            ],
+            "Options": [
+                "Options"
+            ],
+            "Staff must check the box when adding a member. Later edits are never blocked.": [
+                "Le personnel doit cocher la case lors de l\u2019ajout d\u2019un membre. Les modifications ult\u00e9rieures ne sont jamais bloqu\u00e9es."
+            ],
+            "Staff must fill this in when adding a member. Later edits are never blocked.": [
+                "Le personnel doit remplir ce champ lors de l\u2019ajout d\u2019un membre. Les modifications ult\u00e9rieures ne sont jamais bloqu\u00e9es."
+            ],
+            "Members must check the box (for example, to give consent).": [
+                "Les membres doivent cocher la case (par exemple, pour donner leur consentement)."
+            ],
+            "Asked when an account is created. Existing members must answer the next time they update their profile. Staff edits are never blocked.": [
+                "Demand\u00e9 lors de la cr\u00e9ation d\u2019un compte. Les membres existants doivent r\u00e9pondre \u00e0 la prochaine mise \u00e0 jour de leur profil. Les modifications du personnel ne sont jamais bloqu\u00e9es."
+            ],
+            "New profile field": [
+                "Nouveau champ de profil"
+            ],
+            "Reload fields": [
+                "Recharger les champs"
+            ],
+            "Your edits here are kept: reload, then save again.": [
+                "Vos modifications sont conserv\u00e9es ici : rechargez, puis enregistrez \u00e0 nouveau."
+            ],
+            "This field is archived: it is hidden from forms, and existing answers are kept.": [
+                "Ce champ est archiv\u00e9 : il est masqu\u00e9 dans les formulaires et les r\u00e9ponses existantes sont conserv\u00e9es."
+            ],
+            "Label": [
+                "Libell\u00e9"
+            ],
+            "Key": [
+                "Cl\u00e9"
+            ],
+            "Stores the answers. It follows the label until you edit it, and can\u2019t change after the field is saved.": [
+                "Sert \u00e0 stocker les r\u00e9ponses. Elle suit le libell\u00e9 jusqu\u2019\u00e0 ce que vous la modifiiez et ne peut plus changer apr\u00e8s l\u2019enregistrement du champ."
+            ],
+            "The key can\u2019t change once the field is saved, because members\u2019 answers are stored under it.": [
+                "La cl\u00e9 ne peut plus changer apr\u00e8s l\u2019enregistrement du champ, car les r\u00e9ponses des membres y sont associ\u00e9es."
+            ],
+            "The type can\u2019t change after saving. Archive this field and add a new one instead.": [
+                "Le type ne peut plus changer apr\u00e8s l\u2019enregistrement. Archivez ce champ et ajoutez-en un nouveau."
+            ],
+            "Help text": [
+                "Texte d\u2019aide"
+            ],
+            "Several lines": [
+                "Plusieurs lignes"
+            ],
+            "Maximum length (characters)": [
+                "Longueur maximale (caract\u00e8res)"
+            ],
+            "Allow several choices": [
+                "Autoriser plusieurs choix"
+            ],
+            "Style": [
+                "Style"
+            ],
+            "Dropdown": [
+                "Liste d\u00e9roulante"
+            ],
+            "Chips": [
+                "Pastilles"
+            ],
+            "Several choices are shown as chips.": [
+                "Les choix multiples sont affich\u00e9s sous forme de pastilles."
+            ],
+            "Who answers": [
+                "Qui r\u00e9pond"
+            ],
+            "Visibility": [
+                "Visibilit\u00e9"
+            ],
+            "Members and staff": [
+                "Membres et personnel"
+            ],
+            "Staff only": [
+                "Personnel seulement"
+            ],
+            "Only staff see and fill in this field. It is not secret: it is included when a member requests an export of their personal data.": [
+                "Seul le personnel voit et remplit ce champ. Il n\u2019est pas secret : il est inclus lorsqu\u2019un membre demande l\u2019exportation de ses renseignements personnels."
+            ],
+            "Asked on the signup form and shown on the member\u2019s account.": [
+                "Demand\u00e9 dans le formulaire d\u2019inscription et affich\u00e9 dans le compte du membre."
+            ],
+            "Members can change their answer later": [
+                "Les membres peuvent modifier leur r\u00e9ponse plus tard"
+            ],
+            "Required (must be checked)": [
+                "Obligatoire (doit \u00eatre coch\u00e9)"
+            ],
+            "Required": [
+                "Obligatoire"
+            ],
+            "Preview": [
+                "Aper\u00e7u"
+            ],
+            "Add field": [
+                "Ajouter un champ"
+            ],
+            "Show to members": [
+                "Afficher aux membres"
+            ],
+            "Members will see and be able to edit the answers staff entered in this field. Continue?": [
+                "Les membres pourront voir et modifier les r\u00e9ponses saisies par le personnel dans ce champ. Continuer?"
+            ],
+            "Archived": [
+                "Archiv\u00e9"
+            ],
+            "Delete field and its data": [
+                "Supprimer le champ et ses donn\u00e9es"
+            ],
+            "This deletes the field \u201c%s\u201d and every member\u2019s answer to it. This can\u2019t be undone, and the key can never be used again.": [
+                "Cette action supprime le champ \u00ab %s \u00bb et la r\u00e9ponse de chaque membre \u00e0 ce champ. Elle est irr\u00e9versible, et la cl\u00e9 ne pourra jamais \u00eatre r\u00e9utilis\u00e9e."
+            ],
+            "Delete permanently": [
+                "Supprimer d\u00e9finitivement"
+            ],
+            "Field added.": [
+                "Champ ajout\u00e9."
+            ],
+            "Field saved.": [
+                "Champ enregistr\u00e9."
+            ],
+            "Field archived.": [
+                "Champ archiv\u00e9."
+            ],
+            "Field restored.": [
+                "Champ restaur\u00e9."
+            ],
+            "Extra questions for members. Member fields appear on the signup form and the member\u2019s account; staff-only fields appear only to staff. Fields appear in this order.": [
+                "Questions suppl\u00e9mentaires pour les membres. Les champs destin\u00e9s aux membres apparaissent dans le formulaire d\u2019inscription et dans leur compte; les champs r\u00e9serv\u00e9s au personnel n\u2019apparaissent que pour le personnel. Les champs sont affich\u00e9s dans cet ordre."
+            ],
+            "Restore": [
+                "Restaurer"
+            ],
+            "Archive": [
+                "Archiver"
+            ],
+            "Delete\u2026": [
+                "Supprimer\u2026"
+            ],
+            "No profile fields yet.": [
+                "Aucun champ de profil pour le moment."
+            ],
+            "Archived fields are hidden from forms but keep members\u2019 answers. Only archived fields can be deleted.": [
+                "Les champs archiv\u00e9s sont masqu\u00e9s dans les formulaires, mais conservent les r\u00e9ponses des membres. Seuls les champs archiv\u00e9s peuvent \u00eatre supprim\u00e9s."
+            ],
+            "Field and its data deleted.": [
+                "Champ et donn\u00e9es supprim\u00e9s."
+            ],
+            "%1$s (%2$s)": [
+                "%1$s (%2$s)"
+            ],
+            "Translation (%s)": [
+                "Traduction (%s)"
+            ],
+            "Group %d": [
+                "Groupe %d"
+            ],
+            "Option %d": [
+                "Option %d"
+            ],
+            "Option label": [
+                "Libell\u00e9 de l\u2019option"
+            ],
+            "Saved option keys can\u2019t change.": [
+                "Les cl\u00e9s des options enregistr\u00e9es ne peuvent plus changer."
+            ],
+            "Key of %s": [
+                "Cl\u00e9 de %s"
+            ],
+            "key": [
+                "cl\u00e9"
+            ],
+            "Remove %s": [
+                "Retirer %s"
+            ],
+            "Group heading": [
+                "Titre du groupe"
+            ],
+            "Group": [
+                "Groupe"
+            ],
+            "Remove %s (its options move to the group above)": [
+                "Retirer %s (ses options passent au groupe pr\u00e9c\u00e9dent)"
+            ],
+            "Add option": [
+                "Ajouter une option"
+            ],
+            "Add group": [
+                "Ajouter un groupe"
+            ],
+            "Options belong to the group heading above them, so moving a heading changes which options it holds. Options above the first heading have no group. Archived options stay on members who chose them but can\u2019t be chosen again.": [
+                "Les options appartiennent au titre de groupe situ\u00e9 au-dessus d\u2019elles; d\u00e9placer un titre modifie donc les options qu\u2019il contient. Les options au-dessus du premier titre n\u2019appartiennent \u00e0 aucun groupe. Les options archiv\u00e9es restent associ\u00e9es aux membres qui les ont choisies, mais ne peuvent plus \u00eatre s\u00e9lectionn\u00e9es."
+            ],
+            "(No label)": [
+                "(Sans libell\u00e9)"
+            ],
+            "(required)": [
+                "(obligatoire)"
+            ],
+            "Preview language": [
+                "Langue de l\u2019aper\u00e7u"
+            ],
+            "Default": [
+                "Par d\u00e9faut"
+            ],
+            "Staff only: this field never appears on member forms.": [
+                "Personnel seulement : ce champ n\u2019appara\u00eet jamais dans les formulaires des membres."
+            ],
+            "Shown on: %s": [
+                "Affich\u00e9 dans : %s"
+            ],
+            "the Members screen": [
+                "l\u2019\u00e9cran Membres"
+            ],
+            "signup, member account and the Members screen": [
+                "l\u2019inscription, le compte du membre et l\u2019\u00e9cran Membres"
+            ],
+            "Use lowercase letters, numbers and underscores, starting with a letter.": [
+                "Utilisez des lettres minuscules, des chiffres et des traits de soulignement, en commen\u00e7ant par une lettre."
+            ],
+            "This key is reserved. Choose another key.": [
+                "Cette cl\u00e9 est r\u00e9serv\u00e9e. Choisissez une autre cl\u00e9."
+            ],
+            "This key belonged to a deleted field and can\u2019t be reused.": [
+                "Cette cl\u00e9 appartenait \u00e0 un champ supprim\u00e9 et ne peut pas \u00eatre r\u00e9utilis\u00e9e."
+            ],
+            "Another field already uses this key.": [
+                "Un autre champ utilise d\u00e9j\u00e0 cette cl\u00e9."
+            ],
+            "Add a label.": [
+                "Ajoutez un libell\u00e9."
+            ],
+            "Key: %s": [
+                "Cl\u00e9 : %s"
+            ],
+            "The maximum length must be between 1 and %d.": [
+                "La longueur maximale doit \u00eatre comprise entre 1 et %d."
+            ],
+            "Add at least one option.": [
+                "Ajoutez au moins une option."
+            ],
+            "Every option needs a label.": [
+                "Chaque option doit avoir un libell\u00e9."
+            ],
+            "The option key \u201c%s\u201d is invalid or used twice.": [
+                "La cl\u00e9 d\u2019option \u00ab %s \u00bb est invalide ou utilis\u00e9e deux fois."
+            ],
+            "Every group needs a label.": [
+                "Chaque groupe doit avoir un libell\u00e9."
+            ],
+            "Custom": [
+                "Personnalis\u00e9"
+            ],
+            "Edited": [
+                "Modifi\u00e9"
+            ],
+            "%d member": [
+                "%d membre",
+                "%d membres"
+            ],
+            "Role added.": [
+                "R\u00f4le ajout\u00e9."
+            ],
+            "Role saved.": [
+                "R\u00f4le enregistr\u00e9."
+            ],
+            "Delete \u201c%1$s\u201d? It will be removed from %2$d member.": [
+                "Supprimer \u00ab %1$s \u00bb? Il sera retir\u00e9 de %2$d membre.",
+                "Supprimer \u00ab %1$s \u00bb? Il sera retir\u00e9 de %2$d membres."
+            ],
+            "Delete \u201c%s\u201d?": [
+                "Supprimer \u00ab %s \u00bb?"
+            ],
+            "Role deleted.": [
+                "R\u00f4le supprim\u00e9."
+            ],
+            "Restore the original settings for \u201c%s\u201d?": [
+                "Restaurer les r\u00e9glages d\u2019origine de \u00ab %s \u00bb?"
+            ],
+            "Reset": [
+                "R\u00e9initialiser"
+            ],
+            "Role reset.": [
+                "R\u00f4le r\u00e9initialis\u00e9."
+            ],
+            "Restore the original team roles? Custom roles will be deleted.": [
+                "Restaurer les r\u00f4les d\u2019origine de l\u2019\u00e9quipe? Les r\u00f4les personnalis\u00e9s seront supprim\u00e9s."
+            ],
+            "Roles reset.": [
+                "R\u00f4les r\u00e9initialis\u00e9s."
+            ],
+            "Add role": [
+                "Ajouter un r\u00f4le"
+            ],
+            "Give members access to the co-op\u2019s admin screens. All active members can order without a role.": [
+                "Donnez aux membres acc\u00e8s aux \u00e9crans d\u2019administration de la coop\u00e9rative. Tous les membres actifs peuvent commander sans avoir de r\u00f4le."
+            ],
+            "Reload roles": [
+                "Recharger les r\u00f4les"
+            ],
+            "Deleted roles": [
+                "R\u00f4les supprim\u00e9s"
+            ],
+            "Role restored.": [
+                "R\u00f4le restaur\u00e9."
+            ],
+            "Start over": [
+                "Recommencer"
+            ],
+            "Restore original roles\u2026": [
+                "Restaurer les r\u00f4les d\u2019origine\u2026"
+            ],
+            "New team role": [
+                "Nouveau r\u00f4le de l\u2019\u00e9quipe"
+            ],
+            "You can\u2019t edit this role.": [
+                "Vous ne pouvez pas modifier ce r\u00f4le."
+            ],
+            "Rule %d": [
+                "R\u00e8gle %d"
+            ],
+            "The rich-text editor could not be loaded. Reload this page to try again.": [
+                "L\u2019\u00e9diteur de texte enrichi n\u2019a pas pu \u00eatre charg\u00e9. Rechargez cette page pour r\u00e9essayer."
+            ],
+            "Requires member acceptance.": [
+                "Exige l\u2019acceptation des membres."
+            ],
+            "Does not require renewed acceptance.": [
+                "N\u2019exige pas de nouvelle acceptation."
+            ],
+            "Content language": [
+                "Langue du contenu"
+            ],
+            "Missing translations use the default text.": [
+                "Les traductions manquantes utilisent le texte par d\u00e9faut."
+            ],
+            "Version history": [
+                "Historique des versions"
+            ],
+            "No versions have been published.": [
+                "Aucune version n\u2019a \u00e9t\u00e9 publi\u00e9e."
+            ],
+            "View version %d": [
+                "Voir la version %d"
+            ],
+            "Current": [
+                "Actuelle"
+            ],
+            "Acceptance required": [
+                "Acceptation requise"
+            ],
+            "No renewed acceptance": [
+                "Aucune nouvelle acceptation"
+            ],
+            "Rules published.": [
+                "R\u00e8gles publi\u00e9es."
+            ],
+            "Draft saved.": [
+                "Brouillon enregistr\u00e9."
+            ],
+            "Rules reloaded.": [
+                "R\u00e8gles recharg\u00e9es."
+            ],
+            "Draft discarded.": [
+                "Brouillon abandonn\u00e9."
+            ],
+            "Rules draft": [
+                "Brouillon des r\u00e8gles"
+            ],
+            "Add rule": [
+                "Ajouter une r\u00e8gle"
+            ],
+            "Rules appear to members to agree to when they sign up. Save your draft, then publish it when ready. Published versions cannot be edited or deleted.": [
+                "Les r\u00e8gles sont pr\u00e9sent\u00e9es aux membres pour acceptation lors de leur inscription. Enregistrez votre brouillon, puis publiez-le lorsqu\u2019il est pr\u00eat. Les versions publi\u00e9es ne peuvent pas \u00eatre modifi\u00e9es ou supprim\u00e9es."
+            ],
+            "Reload rules": [
+                "Recharger les r\u00e8gles"
+            ],
+            "No rules yet. Add your first rule to get started.": [
+                "Aucune r\u00e8gle pour le moment. Ajoutez votre premi\u00e8re r\u00e8gle pour commencer."
+            ],
+            "Empty rule": [
+                "R\u00e8gle vide"
+            ],
+            "Edit %s": [
+                "Modifier %s"
+            ],
+            "Save draft": [
+                "Enregistrer le brouillon"
+            ],
+            "Discard draft": [
+                "Abandonner le brouillon"
+            ],
+            "Save the draft before publishing.": [
+                "Enregistrez le brouillon avant de le publier."
+            ],
+            "Require existing members to accept this version on their next order": [
+                "Exiger que les membres existants acceptent cette version \u00e0 leur prochaine commande"
+            ],
+            "The first version always requires acceptance. Translation-only changes never require renewed acceptance.": [
+                "La premi\u00e8re version exige toujours l\u2019acceptation. Les modifications touchant uniquement les traductions n\u2019exigent jamais de nouvelle acceptation."
+            ],
+            "Publish rules": [
+                "Publier les r\u00e8gles"
+            ],
+            "Editing language": [
+                "Langue de modification"
+            ],
+            "Leave a translation empty to use the default text.": [
+                "Laissez une traduction vide pour utiliser le texte par d\u00e9faut."
+            ],
+            "Default rule text": [
+                "Texte par d\u00e9faut de la r\u00e8gle"
+            ],
+            "Rule text (%s)": [
+                "Texte de la r\u00e8gle (%s)"
+            ],
+            "Changes are kept in this draft. Use Save draft after closing the editor.": [
+                "Les modifications sont conserv\u00e9es dans ce brouillon. Utilisez Enregistrer le brouillon apr\u00e8s avoir ferm\u00e9 l\u2019\u00e9diteur."
+            ],
+            "Done": [
+                "Termin\u00e9"
+            ],
+            "Publish": [
+                "Publier"
+            ],
+            "Discard": [
+                "Abandonner"
+            ],
+            "Publish this saved draft? This creates an immutable version visible to members.": [
+                "Publier ce brouillon enregistr\u00e9? Une version non modifiable sera cr\u00e9\u00e9e et visible par les membres."
+            ],
+            "Remove this rule from the draft?": [
+                "Retirer cette r\u00e8gle du brouillon?"
+            ],
+            "Discard all unpublished edits and return to the current published rules?": [
+                "Abandonner toutes les modifications non publi\u00e9es et revenir aux r\u00e8gles actuellement publi\u00e9es?"
+            ],
+            "Rules version %d": [
+                "Version %d des r\u00e8gles"
+            ],
+            "This rules version is no longer available.": [
+                "Cette version des r\u00e8gles n\u2019est plus disponible."
+            ],
+            "Something went wrong. Please try again.": [
+                "Un probl\u00e8me est survenu. Veuillez r\u00e9essayer."
+            ]
+        }
+    }
+}

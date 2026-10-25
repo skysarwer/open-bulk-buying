@@ -56,6 +56,44 @@ The plugin's dashboard screens need the built files in `build/`. If the build
 has not been generated or included in the installed plugin, the Co-op screens
 will display a notice explaining how to build them.
 
+## Translations
+
+Canadian French (`fr_CA`) interface translations are bundled in `languages/`,
+including the editable PO catalog, compiled PHP MO catalog, and JavaScript JSON
+catalog. Select **Français du Canada** in **Settings > General > Site Language**
+for the public site. Dashboard users can also select their own language under
+**Users > Profile**. Changing the language does not translate stored product
+names, rules, or custom field content; enter those translations separately in
+the co-op's content editors.
+
+To maintain translations, install [WP-CLI](https://wp-cli.org/) with its i18n
+commands, then run from the plugin directory:
+
+```sh
+npm run i18n:extract
+npm run i18n:update
+```
+
+Open `languages/open-bulk-buying-fr_CA.po` in Poedit (or another gettext editor),
+translate new messages, and review fuzzy entries. Keep placeholders such as
+`%s` and `%1$d`, HTML tags, and both plural forms intact. Use Canadian French
+terminology consistently: *courriel*, *téléverser*, *panier*, *ramassage*,
+*cycle de commande*, and *aide financière*. The `fr_CA` plural rule uses the
+singular form for 0 and 1, and the plural form for larger counts.
+
+After saving the PO catalog:
+
+```sh
+npm run i18n:compile
+```
+
+The compiler retains JavaScript messages in the PO and maps their source files
+to the shipped `build/admin/index.js` bundle. Saving an MO file in Poedit alone
+does not update JavaScript translations. Commit the POT, PO, MO and JSON files,
+and include `languages/` in releases. Check the member forms, dashboard, emails,
+plurals, and English fallback before shipping. Poedit is optional; WP-CLI handles
+extraction and compilation.
+
 ## First-time setup
 
 1. **Give trusted staff co-op access.** As a WordPress Administrator, go to
@@ -268,6 +306,21 @@ Previously emailed login links no longer work; request a code instead.
 
 Themes and other plugins can show the same view with
 `openbb_render_login( array( 'title' => ..., 'intro' => ..., 'login_redirect' => ... ) )`.
+
+## Member order form
+
+Add the `[openbb_order_form]` shortcode to a page to let active members order from a
+cycle that's taking orders. Logged-out visitors see the login form there, with a
+button to switch to signup. Use `auth="signup"` to show the signup form first:
+
+```text
+[openbb_order_form auth="signup"]
+```
+
+The catalog is never shown to logged-out visitors. After logging in or signing up
+on the order form, the page reloads to the form, or to the member's application
+status while approval is pending. Signing up there skips the "You're signed up"
+screen.
 
 ## Bot protection
 

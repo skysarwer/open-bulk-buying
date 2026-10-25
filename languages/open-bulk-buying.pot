@@ -1,0 +1,4289 @@
+# Copyright (C) 2026 Evan Buckiewicz
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Open Bulk Buying 1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/open-bulk-buying\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-10-25T20:12:41+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: open-bulk-buying\n"
+
+#. Plugin Name of the plugin
+#: open-bulk-buying.php
+msgid "Open Bulk Buying"
+msgstr ""
+
+#. Description of the plugin
+#: open-bulk-buying.php
+msgid "Inventory management, order cycles and order forms for Food Coops"
+msgstr ""
+
+#. Author of the plugin
+#: open-bulk-buying.php
+msgid "Evan Buckiewicz"
+msgstr ""
+
+#. Author URI of the plugin
+#: open-bulk-buying.php
+msgid "https://evan.works"
+msgstr ""
+
+#: inc/access/class-openbb-access.php:53
+msgid "Applicant"
+msgstr ""
+
+#: inc/access/class-openbb-access.php:54
+#: src/admin/screens/products/fields.js:342
+#: src/admin/screens/products/fields.js:352
+msgid "Active"
+msgstr ""
+
+#: inc/access/class-openbb-access.php:55
+#: src/admin/screens/products/fields.js:343
+#: src/admin/screens/products/fields.js:353
+msgid "Inactive"
+msgstr ""
+
+#: inc/access/class-openbb-access.php:56
+#: inc/model/order/class-openbb-order.php:111
+#: src/admin/screens/cycles/financial-aid.js:18
+msgid "Declined"
+msgstr ""
+
+#: inc/access/class-openbb-access.php:148
+#: inc/access/class-openbb-access.php:176
+msgid "That membership status or user does not exist."
+msgstr ""
+
+#: inc/access/class-openbb-access.php:157
+#: inc/rest/admin/class-openbb-rest-members.php:380
+msgid "A membership can't change to that status from its current one."
+msgstr ""
+
+#: inc/access/class-openbb-access.php:161
+#: inc/rest/admin/class-openbb-rest-members.php:383
+msgid "You are not allowed to change this person's membership status."
+msgstr ""
+
+#: inc/access/class-openbb-access.php:179
+msgid "This person already has a co-op membership."
+msgstr ""
+
+#: inc/access/class-openbb-access.php:190
+msgid "The membership status could not be saved."
+msgstr ""
+
+#: inc/access/class-openbb-access.php:201
+msgid "The joining date could not be saved. The membership status was not changed."
+msgstr ""
+
+#: inc/access/class-openbb-access.php:202
+msgid "The membership status changed, but the joining date could not be saved or the status restored. Please correct this person's membership before continuing."
+msgstr ""
+
+#: inc/access/class-openbb-access.php:230
+msgid "That role or user does not exist."
+msgstr ""
+
+#: inc/access/class-openbb-access.php:233
+msgid "Only members can be given roles."
+msgstr ""
+
+#: inc/access/class-openbb-access.php:243
+#: inc/rest/admin/class-openbb-rest-members.php:392
+msgid "You are not allowed to give or take away these roles."
+msgstr ""
+
+#: inc/access/class-openbb-access.php:249
+#: inc/access/class-openbb-access.php:254
+#: inc/access/class-openbb-roles.php:692
+msgid "The roles could not be saved."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:122
+msgid "Manage products"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:122
+msgid "Create and edit products, categories and suppliers, and upload images."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:123
+msgid "Manage inventory"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:123
+msgid "Record stock received, counted and adjusted."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:124
+msgid "Manage cycles"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:124
+msgid "Create cycles and move them through their stages."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:125
+msgid "View all orders"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:125
+msgid "See every member's orders."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:126
+msgid "Edit orders"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:126
+msgid "Change, cancel or create orders for members."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:127
+msgid "Process orders"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:127
+msgid "Record prepared quantities and shortages for the cycle being processed."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:128
+msgid "Distribute orders"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:128
+msgid "Hand out orders for the cycle being distributed."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:129
+msgid "Record payments"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:129
+msgid "Mark orders as paid."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:130
+msgid "View members"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:130
+msgid "See the member list and contact details."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:131
+msgid "Edit members"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:131
+msgid "Edit member details and approve, decline, deactivate or reactivate members."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:132
+msgid "Add members"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:132
+msgid "Add people as members without them signing up."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:133
+msgid "Export personal data"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:133
+msgid "Download files that contain members' personal data."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:134
+msgid "View aid requests"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:134
+msgid "See aid requested on orders."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:135
+msgid "Decide aid"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:135
+msgid "Approve or decline aid requests."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:136
+msgid "Manage rules"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:136
+msgid "Edit the co-op rules members agree to."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:137
+msgid "Manage settings"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:137
+msgid "Change the co-op's general settings."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:138
+msgid "Manage profile fields"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:138
+msgid "Add and change the questions members answer about themselves."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:139
+msgid "Manage team roles"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:139
+msgid "Edit team roles and give them to members."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:158
+msgid "Products and cycles"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:159
+#: inc/admin/class-openbb-admin.php:75
+#: src/admin/screens/cycles/list.js:146
+#: src/admin/screens/cycles/list.js:285
+#: src/admin/screens/members/fields.js:137
+#: src/admin/screens/members/panel.js:232
+#: src/admin/screens/orders/index.js:402
+msgid "Orders"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:160
+#: inc/admin/class-openbb-admin.php:76
+#: src/admin/screens/members/index.js:402
+msgid "Members"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:161
+#: src/admin/screens/orders/editor.js:411
+#: src/admin/screens/orders/editor.js:486
+#: src/admin/screens/orders/index.js:117
+msgid "Aid"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:162
+msgid "Administration"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:163
+#: inc/model/product/class-openbb-catalog.php:68
+msgid "Other"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:221
+msgid "Coordinator"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:222
+msgid "Manager"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:223
+msgid "Aid reviewer"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:224
+msgid "Distribution helper"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:225
+msgid "Rules editor"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:616
+msgid "Give the role a name."
+msgstr ""
+
+#. translators: %d: maximum number of characters.
+#: inc/access/class-openbb-roles.php:620
+#, php-format
+msgid "Role names can be at most %d characters."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:624
+msgid "Another role already has that name."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:630
+msgid "Permissions must be a list of permission names."
+msgstr ""
+
+#. translators: %s: permission names.
+#: inc/access/class-openbb-roles.php:635
+#, php-format
+msgid "Unknown permissions: %s"
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:651
+#: inc/access/class-openbb-roles.php:786
+msgid "You are not allowed to change roles."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:656
+msgid "Someone else changed the team roles. Reload to see the latest version."
+msgstr ""
+
+#. translators: 1: role name, 2: reason.
+#: inc/access/class-openbb-roles.php:680
+#, php-format
+msgid "%1$s: %2$s"
+msgstr ""
+
+#. translators: 1: permission, 2: permissions it needs.
+#: inc/access/class-openbb-roles.php:757
+#, php-format
+msgid "“%1$s” also needs: %2$s."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:792
+msgid "You can't change a role you hold. Ask an administrator."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:795
+msgid "Only administrators can change roles that manage access."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:799
+msgid "You can only give permissions you have yourself."
+msgstr ""
+
+#: inc/access/class-openbb-roles.php:807
+msgid "That role doesn't exist."
+msgstr ""
+
+#: inc/access/user-profile.php:14
+msgid "Co-op membership"
+msgstr ""
+
+#: inc/admin/class-openbb-admin.php:44
+#: inc/admin/class-openbb-admin.php:45
+msgid "Co-op"
+msgstr ""
+
+#: inc/admin/class-openbb-admin.php:72
+#: src/admin/screens/overview/index.js:26
+msgid "Overview"
+msgstr ""
+
+#: inc/admin/class-openbb-admin.php:73
+#: inc/model/product/class-openbb-catalog.php:68
+#: inc/model/product/post-type.php:21
+#: src/admin/screens/orders/index.js:103
+#: src/admin/screens/products/index.js:434
+msgid "Products"
+msgstr ""
+
+#: inc/admin/class-openbb-admin.php:74
+#: src/admin/screens/cycles/list.js:516
+msgid "Cycles"
+msgstr ""
+
+#: inc/admin/class-openbb-admin.php:77
+#: src/admin/screens/settings/settings-page.js:23
+msgid "Settings"
+msgstr ""
+
+#: inc/admin/class-openbb-admin.php:95
+msgid "You are not allowed to access this page."
+msgstr ""
+
+#: inc/admin/class-openbb-admin.php:103
+msgid "The admin scripts have not been built. Run \"npm install\" and \"npm run build\" in the plugin folder."
+msgstr ""
+
+#: inc/admin/class-openbb-admin.php:106
+msgid "This screen requires JavaScript."
+msgstr ""
+
+#: inc/admin/class-openbb-admin.php:107
+msgid "Loading…"
+msgstr ""
+
+#: inc/class-openbb-captcha.php:165
+msgid "The verification expired. Please try again."
+msgstr ""
+
+#: inc/class-openbb-captcha.php:180
+msgid "Please complete the verification and try again."
+msgstr ""
+
+#: inc/class-openbb-captcha.php:184
+msgid "We couldn't check that you're not a bot. Please try again later, or contact the co-op."
+msgstr ""
+
+#: inc/class-openbb-demo-catalog.php:23
+#: inc/class-openbb-maintenance.php:33
+msgid "Enable test mode before populating demo data."
+msgstr ""
+
+#: inc/class-openbb-demo-catalog.php:58
+msgid "A non-demo product is already using a demo product identifier."
+msgstr ""
+
+#: inc/class-openbb-demo-catalog.php:94
+msgid "The demo product could not be marked."
+msgstr ""
+
+#: inc/class-openbb-demo-catalog.php:106
+#: inc/class-openbb-maintenance.php:71
+msgid "The demo product could not be loaded."
+msgstr ""
+
+#: inc/class-openbb-demo-catalog.php:117
+#: inc/class-openbb-maintenance.php:146
+msgid "Generated demo stock receipt."
+msgstr ""
+
+#: inc/class-openbb-demo-catalog.php:121
+#: inc/class-openbb-maintenance.php:150
+msgid "The demo stock receipt could not be populated."
+msgstr ""
+
+#: inc/class-openbb-demo-catalog.php:135
+msgid "A non-demo category or supplier is already using a demo identifier."
+msgstr ""
+
+#: inc/class-openbb-demo-catalog.php:146
+msgid "The demo category or supplier could not be marked."
+msgstr ""
+
+#: inc/class-openbb-demo-catalog.php:151
+msgid "The demo category order could not be saved."
+msgstr ""
+
+#: inc/class-openbb-maintenance.php:39
+msgid "A non-demo product is already using the demo product identifier."
+msgstr ""
+
+#: inc/class-openbb-maintenance.php:47
+#: inc/class-openbb-maintenance.php:59
+#: inc/class-openbb-maintenance.php:123
+msgid "[DEMO] Sample bulk beans"
+msgstr ""
+
+#: inc/class-openbb-maintenance.php:60
+msgid "Test data generated by Open Bulk Buying."
+msgstr ""
+
+#: inc/class-openbb-maintenance.php:61
+#: inc/class-openbb-maintenance.php:124
+msgid "Demo supplier"
+msgstr ""
+
+#: inc/class-openbb-maintenance.php:76
+msgid "The demo product could not be populated."
+msgstr ""
+
+#: inc/class-openbb-maintenance.php:89
+msgid "The demo cycle could not be populated."
+msgstr ""
+
+#: inc/class-openbb-maintenance.php:97
+msgid "A WordPress user is needed to create the demo order."
+msgstr ""
+
+#: inc/class-openbb-maintenance.php:112
+msgid "The demo order could not be populated."
+msgstr ""
+
+#: inc/class-openbb-maintenance.php:133
+msgid "The demo order line could not be populated."
+msgstr ""
+
+#: inc/class-openbb-maintenance.php:167
+#: inc/class-openbb-maintenance.php:181
+#: inc/class-openbb-maintenance.php:186
+msgid "Open Bulk Buying data could not be deleted."
+msgstr ""
+
+#: inc/class-openbb-maintenance.php:199
+msgid "Some product data could not be deleted."
+msgstr ""
+
+#: inc/class-openbb-maintenance.php:216
+msgid "Some product taxonomy data could not be deleted."
+msgstr ""
+
+#: inc/class-openbb-rate-limit.php:48
+msgid "Too many attempts. Please wait a few minutes and try again."
+msgstr ""
+
+#. translators: %s: site name.
+#: inc/emails/account-exists.php:12
+#, php-format
+msgid "[%s] You already have an account"
+msgstr ""
+
+#. translators: 1: site name, 2: login URL, 3: lost password URL.
+#: inc/emails/account-exists.php:15
+#, php-format
+msgid ""
+"Someone, hopefully you, tried to sign up to %1$s with this email address. You already have an account, so there's no code to enter.\n"
+"\n"
+"Log in to finish joining:\n"
+"%2$s\n"
+"\n"
+"Forgot your password? Reset it here:\n"
+"%3$s\n"
+"\n"
+"If this wasn't you, you can ignore this email."
+msgstr ""
+
+#. translators: 1: member's first name, 2: site name.
+#: inc/emails/application-pending.php:11
+#, php-format
+msgid ""
+"Hi %1$s,\n"
+"\n"
+"Thanks for applying to join %2$s. A coordinator will review your application. You'll be able to place orders once it's approved."
+msgstr ""
+
+#. translators: %s: site name.
+#: inc/emails/application-pending.php:15
+#, php-format
+msgid "[%s] We received your membership application"
+msgstr ""
+
+#. translators: 1: site name, 2: the code.
+#: inc/emails/login-code.php:12
+#, php-format
+msgid "[%1$s] Your login code: %2$s"
+msgstr ""
+
+#. translators: 1: site name.
+#: inc/emails/login-code.php:16
+#, php-format
+msgid "Enter this code in the browser where you asked to log in to %s:"
+msgstr ""
+
+#. translators: %d: minutes until the code expires.
+#: inc/emails/login-code.php:22
+#, php-format
+msgid "The code works once and expires in %d minutes. Don't share it with anyone."
+msgstr ""
+
+#: inc/emails/login-code.php:25
+msgid "If you didn't ask to log in, you can ignore this email."
+msgstr ""
+
+#. translators: 1: login URL, 2: lost password URL.
+#: inc/emails/member-login-instructions.php:12
+#, php-format
+msgid ""
+"Log in at any time:\n"
+"%1$s\n"
+"\n"
+"To choose a password, use \"Lost your password?\":\n"
+"%2$s"
+msgstr ""
+
+#. translators: %s: site name.
+#: inc/emails/password-required.php:12
+#, php-format
+msgid "[%s] Log in with your password"
+msgstr ""
+
+#. translators: 1: site name, 2: login page, 3: lost password page.
+#: inc/emails/password-required.php:15
+#, php-format
+msgid ""
+"Someone asked for a login code for your account on %1$s.\n"
+"\n"
+"Email-code login isn't available for this account. Please log in with your password instead:\n"
+"\n"
+"%2$s\n"
+"\n"
+"If you've forgotten your password, you can reset it here:\n"
+"\n"
+"%3$s\n"
+"\n"
+"If you didn't ask to log in, you can ignore this email."
+msgstr ""
+
+#. translators: 1: site name, 2: the code.
+#: inc/emails/signup-code.php:12
+#, php-format
+msgid "[%1$s] Your sign-up code: %2$s"
+msgstr ""
+
+#. translators: 1: site name.
+#: inc/emails/signup-code.php:16
+#, php-format
+msgid "Enter this code to finish joining %s:"
+msgstr ""
+
+#. translators: %d: minutes until the code expires.
+#: inc/emails/signup-code.php:22
+#, php-format
+msgid "The code expires in %d minutes."
+msgstr ""
+
+#: inc/emails/signup-code.php:25
+msgid "If you didn't ask to join, you can ignore this email."
+msgstr ""
+
+#. translators: 1: member's first name, 2: site name.
+#: inc/emails/welcome.php:11
+#, php-format
+msgid ""
+"Hi %1$s,\n"
+"\n"
+"Welcome to %2$s! You can place an order whenever an order cycle is open."
+msgstr ""
+
+#. translators: %s: site name.
+#: inc/emails/welcome.php:15
+#, php-format
+msgid "[%s] Welcome to the co-op"
+msgstr ""
+
+#: inc/frontend/class-openbb-frontend.php:144
+#: inc/model/member/class-openbb-profile-fields.php:622
+#: inc/rest/frontend/class-openbb-rest-login.php:76
+#: inc/rest/frontend/class-openbb-rest-login.php:79
+#: inc/rest/frontend/class-openbb-rest-login.php:114
+msgid "This field is required."
+msgstr ""
+
+#: inc/frontend/class-openbb-frontend.php:145
+#: inc/model/member/class-openbb-profile-fields.php:621
+#: src/admin/screens/members/profile.js:382
+msgid "This box must be checked."
+msgstr ""
+
+#: inc/frontend/class-openbb-frontend.php:146
+msgid "Choose an option."
+msgstr ""
+
+#: inc/frontend/class-openbb-frontend.php:147
+#: inc/model/member/class-openbb-signup.php:493
+msgid "Enter a valid email address."
+msgstr ""
+
+#: inc/frontend/class-openbb-login-view.php:147
+#: inc/frontend/class-openbb-order-form-view.php:375
+#: inc/frontend/class-openbb-signup-view.php:168
+#: inc/model/member/class-openbb-signup.php:189
+#: inc/rest/frontend/class-openbb-rest-login.php:82
+#: inc/rest/frontend/class-openbb-rest-login.php:114
+msgid "Some details need attention."
+msgstr ""
+
+#: inc/frontend/class-openbb-login-view.php:148
+#: inc/frontend/class-openbb-order-form-view.php:374
+#: inc/frontend/class-openbb-signup-view.php:169
+msgid "Something went wrong. Check your connection and try again."
+msgstr ""
+
+#: inc/frontend/class-openbb-login-view.php:149
+msgid "We sent you a new code. Use the newest email."
+msgstr ""
+
+#. translators: %d: number of digits.
+#: inc/frontend/class-openbb-login-view.php:151
+#, php-format
+msgid "Enter the %d-digit code from your email."
+msgstr ""
+
+#: inc/frontend/class-openbb-login-view.php:174
+msgid "Email or username"
+msgstr ""
+
+#: inc/frontend/class-openbb-login-view.php:184
+msgid "Password"
+msgstr ""
+
+#: inc/frontend/class-openbb-login-view.php:192
+msgid "Keep me logged in"
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:57
+#: inc/frontend/class-openbb-order-form-view.php:616
+#: src/admin/screens/cycles/financial-aid.js:23
+#: src/admin/screens/cycles/financial-aid.js:87
+#: src/admin/screens/members/panel.js:191
+#: src/admin/screens/orders/editor.js:277
+#: src/admin/screens/orders/index.js:55
+msgid "Order"
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:59
+msgid "Your membership application is being reviewed. You can order once it is approved."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:60
+#: inc/model/order/class-openbb-member-orders.php:104
+msgid "Only active co-op members can place orders."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:68
+msgid "Ordering is closed"
+msgstr ""
+
+#. translators: %s: date and time.
+#: inc/frontend/class-openbb-order-form-view.php:71
+#, php-format
+msgid "The next ordering period opens %s."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:72
+msgid "There is no ordering period open right now. Check back soon."
+msgstr ""
+
+#. translators: %s: member's first name.
+#: inc/frontend/class-openbb-order-form-view.php:145
+#, php-format
+msgid "Welcome, %s"
+msgstr ""
+
+#. translators: %s: date and time.
+#: inc/frontend/class-openbb-order-form-view.php:150
+#, php-format
+msgid "Orders close %s"
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:220
+#: inc/frontend/class-openbb-order-form-view.php:347
+#: inc/frontend/class-openbb-order-form-view.php:348
+#, php-format
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: product name.
+#: inc/frontend/class-openbb-order-form-view.php:350
+#, php-format
+msgid "%s added to your basket."
+msgstr ""
+
+#. translators: %s: product name.
+#: inc/frontend/class-openbb-order-form-view.php:352
+#, php-format
+msgid "%s removed from your basket."
+msgstr ""
+
+#. translators: %s: product name.
+#: inc/frontend/class-openbb-order-form-view.php:354
+#, php-format
+msgid "Quantity, %s"
+msgstr ""
+
+#. translators: %s: product name.
+#: inc/frontend/class-openbb-order-form-view.php:356
+#, php-format
+msgid "Add one %s"
+msgstr ""
+
+#. translators: %s: product name.
+#: inc/frontend/class-openbb-order-form-view.php:358
+#, php-format
+msgid "Remove one %s"
+msgstr ""
+
+#. translators: %s: product name.
+#: inc/frontend/class-openbb-order-form-view.php:360
+#, php-format
+msgid "Remove %s from your basket"
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:361
+msgid "Sold out"
+msgstr ""
+
+#. translators: %d: number of units available.
+#: inc/frontend/class-openbb-order-form-view.php:363
+#, php-format
+msgid "Only %d available"
+msgstr ""
+
+#. translators: 1: price, 2: selling unit, e.g. "500 g".
+#: inc/frontend/class-openbb-order-form-view.php:365
+#, php-format
+msgid "%1$s / %2$s"
+msgstr ""
+
+#. translators: %s: amount saved per unit.
+#: inc/frontend/class-openbb-order-form-view.php:367
+#, php-format
+msgid "I'll bring my own container (saves %s each)"
+msgstr ""
+
+#. translators: %d: number of units available.
+#: inc/frontend/class-openbb-order-form-view.php:369
+#, php-format
+msgid "Only %d available."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:370
+msgid "Saving…"
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:371
+msgid "Basket saved"
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:372
+msgid "Changes saved to your order"
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:373
+msgid "Not saved"
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:376
+msgid "Enter an amount, like 5 or 5.50."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:377
+#: inc/model/order/class-openbb-member-orders.php:148
+msgid "Tell us briefly why you are asking for financial aid."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:378
+#: inc/model/order/class-openbb-member-orders.php:129
+msgid "Add at least one item before submitting your order."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:379
+msgid "Your order is placed. You can keep changing it until ordering closes."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:380
+msgid "Your order details are saved."
+msgstr ""
+
+#. translators: %s: container charge.
+#: inc/frontend/class-openbb-order-form-view.php:444
+#, php-format
+msgid "Includes a %s container charge, taken off if you bring your own."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:460
+msgid "Donation to the co-op (optional)"
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:461
+msgid "Added to your total. Donations help keep prices low for everyone."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:470
+msgid "I would like to request financial aid for this order"
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:471
+msgid "Requests are confidential. The amount depends on the donations available and is taken off your total if approved. We may ask you to verify your financial situation."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:478
+msgid "Why are you asking for aid?"
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:486
+msgid "Note for the co-op (optional)"
+msgstr ""
+
+#. translators: 1: date, 2: start time, 3: end time.
+#: inc/frontend/class-openbb-order-form-view.php:533
+#, php-format
+msgid "%1$s, %2$s–%3$s"
+msgstr ""
+
+#. translators: 1: start date and time, 2: end date and time.
+#: inc/frontend/class-openbb-order-form-view.php:535
+#, php-format
+msgid "%1$s to %2$s"
+msgstr ""
+
+#. translators: 1: pickup location, 2: pickup date and time.
+#: inc/frontend/class-openbb-order-form-view.php:541
+#, php-format
+msgid "I will pick up and pay for this order at %1$s (%2$s)."
+msgstr ""
+
+#. translators: %s: pickup date and time.
+#: inc/frontend/class-openbb-order-form-view.php:545
+#, php-format
+msgid "I will pick up and pay for this order on %s."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:548
+msgid "I will pick up and pay for this order on distribution day."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:564
+msgid "This order was cancelled. Contact the co-op if you have questions."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:565
+msgid "Your order is confirmed and can no longer be changed here. Contact the co-op if something needs fixing."
+msgstr ""
+
+#. translators: %s: date and time.
+#: inc/frontend/class-openbb-order-form-view.php:573
+#, php-format
+msgid "Your order is in. You can change it until %s; changes to your basket save automatically."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:618
+msgid "Log in or sign up to place your order."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:619
+msgid "Log in to place your order."
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:111
+msgid "I have read the co-op rules and agree to follow them."
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:136
+msgid "Your details"
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:137
+msgid "About you"
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:137
+#: inc/frontend/templates/signup.php:158
+#: inc/frontend/templates/signup.php:162
+msgid "Co-op rules"
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:138
+msgid "Confirm your email"
+msgstr ""
+
+#. translators: %d: number of digits in the code.
+#: inc/frontend/class-openbb-signup-view.php:172
+#, php-format
+msgid "Enter the %d-digit code from the email."
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:175
+msgid "We sent you a new code."
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:197
+msgid "Join the co-op"
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:197
+#: inc/frontend/templates/login.php:102
+msgid "Sign up"
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:217
+#: src/admin/screens/members/fields.js:74
+msgid "First name"
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:225
+#: src/admin/screens/members/fields.js:81
+msgid "Last name"
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:232
+#: src/admin/screens/members/fields.js:68
+#: src/admin/screens/members/panel.js:123
+msgid "Email"
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:237
+msgid "We'll send a code to this address to confirm it's yours."
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:241
+#: src/admin/screens/members/fields.js:88
+#: src/admin/screens/members/panel.js:165
+msgid "Phone"
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:252
+msgid "Preferred language"
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:260
+msgid "For emails from the co-op."
+msgstr ""
+
+#. translators: %s: amount, e.g. $25.00.
+#: inc/frontend/class-openbb-signup-view.php:326
+#, php-format
+msgid "Membership has a one-time fee of %s."
+msgstr ""
+
+#. translators: %s: amount, e.g. $25.00.
+#: inc/frontend/class-openbb-signup-view.php:333
+#, php-format
+msgid "Membership has a fee of %s, charged with each order."
+msgstr ""
+
+#. translators: 1: amount, e.g. $25.00; 2: number of orders.
+#: inc/frontend/class-openbb-signup-view.php:335
+#, php-format
+msgid "Membership has a fee of %1$s, charged every %2$d order."
+msgid_plural "Membership has a fee of %1$s, charged every %2$d orders."
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/frontend/class-openbb-signup-view.php:341
+msgid "Thanks for signing up! The co-op will review your application and email you once you're approved."
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:343
+msgid "Your membership application wasn't approved. Contact the co-op if you have questions."
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:345
+msgid "Your membership is inactive. Contact the co-op if you'd like to rejoin."
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:347
+msgid "You're a member of the co-op."
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:352
+#: inc/model/member/class-openbb-signup.php:577
+#: inc/rest/frontend/class-openbb-rest-signup.php:94
+msgid "Signups are closed right now."
+msgstr ""
+
+#: inc/frontend/class-openbb-signup-view.php:357
+msgid "Open signups in the co-op settings."
+msgstr ""
+
+#: inc/frontend/fields.php:275
+#: src/admin/screens/members/profile.js:246
+#: src/admin/screens/settings/profile-fields/preview.js:52
+msgid "Choose…"
+msgstr ""
+
+#: inc/frontend/templates/code-field.php:13
+msgid "Code"
+msgstr ""
+
+#. translators: %s: email address.
+#: inc/frontend/templates/login-message.php:19
+#: inc/frontend/templates/signup.php:103
+#, php-format
+msgid "You're logged in as %s."
+msgstr ""
+
+#: inc/frontend/templates/login-message.php:24
+#: inc/frontend/templates/signup-message.php:19
+#: inc/frontend/templates/signup.php:49
+#: inc/frontend/templates/signup.php:233
+msgid "Continue"
+msgstr ""
+
+#: inc/frontend/templates/login-message.php:26
+msgid "Log out"
+msgstr ""
+
+#: inc/frontend/templates/login.php:59
+#: inc/frontend/templates/login.php:83
+#: inc/frontend/templates/login.php:133
+#: inc/frontend/templates/signup-message.php:24
+#: inc/frontend/templates/signup.php:132
+msgid "Log in"
+msgstr ""
+
+#: inc/frontend/templates/login.php:68
+msgid "We'll email you a code to enter here, so you don't need a password."
+msgstr ""
+
+#: inc/frontend/templates/login.php:84
+msgid "Email me a code"
+msgstr ""
+
+#: inc/frontend/templates/login.php:86
+msgid "Forgot your password?"
+msgstr ""
+
+#: inc/frontend/templates/login.php:92
+msgid "Email me a code instead"
+msgstr ""
+
+#: inc/frontend/templates/login.php:93
+msgid "Log in with a password instead"
+msgstr ""
+
+#: inc/frontend/templates/login.php:101
+msgid "New to the co-op?"
+msgstr ""
+
+#: inc/frontend/templates/login.php:109
+#: inc/frontend/templates/signup.php:176
+msgid "Check your email"
+msgstr ""
+
+#. translators: %s: the email address or username entered.
+#: inc/frontend/templates/login.php:114
+#, php-format
+msgid "If there's an eligible account for %s, we've emailed it a login code. Enter it here to continue."
+msgstr ""
+
+#. translators: %d: minutes.
+#: inc/frontend/templates/login.php:120
+#, php-format
+msgid "The code works once and expires in %d minute."
+msgid_plural "The code works once and expires in %d minutes."
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/frontend/templates/login.php:135
+#: inc/frontend/templates/signup.php:214
+msgid "Send a new code"
+msgstr ""
+
+#. translators: %s: number of seconds, updated live.
+#: inc/frontend/templates/login.php:139
+#: inc/frontend/templates/signup.php:218
+#, php-format
+msgid "(in %ss)"
+msgstr ""
+
+#: inc/frontend/templates/login.php:143
+msgid "Change email or login method"
+msgstr ""
+
+#: inc/frontend/templates/login.php:145
+#: inc/frontend/templates/signup.php:224
+msgid "No email? Check your spam folder, or send a new code."
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:30
+msgid "Your basket"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:31
+msgid "Order details"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:31
+msgid "Finalize your order"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:32
+msgid "Thank you!"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:37
+msgid "Close basket"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:44
+msgid "Reload"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:45
+msgid "Try again"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:51
+msgid "Your basket is empty. Add products from the list to start your order."
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:66
+#: src/admin/screens/orders/editor.js:194
+#: src/admin/screens/products/fields.js:98
+msgid "Remove"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:76
+msgid "Review order details"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:76
+msgid "Continue to finalize"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:85
+msgid "Back to basket"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:104
+msgid "Your financial aid request was approved. It is taken off your total."
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:105
+msgid "Your financial aid request was reviewed and could not be approved this time."
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:131
+msgid "Save changes"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:131
+msgid "Place order"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:141
+msgid "View my basket"
+msgstr ""
+
+#: inc/frontend/templates/order-basket.php:142
+msgid "Keep browsing"
+msgstr ""
+
+#: inc/frontend/templates/order-form.php:35
+msgid "Basket"
+msgstr ""
+
+#: inc/frontend/templates/order-form.php:37
+msgid "items,"
+msgstr ""
+
+#: inc/frontend/templates/order-form.php:43
+msgid "Ordering periods"
+msgstr ""
+
+#: inc/frontend/templates/order-form.php:59
+msgid "There are no products to order yet."
+msgstr ""
+
+#: inc/frontend/templates/order-form.php:63
+msgid "Product categories"
+msgstr ""
+
+#: inc/frontend/templates/order-form.php:98
+msgid "Review order"
+msgstr ""
+
+#: inc/frontend/templates/order-form.php:98
+msgid "Finalize order"
+msgstr ""
+
+#: inc/frontend/templates/order-product.php:38
+msgid "More info"
+msgstr ""
+
+#: inc/frontend/templates/order-product.php:53
+msgid "In your basket:"
+msgstr ""
+
+#: inc/frontend/templates/order-totals.php:20
+msgid "Own containers"
+msgstr ""
+
+#: inc/frontend/templates/order-totals.php:24
+msgid "Financial aid"
+msgstr ""
+
+#: inc/frontend/templates/order-totals.php:28
+#: src/admin/screens/orders/editor.js:493
+#: src/admin/screens/orders/editor.js:559
+msgid "Donation"
+msgstr ""
+
+#: inc/frontend/templates/order-totals.php:32
+msgid "Total to pay at pickup"
+msgstr ""
+
+#: inc/frontend/templates/order-totals.php:36
+msgid "You asked for financial aid. If it is approved, the co-op will tell you how much comes off your total."
+msgstr ""
+
+#: inc/frontend/templates/signup-message.php:23
+#: inc/frontend/templates/signup.php:131
+msgid "Already have an account?"
+msgstr ""
+
+#: inc/frontend/templates/signup.php:52
+#: src/admin/components/side-panel.js:119
+msgid "Back"
+msgstr ""
+
+#: inc/frontend/templates/signup.php:73
+msgid "Signup steps"
+msgstr ""
+
+#: inc/frontend/templates/signup.php:105
+msgid "Details already on your account are shown greyed out."
+msgstr ""
+
+#: inc/frontend/templates/signup.php:110
+msgid "Fields marked * are required."
+msgstr ""
+
+#: inc/frontend/templates/signup.php:122
+msgid "Leave this empty"
+msgstr ""
+
+#. translators: 1: number of digits, 2: email address.
+#: inc/frontend/templates/signup.php:181
+#, php-format
+msgid "We sent a %1$d-digit code to %2$s."
+msgstr ""
+
+#. translators: %d: minutes.
+#: inc/frontend/templates/signup.php:188
+#, php-format
+msgid "Enter it below within %d minute to finish signing up."
+msgid_plural "Enter it below within %d minutes to finish signing up."
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/frontend/templates/signup.php:212
+#: src/admin/screens/orders/editor.js:661
+msgid "Confirm"
+msgstr ""
+
+#: inc/frontend/templates/signup.php:222
+msgid "Use a different email"
+msgstr ""
+
+#: inc/frontend/templates/signup.php:230
+msgid "You're signed up"
+msgstr ""
+
+#: inc/frontend/templates/signup.php:231
+msgid "Thanks! The co-op will review your application and email you once you're approved."
+msgstr ""
+
+#: inc/frontend/templates/signup.php:232
+msgid "Welcome to the co-op! You're now a member."
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycle.php:94
+msgid "This cycle no longer exists."
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycle.php:97
+msgid "A cycle with orders cannot be deleted."
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycle.php:100
+msgid "The cycle could not be deleted."
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycle.php:117
+msgid "Enter a cycle name."
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycle.php:121
+msgid "Choose a valid cycle status."
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycle.php:124
+#: src/admin/screens/cycles/list.js:274
+msgid "Ordering must close after it opens."
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycle.php:127
+#: src/admin/screens/cycles/list.js:277
+msgid "Pickup must end after it starts."
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycle.php:130
+msgid "Set when ordering opens and closes before opening the cycle."
+msgstr ""
+
+#. translators: %s: name of the other cycle.
+#: inc/model/cycle/class-openbb-cycle.php:152
+#, php-format
+msgid "This ordering window overlaps with \"%s\"."
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycle.php:166
+msgid "Setup"
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycle.php:167
+msgid "Ordering"
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycle.php:168
+msgid "Processing"
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycle.php:169
+#: inc/model/inventory/class-openbb-stock-move.php:34
+msgid "Distribution"
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycle.php:170
+msgid "Complete"
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycles.php:59
+#: inc/model/order/class-openbb-order-lifecycle.php:22
+#: inc/model/order/class-openbb-order-line.php:134
+#: inc/model/order/class-openbb-order.php:252
+msgid "Stock is being updated. Please try again."
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycles.php:64
+#: inc/rest/admin/class-openbb-rest-cycles.php:135
+#: inc/rest/admin/class-openbb-rest-cycles.php:271
+#: inc/rest/admin/class-openbb-rest-cycles.php:284
+#: inc/rest/admin/class-openbb-rest-cycles.php:293
+#: inc/rest/frontend/class-openbb-rest-order.php:128
+msgid "Cycle not found."
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycles.php:68
+msgid "A completed cycle cannot be reopened."
+msgstr ""
+
+#: inc/model/cycle/class-openbb-cycles.php:92
+msgid "The cycle could not be saved."
+msgstr ""
+
+#: inc/model/inventory/class-openbb-inventory.php:277
+msgid "Choose a receipt, adjustment, spoilage or distribution."
+msgstr ""
+
+#: inc/model/inventory/class-openbb-inventory.php:283
+msgid "Receipts add stock; spoilage and distribution remove it. Enter a non-zero quantity."
+msgstr ""
+
+#: inc/model/inventory/class-openbb-inventory.php:287
+msgid "Inventory is being updated by someone else. Try again in a moment."
+msgstr ""
+
+#: inc/model/inventory/class-openbb-inventory.php:297
+msgid "This stock request was already used for another product."
+msgstr ""
+
+#. translators: %s: quantity on hand in base units, e.g. "600 g".
+#: inc/model/inventory/class-openbb-inventory.php:307
+#, php-format
+msgid "Only %s is on hand; stock cannot go below zero."
+msgstr ""
+
+#: inc/model/inventory/class-openbb-inventory.php:327
+msgid "The stock change could not be saved."
+msgstr ""
+
+#: inc/model/inventory/class-openbb-stock-move.php:31
+msgid "Receipt"
+msgstr ""
+
+#: inc/model/inventory/class-openbb-stock-move.php:32
+msgid "Adjustment"
+msgstr ""
+
+#: inc/model/inventory/class-openbb-stock-move.php:33
+msgid "Spoilage"
+msgstr ""
+
+#: inc/model/member/class-openbb-email-code.php:40
+msgid "This code can't be used here."
+msgstr ""
+
+#. translators: %d: number of seconds.
+#: inc/model/member/class-openbb-email-code.php:103
+#, php-format
+msgid "Please wait %d second before asking for another code."
+msgid_plural "Please wait %d seconds before asking for another code."
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/model/member/class-openbb-email-code.php:111
+msgid "Too many codes were sent. Please start again."
+msgstr ""
+
+#: inc/model/member/class-openbb-email-code.php:160
+msgid "That code isn't right. Check the email and try again."
+msgstr ""
+
+#: inc/model/member/class-openbb-email-code.php:261
+msgid "This code has expired. Please start again."
+msgstr ""
+
+#: inc/model/member/class-openbb-email-code.php:265
+msgid "Too many incorrect codes. Ask for a new code."
+msgstr ""
+
+#: inc/model/member/class-openbb-email-code.php:269
+#: inc/model/member/class-openbb-login-code.php:50
+msgid "The code could not be created. Please try again."
+msgstr ""
+
+#. translators: %s: field key.
+#: inc/model/member/class-openbb-profile-fields.php:240
+#, php-format
+msgid "\"%s\" is not a valid field key. Use lowercase letters, numbers and underscores, starting with a letter (at most 40 characters)."
+msgstr ""
+
+#. translators: %s: field key.
+#: inc/model/member/class-openbb-profile-fields.php:247
+#, php-format
+msgid "The key \"%s\" is reserved. Choose another key."
+msgstr ""
+
+#. translators: %s: field key.
+#: inc/model/member/class-openbb-profile-fields.php:254
+#, php-format
+msgid "The field \"%s\" needs a label."
+msgstr ""
+
+#. translators: %s: field label.
+#: inc/model/member/class-openbb-profile-fields.php:261
+#, php-format
+msgid "Choose a type for \"%s\"."
+msgstr ""
+
+#. translators: 1: field label, 2: largest allowed maximum length.
+#: inc/model/member/class-openbb-profile-fields.php:269
+#, php-format
+msgid "The maximum length of \"%1$s\" must be between 1 and %2$d."
+msgstr ""
+
+#. translators: %s: field label.
+#: inc/model/member/class-openbb-profile-fields.php:290
+#, php-format
+msgid "\"%s\" allows several choices, so it must use the chips style."
+msgstr ""
+
+#. translators: %s: field label.
+#: inc/model/member/class-openbb-profile-fields.php:302
+#, php-format
+msgid "Every option group of \"%s\" after the first needs a key."
+msgstr ""
+
+#. translators: 1: group key, 2: field label.
+#: inc/model/member/class-openbb-profile-fields.php:310
+#, php-format
+msgid "The group key \"%1$s\" in \"%2$s\" is invalid or used twice."
+msgstr ""
+
+#. translators: %s: field label.
+#: inc/model/member/class-openbb-profile-fields.php:317
+#, php-format
+msgid "Every option group of \"%s\" needs a label."
+msgstr ""
+
+#. translators: 1: option key, 2: field label.
+#: inc/model/member/class-openbb-profile-fields.php:328
+#, php-format
+msgid "The option key \"%1$s\" in \"%2$s\" is invalid or used twice."
+msgstr ""
+
+#. translators: %s: field label.
+#: inc/model/member/class-openbb-profile-fields.php:335
+#, php-format
+msgid "Every option of \"%s\" needs a label."
+msgstr ""
+
+#. translators: %s: field label.
+#: inc/model/member/class-openbb-profile-fields.php:346
+#, php-format
+msgid "\"%s\" needs at least one option."
+msgstr ""
+
+#. translators: %s: field key.
+#: inc/model/member/class-openbb-profile-fields.php:395
+#, php-format
+msgid "The key \"%s\" is used by more than one field."
+msgstr ""
+
+#. translators: %s: field key.
+#: inc/model/member/class-openbb-profile-fields.php:404
+#, php-format
+msgid "The key \"%s\" belonged to a deleted field and can't be reused."
+msgstr ""
+
+#. translators: %s: field label.
+#: inc/model/member/class-openbb-profile-fields.php:416
+#, php-format
+msgid "The type of \"%s\" can't change once it is saved. Archive it and add a new field instead."
+msgstr ""
+
+#. translators: 1: option key, 2: field label.
+#: inc/model/member/class-openbb-profile-fields.php:425
+#, php-format
+msgid "The saved option \"%1$s\" of \"%2$s\" can't be removed. Archive it instead."
+msgstr ""
+
+#. translators: %s: field key.
+#: inc/model/member/class-openbb-profile-fields.php:436
+#, php-format
+msgid "The saved field \"%s\" can't be removed. Archive it instead."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:455
+msgid "Someone else changed the profile fields since you opened them. Reload to see their changes, then make yours again."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:463
+msgid "Each profile field must be an object."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:486
+msgid "That profile field doesn't exist."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:489
+msgid "Archive the field before deleting it."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:521
+msgid "The profile fields could not be saved."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:581
+msgid "This field doesn't exist."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:585
+msgid "This field can't be changed here."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:606
+msgid "This value isn't accepted."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:630
+msgid "Some profile fields need attention."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:652
+msgid "Choose yes or no."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:664
+#: inc/model/member/class-openbb-profile-fields.php:671
+msgid "Choose from the listed options."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:674
+msgid "Choose only one option."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:680
+msgid "Enter text."
+msgstr ""
+
+#. translators: %d: maximum number of characters.
+#: inc/model/member/class-openbb-profile-fields.php:688
+#, php-format
+msgid "Use at most %d characters."
+msgstr ""
+
+#: inc/model/member/class-openbb-profile-fields.php:707
+#: inc/model/member/class-openbb-profile-fields.php:719
+msgid "The profile could not be saved."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:39
+msgid "Accounts can't be created here."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:45
+msgid "You are not allowed to create accounts."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:48
+msgid "You are not allowed to give new members that status."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:51
+msgid "You are not allowed to give new members these roles."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:182
+msgid "The co-op rules were updated while you were signing up. Reload the page to read the new version."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:183
+msgid "You must agree to the co-op rules to join."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:220
+msgid "You already have an account with this email. Log in to finish joining."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:254
+#: inc/rest/class-openbb-rest-controller.php:58
+msgid "You must be logged in."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:257
+msgid "You already have a co-op membership."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:496
+msgid "Enter a first name."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:500
+#: inc/rest/admin/class-openbb-rest-members.php:369
+msgid "Choose one of the site's languages."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:505
+msgid "Some account details need attention."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:531
+#: inc/rest/admin/class-openbb-rest-members.php:293
+msgid "This person is already a member."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:532
+msgid "A user on this site already has this email. Add them with \"Existing user\" instead."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:540
+msgid "This email can't be used. Ask an Administrator."
+msgstr ""
+
+#: inc/model/member/class-openbb-signup.php:581
+msgid "The membership could not be saved. Please try again."
+msgstr ""
+
+#: inc/model/order/class-openbb-member-orders.php:107
+#: inc/rest/frontend/class-openbb-rest-order.php:131
+msgid "Ordering is closed for this cycle."
+msgstr ""
+
+#: inc/model/order/class-openbb-member-orders.php:112
+msgid "This order can no longer be changed here. Contact the co-op if something needs fixing."
+msgstr ""
+
+#: inc/model/order/class-openbb-member-orders.php:129
+msgid "A submitted order needs at least one item. To cancel it, contact the co-op."
+msgstr ""
+
+#: inc/model/order/class-openbb-member-orders.php:132
+msgid "Confirm that you will pick up and pay for your order."
+msgstr ""
+
+#: inc/model/order/class-openbb-member-orders.php:178
+#: inc/model/order/class-openbb-member-orders.php:187
+msgid "The basket could not be read. Reload the page and try again."
+msgstr ""
+
+#. translators: %d: maximum quantity.
+#: inc/model/order/class-openbb-member-orders.php:193
+#, php-format
+msgid "Quantities must be whole numbers from 0 to %d."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-aid.php:25
+msgid "Choose Approved or Declined."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-aid.php:28
+msgid "Orders are being updated. Please try again."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-aid.php:33
+msgid "Order not found in this cycle."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-aid.php:36
+msgid "You cannot decide aid for this order."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-aid.php:39
+msgid "This order changed. Reload the requests before deciding."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-aid.php:42
+msgid "Aid decisions require an unpaid submitted order, an unallocated request, and a cycle that is not complete."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-aid.php:89
+msgid "The aid decision could not be saved. No decision was recorded."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:34
+msgid "Choose an existing cycle."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:37
+msgid "Orders cannot be added to a completed cycle."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:42
+msgid "Choose an active co-op member."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:49
+msgid "This member already has an order in this cycle. Edit that order instead."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:94
+msgid "Stock is being updated by someone else. Please try again."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:143
+#: inc/model/order/class-openbb-order-lifecycle.php:27
+#: inc/rest/admin/class-openbb-rest-orders.php:264
+#: inc/rest/admin/class-openbb-rest-orders.php:286
+#: inc/rest/admin/class-openbb-rest-orders.php:299
+#: inc/rest/admin/class-openbb-rest-orders.php:328
+msgid "Order not found."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:149
+msgid "This order was changed by someone else. Reload it and try again."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:209
+msgid "Explain why this order is being changed."
+msgstr ""
+
+#. translators: 1: date, 2: staff name, 3: reason.
+#: inc/model/order/class-openbb-order-editor.php:215
+#, php-format
+msgid "[%1$s, %2$s] %3$s"
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:217
+#: inc/rest/class-openbb-rest-controller.php:278
+msgid "(deleted user)"
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:234
+msgid "The order could not be saved."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:293
+msgid "An order line no longer exists. Reload the order and try again."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:296
+msgid "Each line can only be listed once."
+msgstr ""
+
+#. translators: %s: product name.
+#: inc/model/order/class-openbb-order-editor.php:309
+#, php-format
+msgid "\"%s\" has already been prepared and cannot be changed here."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:327
+msgid "A product can only appear once on an order. Change the existing line instead."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:330
+msgid "Enter a quantity for each new line."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:334
+msgid "Only active products can be added to an order."
+msgstr ""
+
+#. translators: %s: product name.
+#: inc/model/order/class-openbb-order-editor.php:363
+#, php-format
+msgid "\"%s\" has already been prepared and cannot be removed here."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:418
+msgid "Your financial aid request has already been decided and can no longer be changed."
+msgstr ""
+
+#. translators: 1: product name, 2: quantity available, 3: unit label.
+#: inc/model/order/class-openbb-order-editor.php:455
+#, php-format
+msgid "Not enough stock for \"%1$s\": at most %2$s × %3$s can be ordered."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-lifecycle.php:19
+#: inc/model/order/class-openbb-order-policy.php:87
+msgid "Choose a payment or fulfillment action."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-lifecycle.php:36
+msgid "This order changed. Reload it before confirming."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-lifecycle.php:47
+msgid "An empty order cannot be paid or fulfilled."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-lifecycle.php:51
+msgid "This order has no valid currency snapshot. Correct its currency before recording settlement."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-lifecycle.php:56
+msgid "The recorded payment does not settle this order. Resolve the payment before fulfillment."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-lifecycle.php:78
+msgid "Recorded stock is insufficient for this handoff. Reconcile inventory first."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-lifecycle.php:130
+msgid "The confirmation could not be saved. No payment or stock change was recorded."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-line.php:148
+msgid "This order line no longer exists."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-line.php:151
+msgid "Lines on submitted orders cannot be deleted."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-line.php:155
+#: inc/model/order/class-openbb-order-line.php:161
+msgid "The order line could not be deleted."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-policy.php:58
+msgid "This order is locked. Only the staff note can be changed."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-policy.php:61
+msgid "That status cannot be set here."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-policy.php:68
+msgid "This order cannot move to that status."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-policy.php:71
+msgid "Orders in a completed cycle cannot be changed."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-policy.php:79
+msgid "Paid order quantities and amounts cannot be changed until payment adjustments are supported."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-policy.php:90
+msgid "Only committed orders with an active stock hold can be paid or fulfilled."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-policy.php:93
+msgid "Start distribution before fulfilling orders."
+msgstr ""
+
+#: inc/model/order/class-openbb-order.php:95
+msgid "Draft"
+msgstr ""
+
+#: inc/model/order/class-openbb-order.php:96
+#: src/admin/screens/orders/editor.js:393
+#: src/admin/screens/orders/index.js:126
+msgid "Submitted"
+msgstr ""
+
+#: inc/model/order/class-openbb-order.php:97
+msgid "Cancelled"
+msgstr ""
+
+#: inc/model/order/class-openbb-order.php:98
+#: src/admin/screens/cycles/list.js:170
+#: src/admin/screens/cycles/list.js:303
+msgid "Prepaid"
+msgstr ""
+
+#: inc/model/order/class-openbb-order.php:99
+#: src/admin/screens/cycles/list.js:178
+#: src/admin/screens/cycles/list.js:305
+msgid "Fulfilled"
+msgstr ""
+
+#: inc/model/order/class-openbb-order.php:108
+#: src/admin/screens/products/fields.js:321
+#: src/admin/screens/settings/general.js:151
+msgid "None"
+msgstr ""
+
+#: inc/model/order/class-openbb-order.php:109
+#: src/admin/screens/cycles/financial-aid.js:16
+msgid "Pending"
+msgstr ""
+
+#: inc/model/order/class-openbb-order.php:110
+#: src/admin/screens/cycles/financial-aid.js:17
+msgid "Approved"
+msgstr ""
+
+#: inc/model/order/class-openbb-order.php:265
+msgid "This order has not been saved."
+msgstr ""
+
+#: inc/model/order/class-openbb-order.php:270
+msgid "This order no longer exists."
+msgstr ""
+
+#: inc/model/order/class-openbb-order.php:273
+msgid "Only drafts without operational history can be deleted."
+msgstr ""
+
+#: inc/model/order/class-openbb-order.php:276
+msgid "An order with stock history cannot be deleted."
+msgstr ""
+
+#: inc/model/order/class-openbb-order.php:280
+#: inc/model/order/class-openbb-order.php:288
+#: inc/model/order/class-openbb-order.php:293
+msgid "The order could not be deleted."
+msgstr ""
+
+#: inc/model/product/class-openbb-product.php:110
+msgid "Deactivate the product before changing its unit."
+msgstr ""
+
+#: inc/model/product/class-openbb-product.php:115
+msgid "This unit measures something different. Adjust on-hand stock to zero and wait for open orders to be collected before changing it."
+msgstr ""
+
+#: inc/model/product/class-openbb-product.php:136
+msgid "This product has orders or stock history. Deactivate it instead of deleting it."
+msgstr ""
+
+#: inc/model/product/class-openbb-product.php:140
+msgid "The product could not be deleted."
+msgstr ""
+
+#: inc/model/product/post-type.php:22
+#: src/admin/screens/orders/editor.js:446
+#: src/admin/screens/products/index.js:243
+msgid "Product"
+msgstr ""
+
+#: inc/model/product/post-type.php:41
+msgid "Product Categories"
+msgstr ""
+
+#: inc/model/product/post-type.php:42
+msgid "Product Category"
+msgstr ""
+
+#: inc/model/product/post-type.php:59
+msgid "Suppliers"
+msgstr ""
+
+#: inc/model/product/post-type.php:60
+#: src/admin/screens/products/fields.js:311
+#: src/admin/screens/products/index.js:135
+msgid "Supplier"
+msgstr ""
+
+#: inc/model/product/units.php:26
+msgid "Units"
+msgstr ""
+
+#: inc/model/product/units.php:27
+msgid "Grams"
+msgstr ""
+
+#: inc/model/product/units.php:28
+msgid "Kilograms"
+msgstr ""
+
+#: inc/model/product/units.php:29
+msgid "Millilitres"
+msgstr ""
+
+#: inc/model/product/units.php:30
+msgid "Litres"
+msgstr ""
+
+#. translators: %s: amount in grams.
+#: inc/model/product/units.php:98
+#, php-format
+msgid "%s g"
+msgstr ""
+
+#. translators: %s: amount in kilograms.
+#: inc/model/product/units.php:101
+#, php-format
+msgid "%s kg"
+msgstr ""
+
+#. translators: %s: amount in millilitres.
+#: inc/model/product/units.php:104
+#, php-format
+msgid "%s ml"
+msgstr ""
+
+#. translators: %s: amount in litres.
+#: inc/model/product/units.php:107
+#, php-format
+msgid "%s L"
+msgstr ""
+
+#. translators: %s: number of units.
+#: inc/model/product/units.php:112
+#, php-format
+msgid "%s unit"
+msgid_plural "%s units"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/model/rules/class-openbb-rules.php:184
+msgid "Every rule needs default text before the rules can be published."
+msgstr ""
+
+#: inc/model/rules/class-openbb-rules.php:214
+msgid "The rules could not be published."
+msgstr ""
+
+#: inc/privacy/class-openbb-privacy-profile-fields.php:24
+msgid "Co-op profile fields"
+msgstr ""
+
+#: inc/privacy/class-openbb-privacy-profile-fields.php:90
+#: src/admin/screens/members/profile.js:108
+#: src/admin/screens/members/profile.js:142
+msgid "Yes"
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-cycles.php:152
+#: inc/rest/admin/class-openbb-rest-cycles.php:164
+msgid "Aid requests could not be loaded."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-cycles.php:329
+#: src/admin/screens/cycles/list.js:113
+#: src/admin/screens/cycles/workspace.js:138
+msgid "Ordering opens"
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-cycles.php:330
+#: src/admin/screens/cycles/list.js:114
+#: src/admin/screens/cycles/workspace.js:145
+msgid "Ordering closes"
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-cycles.php:331
+#: src/admin/screens/cycles/list.js:115
+#: src/admin/screens/cycles/workspace.js:152
+msgid "Pickup starts"
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-cycles.php:332
+#: src/admin/screens/cycles/list.js:116
+#: src/admin/screens/cycles/workspace.js:159
+msgid "Pickup ends"
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-members.php:55
+msgid "Profile field key => values. Matches any of a field's values, and all fields."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-members.php:72
+msgid "An existing user to make a member. Leave out to create a new user from `account`."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-members.php:77
+msgid "New user: email, first_name, last_name, phone, language."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-members.php:81
+msgid "New user: send WordPress's set-your-password email."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-members.php:260
+#: inc/rest/admin/class-openbb-rest-members.php:352
+msgid "Member not found."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-members.php:285
+msgid "Send either user_id (existing user) or account (new user)."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-members.php:290
+msgid "User not found."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-members.php:297
+msgid "You are not allowed to give these roles."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-members.php:412
+msgid "The member could not be saved."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-orders.php:151
+msgid "Confirm payment and reload the order before continuing."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-orders.php:458
+msgid "Unknown currency"
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-products.php:295
+#: inc/rest/admin/class-openbb-rest-products.php:308
+#: inc/rest/admin/class-openbb-rest-products.php:320
+#: inc/rest/admin/class-openbb-rest-products.php:462
+#: inc/rest/admin/class-openbb-rest-products.php:474
+msgid "Product not found."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-products.php:347
+msgid "Enter a product name."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-products.php:363
+msgid "Choose an existing category."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-products.php:367
+msgid "Choose an existing supplier."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-products.php:370
+msgid "Choose an image from the media library."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-products.php:448
+msgid "Some product changes could not be saved. Reload the product and check its details."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-products.php:484
+msgid "That unit measures something different from this product."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-products.php:489
+#: src/admin/screens/products/inventory.js:129
+msgid "Explain why the stock is being adjusted."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-products.php:538
+msgid "Enter a name."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-products.php:542
+msgid "Only categories have a display order."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-products.php:570
+msgid "Category not found."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-products.php:582
+msgid "The category order could not be saved."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-settings.php:193
+msgid "The roles revision the change is based on; '' while the roles are the defaults."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-settings.php:296
+msgid "Deleted user"
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-settings.php:320
+msgid "The rules changed since you loaded them. Reload the rules before saving."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-settings.php:331
+msgid "The draft could not be saved."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-settings.php:351
+msgid "The draft could not be discarded."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-settings.php:368
+msgid "Enter the Turnstile site key."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-settings.php:371
+msgid "Enter the Turnstile secret key."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-settings.php:388
+#: inc/rest/admin/class-openbb-rest-settings.php:394
+#: inc/rest/admin/class-openbb-rest-settings.php:403
+msgid "The settings could not be saved."
+msgstr ""
+
+#. translators: %s: the confirmation phrase.
+#. translators: %s: the field key.
+#: inc/rest/admin/class-openbb-rest-settings.php:430
+#: inc/rest/admin/class-openbb-rest-settings.php:528
+#, php-format
+msgid "Type %s to confirm."
+msgstr ""
+
+#: inc/rest/class-openbb-rest-controller.php:61
+msgid "You are not allowed to do that."
+msgstr ""
+
+#. translators: %s: field label.
+#: inc/rest/class-openbb-rest-controller.php:183
+#, php-format
+msgid "%s is not a valid date and time."
+msgstr ""
+
+#: inc/rest/frontend/class-openbb-rest-login.php:174
+msgid "Please wait before asking for another code."
+msgstr ""
+
+#: inc/rest/frontend/class-openbb-rest-login.php:203
+msgid "Email-code login is no longer available for this account. Please log in with your password."
+msgstr ""
+
+#: inc/rest/frontend/class-openbb-rest-login.php:221
+msgid "Email-code login is turned off. Please log in with your password."
+msgstr ""
+
+#: inc/rest/frontend/class-openbb-rest-login.php:236
+#: inc/rest/frontend/class-openbb-rest-signup.php:270
+msgid "We couldn't send the email. Please try again later, or contact the co-op."
+msgstr ""
+
+#: inc/rest/frontend/class-openbb-rest-login.php:257
+msgid "The email, username or password is incorrect."
+msgstr ""
+
+#: inc/rest/frontend/class-openbb-rest-login.php:263
+msgid "You could not be logged in."
+msgstr ""
+
+#: inc/rest/frontend/class-openbb-rest-login.php:267
+#: inc/rest/frontend/class-openbb-rest-signup.php:196
+msgid "You are already logged in. Reload the page to continue."
+msgstr ""
+
+#: src/admin/components/app-nav.js:20
+msgid "Co-op sections"
+msgstr ""
+
+#: src/admin/components/confirm-body.js:49
+#: src/admin/components/edit-form.js:38
+#: src/admin/screens/members/index.js:282
+#: src/admin/screens/orders/editor.js:668
+#: src/admin/screens/orders/editor.js:686
+#: src/admin/screens/orders/index.js:252
+#: src/admin/screens/products/index.js:199
+#: src/admin/screens/settings/profile-fields/field-panel.js:457
+#: src/admin/screens/settings/profile-fields/index.js:121
+#: src/admin/screens/settings/roles/role-panel.js:208
+msgid "Cancel"
+msgstr ""
+
+#: src/admin/components/edit-form.js:37
+#: src/admin/screens/cycles/list.js:344
+#: src/admin/screens/products/index.js:211
+#: src/admin/screens/products/index.js:267
+#: src/admin/screens/settings/profile-fields/field-panel.js:469
+#: src/admin/screens/settings/roles/role-panel.js:225
+msgid "Save"
+msgstr ""
+
+#: src/admin/components/edit-form.js:104
+#: src/admin/hooks/use-discard-guard.js:27
+msgid "Discard changes"
+msgstr ""
+
+#. translators: %s: title of the previous panel.
+#: src/admin/components/side-panel.js:118
+#, js-format
+msgid "Back to %s"
+msgstr ""
+
+#: src/admin/components/side-panel.js:129
+#: src/admin/screens/orders/editor.js:687
+#: src/admin/screens/settings/roles/role-panel.js:207
+msgid "Close"
+msgstr ""
+
+#. translators: 1: item name, 2: new position, 3: number of items.
+#: src/admin/components/sortable-list.js:51
+#, js-format
+msgid "%1$s moved to position %2$d of %3$d."
+msgstr ""
+
+#. translators: %s: item name.
+#: src/admin/components/sortable-list.js:79
+#, js-format
+msgid "Move %s up"
+msgstr ""
+
+#. translators: %s: item name.
+#: src/admin/components/sortable-list.js:91
+#, js-format
+msgid "Move %s down"
+msgstr ""
+
+#: src/admin/hooks/use-discard-guard.js:28
+msgid "Keep editing"
+msgstr ""
+
+#: src/admin/hooks/use-discard-guard.js:36
+#: src/admin/router/index.js:94
+msgid "You have unsaved changes. Discard them?"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:29
+#: src/admin/screens/members/panel.js:238
+#: src/admin/screens/orders/editor.js:378
+#: src/admin/screens/orders/index.js:63
+#: src/admin/screens/orders/index.js:178
+msgid "Member"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:36
+#: src/admin/screens/cycles/financial-aid.js:91
+msgid "Aid status"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:45
+#: src/admin/screens/cycles/financial-aid.js:100
+msgid "Request reason"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:52
+#: src/admin/screens/cycles/financial-aid.js:89
+msgid "Order status"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:59
+#: src/admin/screens/cycles/financial-aid.js:93
+msgid "Decision date"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:96
+msgid "Not decided"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:103
+msgid "No reason provided."
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:109
+msgid "This records eligibility only. No amount is allocated and the order total is unchanged."
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:131
+msgid "Approve"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:132
+msgid "Decline"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:138
+msgid "This request is read-only. Decisions require permission to decide aid for another member, an unpaid submitted order, an unallocated request, and a cycle that is not complete."
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:149
+msgid "Approve aid request"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:150
+msgid "Decline aid request"
+msgstr ""
+
+#. translators: 1: member name, 2: eligibility decision.
+#: src/admin/screens/cycles/financial-aid.js:158
+#, js-format
+msgid "Set the aid request for %1$s to %2$s? This records eligibility only; it does not allocate an amount or change the order total."
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:195
+msgid "View request"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:202
+#: src/admin/screens/cycles/financial-aid.js:204
+#: src/admin/screens/cycles/workspace.js:16
+msgid "Financial Aid"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:206
+msgid "Approve or decline eligibility here. Aid amounts and percentage-based allocation will be calculated separately; decisions do not change order totals. Draft requests are not shown. Paid, fulfilled, cancelled, allocated, and completed-cycle requests are read-only. You cannot decide your own request."
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:219
+msgid "Refresh requests"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:244
+msgid "Search members or order IDs"
+msgstr ""
+
+#: src/admin/screens/cycles/financial-aid.js:264
+msgid "Aid decision saved."
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:80
+#: src/admin/screens/cycles/workspace.js:176
+msgid "Not set"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:88
+#: src/admin/screens/members/fields.js:61
+#: src/admin/screens/members/fields.js:179
+#: src/admin/screens/members/index.js:82
+#: src/admin/screens/products/fields.js:193
+#: src/admin/screens/products/index.js:175
+#: src/admin/screens/settings/roles/role-panel.js:140
+msgid "Name"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:96
+#: src/admin/screens/members/fields.js:112
+#: src/admin/screens/members/index.js:249
+#: src/admin/screens/members/panel.js:113
+#: src/admin/screens/members/panel.js:193
+#: src/admin/screens/orders/editor.js:541
+#: src/admin/screens/orders/editor.js:547
+#: src/admin/screens/orders/index.js:85
+#: src/admin/screens/products/fields.js:338
+msgid "Status"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:108
+msgid "Members can order while the cycle is in \"Ordering\" and its ordering window is open."
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:119
+#: src/admin/screens/cycles/workspace.js:166
+msgid "Pickup location"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:126
+msgid "Pickup instructions"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:136
+#, js-format
+msgid "Pickup instructions (%s)"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:162
+msgid "Unfulfilled"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:186
+#: src/admin/screens/cycles/list.js:307
+msgid "Order total"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:222
+msgid "Ordering window"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:225
+msgid "Opens"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:226
+msgid "Closes"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:231
+msgid "Pickup window"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:236
+msgid "Starts"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:240
+msgid "Ends"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:268
+msgid "Set the ordering window before moving the cycle out of setup."
+msgstr ""
+
+#. translators: %d: number of committed, unfulfilled orders.
+#: src/admin/screens/cycles/list.js:299
+#, js-format
+msgid "%d unfulfilled"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:345
+msgid "Create cycle"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:357
+msgid "New cycle"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:372
+#: src/admin/screens/cycles/workspace.js:46
+msgid "Manage cycle"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:414
+msgid "Manage"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:423
+msgid "Edit details"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:429
+msgid "Duplicate"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:436
+#, js-format
+msgid "%s (copy)"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:451
+msgid "View orders"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:461
+#: src/admin/screens/cycles/list.js:482
+#: src/admin/screens/orders/index.js:333
+#: src/admin/screens/orders/index.js:346
+#: src/admin/screens/products/index.js:398
+#: src/admin/screens/products/index.js:409
+#: src/admin/screens/settings/roles/index.js:185
+msgid "Delete"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:465
+msgid "Delete cycle"
+msgstr ""
+
+#. translators: %s: cycle name.
+#: src/admin/screens/cycles/list.js:476
+#, js-format
+msgid "Delete \"%s\"? This cannot be undone."
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:499
+msgid "Cycle deleted."
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:532
+msgid "Cycle created."
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:533
+#: src/admin/screens/cycles/workspace.js:116
+msgid "Cycle saved."
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:546
+msgid "Add cycle"
+msgstr ""
+
+#: src/admin/screens/cycles/list.js:576
+msgid "Search cycles"
+msgstr ""
+
+#: src/admin/screens/cycles/workspace.js:13
+#: src/admin/screens/members/panel.js:230
+#: src/admin/screens/products/index.js:233
+msgid "Details"
+msgstr ""
+
+#: src/admin/screens/cycles/workspace.js:59
+msgid "Back to cycles"
+msgstr ""
+
+#: src/admin/screens/cycles/workspace.js:64
+msgid "Invalid cycle ID."
+msgstr ""
+
+#: src/admin/screens/cycles/workspace.js:73
+msgid "Cycle sections"
+msgstr ""
+
+#: src/admin/screens/cycles/workspace.js:105
+msgid "Cycle details"
+msgstr ""
+
+#: src/admin/screens/cycles/workspace.js:129
+msgid "You can review this cycle, but do not have permission to edit its details."
+msgstr ""
+
+#: src/admin/screens/members/fields.js:47
+msgid "Gives access to admin screens. Only applies while the member is active."
+msgstr ""
+
+#: src/admin/screens/members/fields.js:95
+msgid "Language"
+msgstr ""
+
+#: src/admin/screens/members/fields.js:101
+msgid "Site default"
+msgstr ""
+
+#: src/admin/screens/members/fields.js:126
+#: src/admin/screens/members/index.js:93
+#: src/admin/screens/members/panel.js:119
+#: src/admin/screens/settings/index.js:33
+#: src/admin/screens/settings/roles/index.js:230
+msgid "Team roles"
+msgstr ""
+
+#: src/admin/screens/members/fields.js:145
+msgid "Last order"
+msgstr ""
+
+#: src/admin/screens/members/fields.js:154
+#: src/admin/screens/members/panel.js:127
+msgid "Joined"
+msgstr ""
+
+#: src/admin/screens/members/fields.js:162
+#: src/admin/screens/members/panel.js:129
+msgid "Rules"
+msgstr ""
+
+#: src/admin/screens/members/fields.js:167
+#: src/admin/screens/members/panel.js:132
+msgid "Accepted"
+msgstr ""
+
+#: src/admin/screens/members/fields.js:168
+#: src/admin/screens/members/panel.js:133
+msgid "Not accepted"
+msgstr ""
+
+#: src/admin/screens/members/index.js:183
+#: src/admin/screens/members/index.js:292
+#: src/admin/screens/members/index.js:408
+msgid "Add member"
+msgstr ""
+
+#: src/admin/screens/members/index.js:191
+msgid "Who"
+msgstr ""
+
+#: src/admin/screens/members/index.js:196
+msgid "Existing user"
+msgstr ""
+
+#: src/admin/screens/members/index.js:197
+msgid "New user"
+msgstr ""
+
+#: src/admin/screens/members/index.js:209
+msgid "No email address? Use a made-up one ending in .invalid, such as jane.doe.4821@noemail.invalid. It can be replaced later."
+msgstr ""
+
+#: src/admin/screens/members/index.js:217
+msgid "Send account email"
+msgstr ""
+
+#: src/admin/screens/members/index.js:220
+msgid "Placeholder addresses can’t receive email."
+msgstr ""
+
+#: src/admin/screens/members/index.js:221
+msgid "Emails them a link to set their password. Without it, they can use “Lost your password?” on the login page later."
+msgstr ""
+
+#: src/admin/screens/members/index.js:235
+msgid "User"
+msgstr ""
+
+#: src/admin/screens/members/index.js:236
+msgid "Search the site’s users who are not members yet, by name or email."
+msgstr ""
+
+#: src/admin/screens/members/index.js:354
+#: src/admin/screens/orders/index.js:326
+#: src/admin/screens/products/index.js:366
+msgid "Edit"
+msgstr ""
+
+#: src/admin/screens/members/index.js:354
+#: src/admin/screens/orders/index.js:326
+msgid "View"
+msgstr ""
+
+#. translators: %s: member name.
+#: src/admin/screens/members/index.js:374
+#, js-format
+msgid "%s is now a member. They’ve been emailed a link to set their password."
+msgstr ""
+
+#. translators: %s: member name.
+#: src/admin/screens/members/index.js:376
+#, js-format
+msgid "%s is now a member."
+msgstr ""
+
+#: src/admin/screens/members/index.js:394
+#: src/admin/screens/related-panels.js:13
+msgid "Member saved."
+msgstr ""
+
+#: src/admin/screens/members/index.js:427
+msgid "Search members"
+msgstr ""
+
+#: src/admin/screens/members/panel.js:71
+#: src/admin/screens/settings/profile-fields/index.js:274
+msgid "Profile fields"
+msgstr ""
+
+#: src/admin/screens/members/panel.js:72
+msgid "Archived fields"
+msgstr ""
+
+#: src/admin/screens/members/panel.js:137
+msgid "Profile"
+msgstr ""
+
+#: src/admin/screens/members/panel.js:140
+msgid "Edit WordPress profile"
+msgstr ""
+
+#: src/admin/screens/members/panel.js:172
+msgid "(archived)"
+msgstr ""
+
+#: src/admin/screens/members/panel.js:185
+msgid "No orders yet."
+msgstr ""
+
+#: src/admin/screens/members/panel.js:192
+#: src/admin/screens/orders/editor.js:376
+#: src/admin/screens/orders/index.js:76
+#: src/admin/screens/orders/index.js:229
+msgid "Cycle"
+msgstr ""
+
+#: src/admin/screens/members/panel.js:194
+#: src/admin/screens/orders/editor.js:449
+#: src/admin/screens/orders/editor.js:502
+#: src/admin/screens/orders/index.js:110
+msgid "Total"
+msgstr ""
+
+#. translators: %s: option label.
+#: src/admin/screens/members/profile.js:95
+#, js-format
+msgid "%s (archived)"
+msgstr ""
+
+#: src/admin/screens/members/profile.js:109
+#: src/admin/screens/members/profile.js:143
+msgid "No"
+msgstr ""
+
+#: src/admin/screens/members/profile.js:199
+msgid "No longer defined"
+msgstr ""
+
+#. translators: %s: field label.
+#: src/admin/screens/members/profile.js:227
+#, js-format
+msgid "%s (required)"
+msgstr ""
+
+#: src/admin/screens/members/profile.js:324
+msgid "Clear choice"
+msgstr ""
+
+#. translators: 1: product name, 2: unit, 3: price, 4: quantity available.
+#: src/admin/screens/orders/editor.js:98
+#, js-format
+msgid "%1$s (%2$s) — %3$s — %4$s available"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:113
+msgid "Add a product"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:114
+msgid "Only active products with stock available can be added."
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:142
+msgid "container"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:152
+#, js-format
+msgid "Prepared: %s"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:160
+#: src/admin/screens/orders/editor.js:447
+#: src/admin/screens/products/inventory.js:76
+msgid "Quantity"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:170
+#, js-format
+msgid "Max %s"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:179
+msgid "Own container"
+msgstr ""
+
+#. translators: %s: product name.
+#: src/admin/screens/orders/editor.js:258
+#, js-format
+msgid "Enter a quantity for \"%s\"."
+msgstr ""
+
+#. translators: 1: product name, 2: maximum quantity, 3: unit.
+#: src/admin/screens/orders/editor.js:263
+#, js-format
+msgid "Not enough stock for \"%1$s\": at most %2$s × %3$s."
+msgstr ""
+
+#. translators: 1: order number, 2: member name.
+#: src/admin/screens/orders/editor.js:371
+#, js-format
+msgid "Order #%1$d — %2$s"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:397
+msgid "Payment settled"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:405
+msgid "Collected"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:422
+msgid "This order is locked against quantity, amount, and status edits. Staff can still update its note."
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:430
+msgid "This order was not collected before its hold expired. It is abandoned and no longer reserves stock. Its payment status is retained."
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:438
+msgid "Member note:"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:448
+msgid "Container"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:451
+msgid "Actions"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:458
+msgid "No products yet."
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:473
+msgid "Subtotal"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:479
+msgid "Container credit"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:501
+msgid "Estimated total"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:571
+#: src/admin/screens/orders/editor.js:580
+msgid "Staff note"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:572
+msgid "Only visible to staff."
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:588
+msgid "Reason for the change (required)"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:589
+msgid "Added to the staff note with your name and the date."
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:615
+msgid "Mark prepaid"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:624
+msgid "Fulfill order"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:630
+msgid "Save your changes before confirming payment or fulfillment."
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:641
+#, js-format
+msgid "Confirm that the full amount due (%s) is settled. Stock will remain reserved; no goods are handed over."
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:648
+#, js-format
+msgid "Confirm that the full amount due (%s) is settled and the listed quantities have been handed over. This deducts stock and cannot be undone here."
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:703
+msgid "Save order"
+msgstr ""
+
+#: src/admin/screens/orders/index.js:94
+msgid "Abandoned (uncollected)"
+msgstr ""
+
+#: src/admin/screens/orders/index.js:132
+msgid "Updated"
+msgstr ""
+
+#: src/admin/screens/orders/index.js:219
+msgid "New order"
+msgstr ""
+
+#: src/admin/screens/orders/index.js:224
+msgid "There are no open cycles to add an order to."
+msgstr ""
+
+#: src/admin/screens/orders/index.js:240
+msgid "The order starts as a draft. Add products, then submit it to reserve stock."
+msgstr ""
+
+#: src/admin/screens/orders/index.js:262
+msgid "Create order"
+msgstr ""
+
+#: src/admin/screens/orders/index.js:337
+msgid "Delete order"
+msgstr ""
+
+#. translators: 1: order number, 2: member name.
+#: src/admin/screens/orders/index.js:342
+#, js-format
+msgid "Delete order #%1$d for %2$s? Consider cancelling it instead to keep its history."
+msgstr ""
+
+#: src/admin/screens/orders/index.js:356
+msgid "Order deleted."
+msgstr ""
+
+#: src/admin/screens/orders/index.js:394
+#: src/admin/screens/related-panels.js:18
+msgid "Order saved."
+msgstr ""
+
+#: src/admin/screens/orders/index.js:408
+msgid "Add order"
+msgstr ""
+
+#: src/admin/screens/orders/index.js:427
+msgid "Search by order number, name or email"
+msgstr ""
+
+#: src/admin/screens/overview/index.js:13
+msgid "Catalogue, prices and stock levels."
+msgstr ""
+
+#: src/admin/screens/overview/index.js:14
+msgid "Ordering windows, dates and pickup details."
+msgstr ""
+
+#: src/admin/screens/overview/index.js:15
+msgid "Members' orders for each cycle."
+msgstr ""
+
+#: src/admin/screens/overview/index.js:16
+msgid "Co-op members, roles and order history."
+msgstr ""
+
+#: src/admin/screens/overview/index.js:17
+msgid "Test mode, demo data and data maintenance."
+msgstr ""
+
+#: src/admin/screens/overview/index.js:43
+msgid "There is nothing here for you to manage yet."
+msgstr ""
+
+#: src/admin/screens/products/fields.js:62
+msgid "Choose a product image"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:65
+msgid "Use this image"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:87
+msgid "Replace"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:88
+msgid "Choose image"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:124
+msgid "Deactivate the product to change its unit."
+msgstr ""
+
+#. translators: %s: language code.
+#: src/admin/screens/products/fields.js:161
+#, js-format
+msgid "Name (%s)"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:170
+#, js-format
+msgid "Description (%s)"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:183
+msgid "Image"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:201
+#: src/admin/screens/products/index.js:185
+msgid "Display order"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:204
+msgid "Lower numbers appear first. Products with the same order sort by name."
+msgstr ""
+
+#: src/admin/screens/products/fields.js:212
+msgid "Brand"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:219
+msgid "Description"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:228
+msgid "Unit amount"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:239
+msgid "Unit type"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:250
+msgid "Sold per"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:257
+msgid "Price"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:258
+msgid "Price per selling unit."
+msgstr ""
+
+#: src/admin/screens/products/fields.js:261
+msgid "Container charge"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:263
+msgid "Charged per unit unless the member brings their own container."
+msgstr ""
+
+#: src/admin/screens/products/fields.js:270
+#: src/admin/screens/products/inventory.js:179
+msgid "Available"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:279
+#: src/admin/screens/products/inventory.js:177
+msgid "On hand"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:288
+#: src/admin/screens/products/inventory.js:178
+msgid "Reserved"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:297
+msgid "Categories"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:356
+msgid "Only active products can be ordered."
+msgstr ""
+
+#: src/admin/screens/products/fields.js:379
+#: src/admin/screens/products/inventory.js:83
+msgid "Unit"
+msgstr ""
+
+#: src/admin/screens/products/fields.js:385
+msgid "Pricing"
+msgstr ""
+
+#: src/admin/screens/products/index.js:121
+#: src/admin/screens/products/index.js:438
+msgid "Categories and suppliers"
+msgstr ""
+
+#: src/admin/screens/products/index.js:131
+#: src/admin/screens/settings/profile-fields/field-panel.js:257
+msgid "Type"
+msgstr ""
+
+#: src/admin/screens/products/index.js:134
+#: src/admin/screens/products/index.js:151
+msgid "Category"
+msgstr ""
+
+#: src/admin/screens/products/index.js:138
+msgid "Edit category order"
+msgstr ""
+
+#: src/admin/screens/products/index.js:156
+msgid "Choose a category"
+msgstr ""
+
+#: src/admin/screens/products/index.js:186
+msgid "Lower numbers appear first. Categories with the same order sort by name."
+msgstr ""
+
+#: src/admin/screens/products/index.js:212
+msgid "Add"
+msgstr ""
+
+#: src/admin/screens/products/index.js:235
+msgid "Inventory"
+msgstr ""
+
+#: src/admin/screens/products/index.js:244
+msgid "New product"
+msgstr ""
+
+#: src/admin/screens/products/index.js:268
+msgid "Create product"
+msgstr ""
+
+#. translators: %d: number of products.
+#: src/admin/screens/products/index.js:345
+#, js-format
+msgid "%d product activated."
+msgid_plural "%d products activated."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of products.
+#: src/admin/screens/products/index.js:350
+#, js-format
+msgid "%d product deactivated."
+msgid_plural "%d products deactivated."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/admin/screens/products/index.js:373
+#: src/admin/screens/products/inventory.js:292
+msgid "Update stock"
+msgstr ""
+
+#: src/admin/screens/products/index.js:379
+#: src/admin/screens/products/inventory.js:297
+msgid "Stock history"
+msgstr ""
+
+#: src/admin/screens/products/index.js:384
+msgid "Activate"
+msgstr ""
+
+#: src/admin/screens/products/index.js:391
+msgid "Deactivate"
+msgstr ""
+
+#: src/admin/screens/products/index.js:401
+msgid "Delete product"
+msgstr ""
+
+#. translators: %s: product name.
+#: src/admin/screens/products/index.js:406
+#, js-format
+msgid "Delete \"%s\"? Products with orders or stock history can only be deactivated."
+msgstr ""
+
+#: src/admin/screens/products/index.js:419
+msgid "Product deleted."
+msgstr ""
+
+#: src/admin/screens/products/index.js:445
+msgid "Add product"
+msgstr ""
+
+#: src/admin/screens/products/index.js:462
+msgid "Product created."
+msgstr ""
+
+#: src/admin/screens/products/index.js:465
+msgid "Product saved."
+msgstr ""
+
+#: src/admin/screens/products/index.js:486
+msgid "Search products"
+msgstr ""
+
+#: src/admin/screens/products/index.js:495
+msgid "Stock updated."
+msgstr ""
+
+#: src/admin/screens/products/index.js:506
+msgid "Saved."
+msgstr ""
+
+#. translators: %s: selling unit, e.g. "500 g".
+#: src/admin/screens/products/inventory.js:38
+#, js-format
+msgid "Selling units (%s)"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:52
+msgid "Quantity received"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:53
+msgid "Quantity spoiled"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:54
+msgid "Quantity distributed"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:55
+msgid "Change (use a negative number to remove)"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:65
+#: src/admin/screens/products/inventory.js:215
+msgid "Reason"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:91
+#: src/admin/screens/products/inventory.js:247
+msgid "Note"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:111
+msgid "Note (required)"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:123
+msgid "Enter a quantity other than zero."
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:126
+msgid "Enter a positive quantity."
+msgstr ""
+
+#. translators: %s: product name.
+#: src/admin/screens/products/inventory.js:161
+#, js-format
+msgid "Update stock: %s"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:168
+msgid "Record"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:196
+#, js-format
+msgid "× %s"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:208
+msgid "Date"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:222
+msgid "Change"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:240
+msgid "By"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:258
+#, js-format
+msgid "Order #%d"
+msgstr ""
+
+#: src/admin/screens/products/inventory.js:310
+msgid "No stock changes yet."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:73
+msgid "General settings saved."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:89
+msgid "Signups"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:92
+msgid "Allow signups"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:95
+msgid "People can sign up from any page with the [openbb_signup] shortcode."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:99
+msgid "Signups are closed. The [openbb_signup] shortcode shows a \"signups are closed\" message."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:109
+msgid "Login"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:112
+msgid "Allow members to log in with an email code"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:118
+msgid "Members can use a one-time email code instead of their password. Editors and administrators must still use their password. This is passwordless login, not two-factor authentication."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:122
+msgid "People log in with their password only."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:132
+msgid "Bot protection"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:136
+msgid "Provider"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:139
+msgid "Signup and login forms ask Cloudflare Turnstile to check that visitors are human before sending email or checking a password."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:143
+msgid "Signup and login forms rely on rate limits and a hidden honeypot field only."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:155
+msgid "Cloudflare Turnstile"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:169
+msgid "Add this site in the <a>Cloudflare dashboard</a> under Turnstile to get a site key and secret key. Your site doesn’t need to use Cloudflare otherwise."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:188
+msgid "Site key"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:199
+msgid "Secret key"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:202
+msgid "Set in wp-config.php with OPENBB_TURNSTILE_SECRET."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:207
+msgid "A secret key is saved. Leave this empty to keep it."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:225
+msgid "Member approval"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:228
+msgid "Require member approval"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:234
+msgid "After signup, new members remain Applicants until staff approve them."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:238
+msgid "After signup, new members are automatically approved as Members."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:248
+msgid "Membership fees"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:252
+msgid "Fee frequency"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:256
+msgid "One time"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:260
+msgid "Recurring"
+msgstr ""
+
+#. translators: %s: ISO currency code.
+#: src/admin/screens/settings/general.js:272
+#, js-format
+msgid "Fee amount (%s)"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:275
+msgid "Set to 0 for no membership fee."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:291
+msgid "Charge every X orders"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:295
+msgid "Number of orders between membership fees."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:320
+msgid "Save settings"
+msgstr ""
+
+#: src/admin/screens/settings/index.js:15
+msgid "General"
+msgstr ""
+
+#: src/admin/screens/settings/index.js:21
+msgid "Co-op Rules"
+msgstr ""
+
+#: src/admin/screens/settings/index.js:27
+msgid "Profile Fields"
+msgstr ""
+
+#: src/admin/screens/settings/index.js:39
+msgid "Data & Maintenance"
+msgstr ""
+
+#: src/admin/screens/settings/index.js:61
+msgid "Settings sections"
+msgstr ""
+
+#: src/admin/screens/settings/maintenance.js:36
+msgid "This site's Open Bulk Buying data has been deleted."
+msgstr ""
+
+#: src/admin/screens/settings/maintenance.js:50
+msgid "Danger zone"
+msgstr ""
+
+#: src/admin/screens/settings/maintenance.js:52
+msgid "Permanently deletes this site's Open Bulk Buying records, products and terms, co-op user metadata, and plugin settings. WordPress users and roles, other plugins' data, and other sites on this network are not changed. The database schema is retained."
+msgstr ""
+
+#. translators: %s: the confirmation phrase.
+#: src/admin/screens/settings/maintenance.js:64
+#: src/admin/screens/settings/profile-fields/index.js:107
+#, js-format
+msgid "Type %s to confirm"
+msgstr ""
+
+#: src/admin/screens/settings/maintenance.js:82
+msgid "Delete all Open Bulk Buying data"
+msgstr ""
+
+#: src/admin/screens/settings/maintenance.js:121
+msgid "Test mode enabled."
+msgstr ""
+
+#: src/admin/screens/settings/maintenance.js:122
+msgid "Test mode disabled."
+msgstr ""
+
+#: src/admin/screens/settings/maintenance.js:129
+msgid "Demo data is ready. Populating again will not duplicate the demo records."
+msgstr ""
+
+#: src/admin/screens/settings/maintenance.js:153
+msgid "Test mode"
+msgstr ""
+
+#: src/admin/screens/settings/maintenance.js:156
+msgid "Enable test mode"
+msgstr ""
+
+#: src/admin/screens/settings/maintenance.js:157
+msgid "Test mode enables a repeatable demo-data action. Demo records are marked and use the current site only."
+msgstr ""
+
+#: src/admin/screens/settings/maintenance.js:168
+msgid "Demo data"
+msgstr ""
+
+#: src/admin/screens/settings/maintenance.js:170
+msgid "Adds 41 marked demo products, 11 categories (including nested and empty categories), 4 suppliers, varied stock levels, a setup cycle and a draft order. Includes long names, varied units, container charges and inactive products. Repeating adds missing fixtures without duplicating stock. It does not create WordPress users or publish demo rules."
+msgstr ""
+
+#: src/admin/screens/settings/maintenance.js:184
+msgid "Populate demo data"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:34
+msgid "Text"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:35
+msgid "True/false"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:36
+#: src/admin/screens/settings/profile-fields/field-panel.js:376
+msgid "Options"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:42
+msgid "Staff must check the box when adding a member. Later edits are never blocked."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:46
+msgid "Staff must fill this in when adding a member. Later edits are never blocked."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:52
+msgid "Members must check the box (for example, to give consent)."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:57
+msgid "Asked when an account is created. Existing members must answer the next time they update their profile. Staff edits are never blocked."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:158
+msgid "New profile field"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:171
+#: src/admin/screens/settings/profile-fields/index.js:298
+msgid "Reload fields"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:183
+msgid "Your edits here are kept: reload, then save again."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:205
+msgid "This field is archived: it is hidden from forms, and existing answers are kept."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:213
+msgid "Label"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:222
+#: src/admin/screens/settings/profile-fields/field-panel.js:242
+msgid "Key"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:232
+msgid "Stores the answers. It follows the label until you edit it, and can’t change after the field is saved."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:246
+msgid "The key can’t change once the field is saved, because members’ answers are stored under it."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:267
+msgid "The type can’t change after saving. Archive this field and add a new one instead."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:275
+msgid "Help text"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:284
+msgid "Several lines"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:297
+msgid "Maximum length (characters)"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:323
+msgid "Allow several choices"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:342
+msgid "Style"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:352
+msgid "Dropdown"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:360
+msgid "Chips"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:368
+msgid "Several choices are shown as chips."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:386
+msgid "Who answers"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:391
+msgid "Visibility"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:397
+msgid "Members and staff"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:404
+#: src/admin/screens/settings/profile-fields/index.js:34
+msgid "Staff only"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:409
+msgid "Only staff see and fill in this field. It is not secret: it is included when a member requests an export of their personal data."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:413
+msgid "Asked on the signup form and shown on the member’s account."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:422
+msgid "Members can change their answer later"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:436
+msgid "Required (must be checked)"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:440
+#: src/admin/screens/settings/profile-fields/index.js:33
+msgid "Required"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:447
+msgid "Preview"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:468
+#: src/admin/screens/settings/profile-fields/index.js:282
+msgid "Add field"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:476
+msgid "Show to members"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/field-panel.js:483
+msgid "Members will see and be able to edit the answers staff entered in this field. Continue?"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:35
+msgid "Archived"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:82
+msgid "Delete field and its data"
+msgstr ""
+
+#. translators: %s: field label.
+#: src/admin/screens/settings/profile-fields/index.js:95
+#, js-format
+msgid "This deletes the field “%s” and every member’s answer to it. This can’t be undone, and the key can never be used again."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:132
+msgid "Delete permanently"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:209
+msgid "Field added."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:210
+msgid "Field saved."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:221
+msgid "Field archived."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:222
+msgid "Field restored."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:287
+msgid "Extra questions for members. Member fields appear on the signup form and the member’s account; staff-only fields appear only to staff. Fields appear in this order."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:364
+#: src/admin/screens/settings/profile-fields/options-editor.js:96
+#: src/admin/screens/settings/roles/index.js:214
+#: src/admin/screens/settings/roles/index.js:355
+msgid "Restore"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:368
+#: src/admin/screens/settings/profile-fields/options-editor.js:97
+msgid "Archive"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:384
+#: src/admin/screens/settings/roles/index.js:327
+msgid "Delete…"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:396
+msgid "No profile fields yet."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:403
+msgid "Archived fields are hidden from forms but keep members’ answers. Only archived fields can be deleted."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/index.js:421
+msgid "Field and its data deleted."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/localized-text-control.js:53
+#, js-format
+msgid "%1$s (%2$s)"
+msgstr ""
+
+#. translators: %s: language code.
+#: src/admin/screens/settings/profile-fields/localized-text-control.js:62
+#, js-format
+msgid "Translation (%s)"
+msgstr ""
+
+#. translators: %d: group number.
+#: src/admin/screens/settings/profile-fields/options-editor.js:35
+#, js-format
+msgid "Group %d"
+msgstr ""
+
+#. translators: %d: option number.
+#: src/admin/screens/settings/profile-fields/options-editor.js:37
+#, js-format
+msgid "Option %d"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/options-editor.js:50
+msgid "Option label"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/options-editor.js:58
+msgid "Saved option keys can’t change."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/options-editor.js:71
+#, js-format
+msgid "Key of %s"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/options-editor.js:75
+msgid "key"
+msgstr ""
+
+#. translators: %s: rule label.
+#: src/admin/screens/settings/profile-fields/options-editor.js:105
+#: src/admin/screens/settings/rules.js:391
+#, js-format
+msgid "Remove %s"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/options-editor.js:124
+msgid "Group heading"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/options-editor.js:131
+msgid "Group"
+msgstr ""
+
+#. translators: %s: group position, e.g. "Group 2".
+#: src/admin/screens/settings/profile-fields/options-editor.js:140
+#, js-format
+msgid "Remove %s (its options move to the group above)"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/options-editor.js:255
+msgid "Add option"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/options-editor.js:263
+msgid "Add group"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/options-editor.js:267
+msgid "Options belong to the group heading above them, so moving a heading changes which options it holds. Options above the first heading have no group. Archived options stay on members who chose them but can’t be chosen again."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/preview.js:16
+msgid "(No label)"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/preview.js:20
+msgid "(required)"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/preview.js:181
+msgid "Preview language"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/preview.js:187
+#: src/admin/screens/settings/rules.js:50
+#: src/admin/screens/settings/rules.js:147
+msgid "Default"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/preview.js:201
+msgid "Staff only: this field never appears on member forms."
+msgstr ""
+
+#. translators: %s: where the field appears.
+#: src/admin/screens/settings/profile-fields/preview.js:211
+#, js-format
+msgid "Shown on: %s"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/preview.js:213
+msgid "the Members screen"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/preview.js:214
+msgid "signup, member account and the Members screen"
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/utils.js:256
+msgid "Use lowercase letters, numbers and underscores, starting with a letter."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/utils.js:262
+msgid "This key is reserved. Choose another key."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/utils.js:268
+msgid "This key belonged to a deleted field and can’t be reused."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/utils.js:274
+msgid "Another field already uses this key."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/utils.js:291
+msgid "Add a label."
+msgstr ""
+
+#. translators: %s: why the key can't be used.
+#: src/admin/screens/settings/profile-fields/utils.js:297
+#, js-format
+msgid "Key: %s"
+msgstr ""
+
+#. translators: %d: largest allowed maximum length.
+#: src/admin/screens/settings/profile-fields/utils.js:307
+#, js-format
+msgid "The maximum length must be between 1 and %d."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/utils.js:321
+msgid "Add at least one option."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/utils.js:326
+msgid "Every option needs a label."
+msgstr ""
+
+#. translators: %s: option key.
+#: src/admin/screens/settings/profile-fields/utils.js:335
+#, js-format
+msgid "The option key “%s” is invalid or used twice."
+msgstr ""
+
+#: src/admin/screens/settings/profile-fields/utils.js:352
+msgid "Every group needs a label."
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:33
+msgid "Custom"
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:34
+msgid "Edited"
+msgstr ""
+
+#. translators: %d: number of members.
+#: src/admin/screens/settings/roles/index.js:51
+#, js-format
+msgid "%d member"
+msgid_plural "%d members"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/admin/screens/settings/roles/index.js:118
+msgid "Role added."
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:119
+msgid "Role saved."
+msgstr ""
+
+#. translators: 1: role name, 2: number of members.
+#: src/admin/screens/settings/roles/index.js:171
+#, js-format
+msgid "Delete “%1$s”? It will be removed from %2$d member."
+msgid_plural "Delete “%1$s”? It will be removed from %2$d members."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: role name.
+#: src/admin/screens/settings/roles/index.js:182
+#, js-format
+msgid "Delete “%s”?"
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:190
+msgid "Role deleted."
+msgstr ""
+
+#. translators: %s: role name.
+#: src/admin/screens/settings/roles/index.js:197
+#, js-format
+msgid "Restore the original settings for “%s”?"
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:200
+#: src/admin/screens/settings/roles/index.js:309
+msgid "Reset"
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:205
+msgid "Role reset."
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:210
+msgid "Restore the original team roles? Custom roles will be deleted."
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:219
+msgid "Roles reset."
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:238
+#: src/admin/screens/settings/roles/role-panel.js:224
+msgid "Add role"
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:243
+msgid "Give members access to the co-op’s admin screens. All active members can order without a role."
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:254
+#: src/admin/screens/settings/roles/role-panel.js:115
+msgid "Reload roles"
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:337
+msgid "Deleted roles"
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:351
+msgid "Role restored."
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:364
+msgid "Start over"
+msgstr ""
+
+#: src/admin/screens/settings/roles/index.js:379
+msgid "Restore original roles…"
+msgstr ""
+
+#: src/admin/screens/settings/roles/role-panel.js:102
+msgid "New team role"
+msgstr ""
+
+#: src/admin/screens/settings/roles/role-panel.js:133
+msgid "You can’t edit this role."
+msgstr ""
+
+#. translators: %d: rule position.
+#: src/admin/screens/settings/rules.js:46
+#, js-format
+msgid "Rule %d"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:66
+msgid "The rich-text editor could not be loaded. Reload this page to try again."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:131
+msgid "Requires member acceptance."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:132
+msgid "Does not require renewed acceptance."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:141
+msgid "Content language"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:151
+msgid "Missing translations use the default text."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:171
+#: src/admin/screens/settings/rules.js:297
+msgid "Version history"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:176
+msgid "No versions have been published."
+msgstr ""
+
+#. translators: %d: published version ID.
+#: src/admin/screens/settings/rules.js:188
+#, js-format
+msgid "View version %d"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:194
+msgid "Current"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:207
+msgid "Acceptance required"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:211
+msgid "No renewed acceptance"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:277
+msgid "Rules published."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:278
+msgid "Draft saved."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:279
+msgid "Rules reloaded."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:280
+msgid "Draft discarded."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:293
+msgid "Rules draft"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:312
+msgid "Add rule"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:318
+msgid "Rules appear to members to agree to when they sign up. Save your draft, then publish it when ready. Published versions cannot be edited or deleted."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:333
+msgid "Reload rules"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:338
+msgid "No rules yet. Add your first rule to get started."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:361
+msgid "Empty rule"
+msgstr ""
+
+#. translators: %s: rule label.
+#: src/admin/screens/settings/rules.js:374
+#, js-format
+msgid "Edit %s"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:406
+msgid "Save draft"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:413
+msgid "Discard draft"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:418
+msgid "Save the draft before publishing."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:426
+msgid "Require existing members to accept this version on their next order"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:430
+msgid "The first version always requires acceptance. Translation-only changes never require renewed acceptance."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:450
+msgid "Publish rules"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:464
+msgid "Editing language"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:471
+msgid "Leave a translation empty to use the default text."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:482
+msgid "Default rule text"
+msgstr ""
+
+#. translators: %s: language code.
+#: src/admin/screens/settings/rules.js:488
+#, js-format
+msgid "Rule text (%s)"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:513
+msgid "Changes are kept in this draft. Use Save draft after closing the editor."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:522
+msgid "Done"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:545
+msgid "Publish"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:546
+msgid "Discard"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:551
+msgid "Publish this saved draft? This creates an immutable version visible to members."
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:555
+msgid "Remove this rule from the draft?"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:559
+msgid "Discard all unpublished edits and return to the current published rules?"
+msgstr ""
+
+#. translators: %d: published version ID.
+#: src/admin/screens/settings/rules.js:587
+#, js-format
+msgid "Rules version %d"
+msgstr ""
+
+#: src/admin/screens/settings/rules.js:594
+msgid "This rules version is no longer available."
+msgstr ""
+
+#: src/admin/utils/api.js:26
+msgid "Something went wrong. Please try again."
+msgstr ""

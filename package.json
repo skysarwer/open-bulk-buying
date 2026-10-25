@@ -11,6 +11,9 @@
 		"format": "wp-scripts format",
 		"lint:css": "wp-scripts lint-style",
 		"lint:js": "wp-scripts lint-js",
+		"i18n:extract": "wp i18n make-pot . languages/open-bulk-buying.pot --domain=open-bulk-buying --exclude=node_modules,vendor,tests,ref,build",
+		"i18n:update": "wp i18n update-po languages/open-bulk-buying.pot languages",
+		"i18n:compile": "node scripts/compile-translations.js",
 		"packages-update": "wp-scripts packages-update",
 		"plugin-zip": "wp-scripts plugin-zip"
 	},
@@ -18,6 +21,7 @@
 		"assets",
 		"build",
 		"inc/**/*.php",
+		"languages",
 		"open-bulk-buying.php",
 		"uninstall.php",
 		"readme.txt"

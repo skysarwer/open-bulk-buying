@@ -10,6 +10,7 @@
  * License: GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: open-bulk-buying
+ * Domain Path: /languages
  */
 
 // Exit if accessed directly
@@ -86,6 +87,13 @@ require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-login-view.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-order-form-view.php';
 
 register_activation_hook( __FILE__, array( 'OPENBB_Installer', 'install' ) );
+add_action(
+	'init',
+	static function () {
+		load_plugin_textdomain( 'open-bulk-buying', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	},
+	0
+);
 add_action( 'plugins_loaded', array( 'OPENBB_Installer', 'maybe_upgrade' ) );
 add_filter( 'user_has_cap', array( 'OPENBB_Access', 'filter_user_has_cap' ), 10, 4 );
 add_filter( 'map_meta_cap', array( 'OPENBB_Access', 'filter_map_meta_cap' ), 10, 4 );
