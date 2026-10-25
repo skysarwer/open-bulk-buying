@@ -101,9 +101,9 @@ class Test_OPENBB_Signup_Self_Service extends OPENBB_TestCase {
 
 	private function last_code(): string {
 		$this->assertNotEmpty( $this->mail );
-		$this->assertSame( 1, preg_match( '/\b(\d{3}) (\d{3})\b/', end( $this->mail )['message'], $match ) );
+		$this->assertSame( 1, preg_match( '/font-family: monospace[^>]*>(\d{6})<\/p>/', end( $this->mail )['message'], $match ) );
 
-		return $match[1] . $match[2];
+		return $match[1];
 	}
 
 	// ------------------------------------------------------------------
@@ -256,6 +256,7 @@ class Test_OPENBB_Signup_Self_Service extends OPENBB_TestCase {
 		$this->assertSame( 200, $response->get_status() );
 		$this->assertSame( 'code', $response->get_data()['step'] );
 		$this->assertSame( 'jane.doe@example.com', $response->get_data()['email'] );
+		$this->assertStringContainsString( 'Content-Type: text/html; charset=UTF-8', $this->mail[0]['headers'] );
 		$this->assertFalse( email_exists( 'jane.doe@example.com' ) );
 		$this->assertNotEmpty( $_COOKIE[ OPENBB_REST_Signup::COOKIE ] );
 		$this->assertSame( 'jane.doe@example.com', OPENBB_REST_Signup::pending()['email'] );
@@ -294,7 +295,7 @@ class Test_OPENBB_Signup_Self_Service extends OPENBB_TestCase {
 		$this->assertSame( 'code', $response->get_data()['step'] );
 		$this->assertCount( 1, $this->mail );
 		$this->assertStringContainsString( wp_login_url(), $this->mail[0]['message'] );
-		$this->assertSame( 0, preg_match( '/\b\d{3} \d{3}\b/', $this->mail[0]['message'] ) );
+		$this->assertSame( 0, preg_match( '/font-family: monospace[^>]*>\d{6}<\/p>/', $this->mail[0]['message'] ) );
 		$this->assertFalse( OPENBB_REST_Signup::pending()['deliverable'] );
 	}
 

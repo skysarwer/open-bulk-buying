@@ -55,8 +55,8 @@ class Test_OPENBB_Login extends OPENBB_TestCase {
 
 	private function last_code(): string {
 		$this->assertNotEmpty( $this->mail );
-		$this->assertSame( 1, preg_match( '/\b([0-9]{3}) ([0-9]{3})\b/', end( $this->mail )['message'], $match ) );
-		return $match[1] . $match[2];
+		$this->assertSame( 1, preg_match( '/font-family: monospace[^>]*>([0-9]{6})<\/p>/', end( $this->mail )['message'], $match ) );
+		return $match[1];
 	}
 
 	private function age_challenge( int $expires_at = 0 ): void {
@@ -128,6 +128,7 @@ class Test_OPENBB_Login extends OPENBB_TestCase {
 		$this->assertSame( 200, $response->get_status() );
 		$this->assertSame( 'code', $response->get_data()['step'] );
 		$this->assertSame( array( 'jane@example.com' ), wp_list_pluck( $this->mail, 'to' ) );
+		$this->assertStringContainsString( 'Content-Type: text/html; charset=UTF-8', $this->mail[0]['headers'] );
 		$code = $this->last_code();
 		$token = $_COOKIE[ OPENBB_REST_Login::COOKIE ];
 		$this->assertSame( 0, get_current_user_id() );

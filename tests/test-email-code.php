@@ -34,7 +34,7 @@ class Test_OPENBB_Email_Code extends OPENBB_TestCase {
 		$this->assertMatchesRegularExpression( '/^[A-Za-z0-9]{40}$/', $issued['token'] );
 		$this->assertMatchesRegularExpression( '/^\d{6}$/', $issued['code'] );
 		$this->assertSame( OPENBB_Email_Code::RESEND_COOLDOWN, $issued['resend_after'] );
-		$this->assertSame( '123 456', OPENBB_Email_Code::format( '123456' ) );
+		$this->assertSame( '123456', OPENBB_Email_Code::format( '123 456' ) );
 	}
 
 	public function test_the_code_is_not_stored_in_plain_text(): void {

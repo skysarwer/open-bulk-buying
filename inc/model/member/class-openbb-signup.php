@@ -371,7 +371,7 @@ final class OPENBB_Signup {
 				'to'      => $to,
 				'subject' => $subject,
 				'message' => $message,
-				'headers' => '',
+				'headers' => 'code' === $type ? 'Content-Type: text/html; charset=UTF-8' : '',
 			),
 			$type,
 			$user_id

@@ -61,14 +61,14 @@ final class OPENBB_Login_Code {
 			)
 		);
 
-		return self::mail( $user, $template, $code );
+		return self::mail( $user, $template, $code, true );
 	}
 
 	public static function send_password_required( WP_User $user, string $page ): bool {
 		return self::mail( $user, OPENBB_Emails::render( 'password-required', array( 'page' => $page ) ), $page );
 	}
 
-	private static function mail( WP_User $user, array $template, string $code_or_page ): bool {
+	private static function mail( WP_User $user, array $template, string $code_or_page, bool $is_code = false ): bool {
 		/**
 		 * Filters the login email.
 		 *
@@ -82,7 +82,7 @@ final class OPENBB_Login_Code {
 				'to'      => $user->user_email,
 				'subject' => $template['subject'],
 				'message' => $template['message'],
-				'headers' => '',
+				'headers' => $is_code ? 'Content-Type: text/html; charset=UTF-8' : '',
 			),
 			$user,
 			$code_or_page

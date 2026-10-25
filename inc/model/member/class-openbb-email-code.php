@@ -217,10 +217,10 @@ final class OPENBB_Email_Code {
 	}
 
 	/**
-	 * "Your code is 123 456"-style display, easier to read and type.
+	 * Keep the code contiguous so email clients can recognize and copy it.
 	 */
 	public static function format( string $code ): string {
-		return trim( chunk_split( $code, 3, ' ' ) );
+		return str_replace( ' ', '', $code );
 	}
 
 	private static function generate_code(): string {
