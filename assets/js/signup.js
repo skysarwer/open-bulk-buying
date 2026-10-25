@@ -12,6 +12,7 @@ import {
 	codeInput,
 	findField,
 	focusField,
+	leaveTo,
 	setErrors,
 	validate,
 } from '@open-bulk-buying/forms';
@@ -34,6 +35,24 @@ function go( ctx, step, focusHeading = true ) {
 	ctx.focus = focusHeading;
 	ctx.notice = '';
 	ctx.status = '';
+}
+
+/**
+ * After signing up: reload into context.continueTo when set (the order form shows the
+ * new member's form or application status), else show the done step.
+ *
+ * @param {Object} ctx  Signup context.
+ * @param {Object} data REST response.
+ * @return {boolean} Whether the page is leaving.
+ */
+function finish( ctx, data ) {
+	ctx.applicant = data.status === 'applicant';
+	if ( ctx.continueTo ) {
+		leaveTo( ctx.continueTo );
+		return true;
+	}
+	go( ctx, 'done' );
+	return false;
 }
 
 function startCountdown( ctx, seconds ) {
@@ -151,6 +170,7 @@ const { state } = store( 'openbb/signup', {
 			}
 
 			ctx.busy = true;
+			let leaving = false;
 			try {
 				const { ok, data } = yield post(
 					'',
@@ -165,12 +185,14 @@ const { state } = store( 'openbb/signup', {
 					startCountdown( ctx, data.resend_after );
 					go( ctx, 'code' );
 				} else {
-					ctx.applicant = data.status === 'applicant';
-					go( ctx, 'done' );
+					leaving = finish( ctx, data );
 				}
 			} finally {
-				ctx.busy = false;
-				resetCaptcha( form );
+				// Stay busy while the next page loads.
+				if ( ! leaving ) {
+					ctx.busy = false;
+					resetCaptcha( form );
+				}
 			}
 		} ),
 
@@ -210,12 +232,12 @@ const { state } = store( 'openbb/signup', {
 			ctx.busy = true;
 			ctx.notice = '';
 			ctx.status = '';
+			let leaving = false;
 			try {
 				const { ok, data } = yield post( '/verify', { code } );
 				if ( ok ) {
 					state.nonce = data.nonce;
-					ctx.applicant = data.status === 'applicant';
-					go( ctx, 'done' );
+					leaving = finish( ctx, data );
 					return;
 				}
 				if ( data?.code === 'openbb_code_invalid' ) {
@@ -225,7 +247,9 @@ const { state } = store( 'openbb/signup', {
 					ctx.notice = data?.message || state.messages.network;
 				}
 			} finally {
-				ctx.busy = false;
+				if ( ! leaving ) {
+					ctx.busy = false;
+				}
 			}
 		} ),
 

@@ -17,6 +17,8 @@
 
 	box-sizing: border-box;
 	max-width: 42rem;
+	// Landing on a view by its #id (e.g. after logging in on the order form).
+	scroll-margin-top: var(--openbb-scroll-offset);
 
 	*,
 	*::before,

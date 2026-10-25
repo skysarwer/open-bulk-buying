@@ -67,9 +67,23 @@ final class OPENBB_Signup_View {
 	/**
 	 * The signup form for a visitor, as the second panel of the login view. Unprocessed:
 	 * the caller runs the directives over the whole view.
+	 *
+	 * @param string $redirect     Where the done step's Continue link goes.
+	 * @param bool   $auto_continue Go to $redirect right after signing up instead of
+	 *                              showing the done step (the order form reloads into
+	 *                              the new member's form or application status).
 	 */
-	public static function panel( string $redirect ): string {
-		return self::form( array_merge( self::defaults(), array( 'redirect_to' => $redirect ) ), 0 );
+	public static function panel( string $redirect, bool $auto_continue = false ): string {
+		return self::form(
+			array_merge(
+				self::defaults(),
+				array(
+					'redirect_to'   => $redirect,
+					'auto_continue' => $auto_continue,
+				)
+			),
+			0
+		);
 	}
 
 	private static function form( array $args, int $user_id ): string {
@@ -136,6 +150,7 @@ final class OPENBB_Signup_View {
 			'applicant'    => OPENBB_Access::STATUS_APPLICANT === OPENBB_Signup::signup_status(),
 			'focus'        => false,
 			'rulesVersion' => $rules ? $rules->id : 0,
+			'continueTo'   => empty( $args['auto_continue'] ) ? '' : $args['redirect_to'],
 		);
 		$context['current'][ $current ] = true;
 

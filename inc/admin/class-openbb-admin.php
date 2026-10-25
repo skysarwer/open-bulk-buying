@@ -132,7 +132,7 @@ class OPENBB_Admin {
 		}
 
 		wp_enqueue_script( 'openbb-admin', OPENBB_PLUGIN_URL . 'build/admin/index.js', $asset['dependencies'], $asset['version'], true );
-		wp_set_script_translations( 'openbb-admin', 'open-bulk-buying' );
+		wp_set_script_translations( 'openbb-admin', 'open-bulk-buying', OPENBB_PLUGIN_DIR . 'languages' );
 		wp_add_inline_script( 'openbb-admin', 'window.openbbAdmin = ' . wp_json_encode( self::boot_data( $screen ) ) . ';', 'before' );
 
 		if ( file_exists( OPENBB_PLUGIN_DIR . 'build/admin/style-index.css' ) ) {

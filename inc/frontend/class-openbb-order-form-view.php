@@ -31,19 +31,23 @@ final class OPENBB_Order_Form_View {
 	/** At or below this many units available, a product shows how many are left. */
 	const LOW_STOCK = 5;
 
+	/**
+	 * auth: which form a logged-out visitor sees first, login or signup (they can switch).
+	 */
 	public static function defaults(): array {
-		return array();
+		return array(
+			'auth' => 'login',
+		);
 	}
 
 	public static function render( array $args = array() ): string {
+		$args = array_merge( self::defaults(), array_intersect_key( $args, self::defaults() ) );
+
 		OPENBB_Frontend::no_cache();
 		OPENBB_Frontend::enqueue_style();
 
 		if ( ! is_user_logged_in() ) {
-			return self::message(
-				__( 'Order', 'open-bulk-buying' ),
-				__( 'Log in to place your order.', 'open-bulk-buying' )
-			) . OPENBB_Login_View::render();
+			return self::auth( 'signup' === $args['auth'] ? 'signup' : 'login' );
 		}
 
 		$user_id = get_current_user_id();
@@ -593,10 +597,34 @@ final class OPENBB_Order_Form_View {
 		return $links;
 	}
 
+	/**
+	 * Login and signup for a visitor. The catalog stays out of the page (it isn't public),
+	 * so both reload this page afterwards, landing on the form or the member's status.
+	 *
+	 * @param string $first login or signup.
+	 */
+	private static function auth( string $first ): string {
+		$redirect = OPENBB_Frontend::current_url() . '#' . self::ID;
+		$open     = OPENBB_Signup::is_open();
+
+		$panels = array( 'login' => OPENBB_Login_View::panel( array( 'login_redirect' => $redirect ), $open ) );
+		if ( $open ) {
+			$panels['signup'] = OPENBB_Signup_View::panel( $redirect, true );
+		}
+
+		return self::message(
+			__( 'Order', 'open-bulk-buying' ),
+			$open
+				? __( 'Log in or sign up to place your order.', 'open-bulk-buying' )
+				: __( 'Log in to place your order.', 'open-bulk-buying' )
+		) . OPENBB_Login_View::auth( $first, $panels );
+	}
+
 	private static function message( string $title, string $text ): string {
 		return OPENBB_Frontend::template(
 			'order-message',
 			array(
+				'id'    => self::ID,
 				'title' => $title,
 				'text'  => $text,
 			)

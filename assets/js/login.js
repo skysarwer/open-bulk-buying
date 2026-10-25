@@ -13,6 +13,7 @@ import {
 	codeInput,
 	findField,
 	focusField,
+	leaveTo,
 	setErrors,
 	validate,
 } from '@open-bulk-buying/forms';
@@ -127,7 +128,7 @@ const { state } = store( 'openbb/login', {
 				if ( ok ) {
 					// Stay busy while the next page loads.
 					leaving = true;
-					window.location.assign( data.redirect );
+					leaveTo( data.redirect );
 					return;
 				}
 
@@ -238,7 +239,7 @@ const { state } = store( 'openbb/login', {
 				} );
 				if ( ok ) {
 					leaving = true;
-					window.location.assign( data.redirect );
+					leaveTo( data.redirect );
 					return;
 				}
 				if ( data?.code === 'openbb_code_invalid' ) {

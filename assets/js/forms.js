@@ -105,6 +105,23 @@ export const afterRender = () =>
 	);
 
 /**
+ * Loads `url`, reloading when it's this page with a #fragment (assigning that alone
+ * would only scroll).
+ *
+ * @param {string} url
+ */
+export function leaveTo( url ) {
+	const target = new URL( url, window.location.href );
+	const here = new URL( window.location.href );
+	target.hash = '';
+	here.hash = '';
+	window.location.assign( url );
+	if ( target.href === here.href ) {
+		window.location.reload();
+	}
+}
+
+/**
  * The field wrapper for `name` inside `container`.
  *
  * @param {Element} container
