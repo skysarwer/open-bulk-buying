@@ -58,8 +58,9 @@ class OPENBB_Order_Lifecycle {
 			if ( false === $wpdb->query( 'START TRANSACTION' ) ) {
 				return self::failed();
 			}
-			$from = $order->status;
-			$now  = current_time( 'mysql', true );
+			$before = clone $order;
+			$from   = $order->status;
+			$now    = current_time( 'mysql', true );
 			if ( OPENBB_Order::STATUS_SUBMITTED === $from ) {
 				$order->paid_at       = $now;
 				$order->paid_by       = $actor_id;
@@ -120,10 +121,11 @@ class OPENBB_Order_Lifecycle {
 				$wpdb->query( 'ROLLBACK' );
 				return self::failed();
 			}
-			return $order;
 		} finally {
 			OPENBB_Inventory::unlock();
 		}
+		do_action( 'openbb_order_saved', $order, $before );
+		return $order;
 	}
 
 	private static function failed(): WP_Error {

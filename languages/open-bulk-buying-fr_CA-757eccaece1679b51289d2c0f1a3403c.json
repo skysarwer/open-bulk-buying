@@ -40,6 +40,36 @@
             "Settings": [
                 "R\u00e9glages"
             ],
+            "Subtotal": [
+                "Sous-total"
+            ],
+            "Container credit": [
+                "Cr\u00e9dit pour contenant"
+            ],
+            "Donation": [
+                "Don"
+            ],
+            "Total": [
+                "Total"
+            ],
+            "Own container": [
+                "Contenant personnel"
+            ],
+            "Yes": [
+                "Oui"
+            ],
+            "No": [
+                "Non"
+            ],
+            "Change": [
+                "Variation"
+            ],
+            "Product": [
+                "Produit"
+            ],
+            "Quantity": [
+                "Quantit\u00e9"
+            ],
             "This box must be checked.": [
                 "Cette case doit \u00eatre coch\u00e9e."
             ],
@@ -64,9 +94,6 @@
             "Remove": [
                 "Retirer"
             ],
-            "Donation": [
-                "Don"
-            ],
             "Back": [
                 "Retour"
             ],
@@ -78,6 +105,9 @@
             ],
             "Pickup must end after it starts.": [
                 "La fin du ramassage doit \u00eatre post\u00e9rieure \u00e0 son d\u00e9but."
+            ],
+            "Purchase quantities must be non-negative whole numbers of selling packages.": [
+                "Les quantit\u00e9s achet\u00e9es doivent \u00eatre des nombres entiers positifs ou nuls de lots de vente."
             ],
             "Submitted": [
                 "Soumis"
@@ -97,14 +127,8 @@
             "Approved": [
                 "Approuv\u00e9"
             ],
-            "Product": [
-                "Produit"
-            ],
             "Supplier": [
                 "Fournisseur"
-            ],
-            "Yes": [
-                "Oui"
             ],
             "Ordering opens": [
                 "Ouverture des commandes"
@@ -427,14 +451,8 @@
             "Cycle": [
                 "Cycle"
             ],
-            "Total": [
-                "Total"
-            ],
             "%s (archived)": [
                 "%s (archiv\u00e9)"
-            ],
-            "No": [
-                "Non"
             ],
             "No longer defined": [
                 "N\u2019est plus d\u00e9fini"
@@ -460,14 +478,8 @@
             "Prepared: %s": [
                 "Quantit\u00e9 pr\u00e9par\u00e9e : %s"
             ],
-            "Quantity": [
-                "Quantit\u00e9"
-            ],
             "Max %s": [
                 "Maximum %s"
-            ],
-            "Own container": [
-                "Contenant personnel"
             ],
             "Enter a quantity for \"%s\".": [
                 "Saisissez une quantit\u00e9 pour \u00ab %s \u00bb."
@@ -501,12 +513,6 @@
             ],
             "No products yet.": [
                 "Aucun produit pour le moment."
-            ],
-            "Subtotal": [
-                "Sous-total"
-            ],
-            "Container credit": [
-                "Cr\u00e9dit pour contenant"
             ],
             "Estimated total": [
                 "Total estim\u00e9"
@@ -791,9 +797,6 @@
             ],
             "Date": [
                 "Date"
-            ],
-            "Change": [
-                "Variation"
             ],
             "By": [
                 "Par"
@@ -1411,9 +1414,6 @@
             ],
             "Something went wrong. Please try again.": [
                 "Un probl\u00e8me est survenu. Veuillez r\u00e9essayer."
-            ],
-            "Purchase quantities must be non-negative whole numbers of selling packages.": [
-                "Les quantit\u00e9s achet\u00e9es doivent \u00eatre des nombres entiers positifs ou nuls de lots de vente."
             ]
         }
     }

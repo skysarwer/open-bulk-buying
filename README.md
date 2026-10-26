@@ -112,6 +112,26 @@ extraction and compilation.
    When changing a submitted order or cancelling it, staff are asked to provide
    a reason.
 
+### Order emails
+
+The owning member receives an HTML email when an order is first submitted
+(whether by the member or staff), updated, marked as prepaid, cancelled or
+fulfilled. Draft creation/autosaves, unchanged saves, internal staff-note edits
+and repeated payment/fulfillment confirmations do not send emails.
+
+Update emails contain a Before/After table of changed lines and member-visible
+fields only, including changed totals. Other events contain a photo-free table
+of product/package snapshots, quantities, unit prices (including container
+charges), container credits and net line totals, followed by the order totals.
+Internal staff notes and financial-aid explanations are never emailed.
+Currency and product descriptions come from the order snapshots; email labels
+use the order language when a matching translation is available.
+
+Delivery uses WordPress `wp_mail()`, so configure and monitor your site's mail
+transport. A failed send is logged with order ID, revision and event and fires
+`openbb_order_email_failed( $order, $event )`; it does not undo the saved order or
+payment. There is no automatic retry queue or PDF attachment in this release.
+
 ## Cycle management
 
 In **Co-op > Cycles**, click a cycle title for its quick-view/edit panel. The

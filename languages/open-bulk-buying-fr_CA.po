@@ -101,8 +101,7 @@ msgid "You are not allowed to give or take away these roles."
 msgstr "Vous n’avez pas l’autorisation d’attribuer ou de retirer ces rôles."
 
 #: inc/access/class-openbb-access.php:249
-#: inc/access/class-openbb-access.php:254
-#: inc/access/class-openbb-roles.php:692
+#: inc/access/class-openbb-access.php:254 inc/access/class-openbb-roles.php:692
 msgid "The roles could not be saved."
 msgstr "Les rôles n’ont pas pu être enregistrés."
 
@@ -254,26 +253,20 @@ msgstr "Modifier les rôles de l’équipe et les attribuer aux membres."
 msgid "Products and cycles"
 msgstr "Produits et cycles"
 
-#: inc/access/class-openbb-roles.php:159
-#: inc/admin/class-openbb-admin.php:75
-#: src/admin/screens/cycles/list.js:146
-#: src/admin/screens/cycles/list.js:285
+#: inc/access/class-openbb-roles.php:159 inc/admin/class-openbb-admin.php:75
+#: src/admin/screens/cycles/list.js:146 src/admin/screens/cycles/list.js:285
 #: src/admin/screens/members/fields.js:137
-#: src/admin/screens/members/panel.js:232
-#: src/admin/screens/orders/index.js:402
+#: src/admin/screens/members/panel.js:232 src/admin/screens/orders/index.js:402
 msgid "Orders"
 msgstr "Commandes"
 
-#: inc/access/class-openbb-roles.php:160
-#: inc/admin/class-openbb-admin.php:76
+#: inc/access/class-openbb-roles.php:160 inc/admin/class-openbb-admin.php:76
 #: src/admin/screens/members/index.js:402
 msgid "Members"
 msgstr "Membres"
 
-#: inc/access/class-openbb-roles.php:161
-#: src/admin/screens/orders/editor.js:411
-#: src/admin/screens/orders/editor.js:486
-#: src/admin/screens/orders/index.js:117
+#: inc/access/class-openbb-roles.php:161 src/admin/screens/orders/editor.js:417
+#: src/admin/screens/orders/editor.js:492 src/admin/screens/orders/index.js:117
 msgid "Aid"
 msgstr "Aide"
 
@@ -330,8 +323,7 @@ msgstr "Les autorisations doivent être une liste de noms d’autorisations."
 msgid "Unknown permissions: %s"
 msgstr "Autorisations inconnues : %s"
 
-#: inc/access/class-openbb-roles.php:651
-#: inc/access/class-openbb-roles.php:786
+#: inc/access/class-openbb-roles.php:651 inc/access/class-openbb-roles.php:786
 msgid "You are not allowed to change roles."
 msgstr "Vous n’avez pas l’autorisation de modifier les rôles."
 
@@ -371,26 +363,22 @@ msgstr "Ce rôle n’existe pas."
 msgid "Co-op membership"
 msgstr "Adhésion à la coopérative"
 
-#: inc/admin/class-openbb-admin.php:44
-#: inc/admin/class-openbb-admin.php:45
+#: inc/admin/class-openbb-admin.php:44 inc/admin/class-openbb-admin.php:45
 msgid "Co-op"
 msgstr "Coopérative"
 
-#: inc/admin/class-openbb-admin.php:72
-#: src/admin/screens/overview/index.js:26
+#: inc/admin/class-openbb-admin.php:72 src/admin/screens/overview/index.js:26
 msgid "Overview"
 msgstr "Vue d’ensemble"
 
 #: inc/admin/class-openbb-admin.php:73
 #: inc/model/product/class-openbb-catalog.php:68
-#: inc/model/product/post-type.php:21
-#: src/admin/screens/orders/index.js:103
+#: inc/model/product/post-type.php:21 src/admin/screens/orders/index.js:103
 #: src/admin/screens/products/index.js:434
 msgid "Products"
 msgstr "Produits"
 
-#: inc/admin/class-openbb-admin.php:74
-#: src/admin/screens/cycles/list.js:516
+#: inc/admin/class-openbb-admin.php:74 src/admin/screens/cycles/list.js:516
 msgid "Cycles"
 msgstr "Cycles"
 
@@ -427,8 +415,7 @@ msgstr "Veuillez effectuer la vérification et réessayer."
 msgid "We couldn't check that you're not a bot. Please try again later, or contact the co-op."
 msgstr "Nous n’avons pas pu vérifier que vous n’êtes pas un robot. Veuillez réessayer plus tard ou communiquer avec la coopérative."
 
-#: inc/class-openbb-demo-catalog.php:23
-#: inc/class-openbb-maintenance.php:33
+#: inc/class-openbb-demo-catalog.php:23 inc/class-openbb-maintenance.php:33
 msgid "Enable test mode before populating demo data."
 msgstr "Activez le mode test avant de générer les données de démonstration."
 
@@ -440,18 +427,15 @@ msgstr "Un produit qui n’est pas une démonstration utilise déjà un identifi
 msgid "The demo product could not be marked."
 msgstr "Le produit de démonstration n’a pas pu être identifié comme tel."
 
-#: inc/class-openbb-demo-catalog.php:106
-#: inc/class-openbb-maintenance.php:71
+#: inc/class-openbb-demo-catalog.php:106 inc/class-openbb-maintenance.php:71
 msgid "The demo product could not be loaded."
 msgstr "Le produit de démonstration n’a pas pu être chargé."
 
-#: inc/class-openbb-demo-catalog.php:117
-#: inc/class-openbb-maintenance.php:146
+#: inc/class-openbb-demo-catalog.php:117 inc/class-openbb-maintenance.php:146
 msgid "Generated demo stock receipt."
 msgstr "Réception de stock de démonstration générée."
 
-#: inc/class-openbb-demo-catalog.php:121
-#: inc/class-openbb-maintenance.php:150
+#: inc/class-openbb-demo-catalog.php:121 inc/class-openbb-maintenance.php:150
 msgid "The demo stock receipt could not be populated."
 msgstr "La réception de stock de démonstration n’a pas pu être générée."
 
@@ -471,8 +455,7 @@ msgstr "L’ordre des catégories de démonstration n’a pas pu être enregistr
 msgid "A non-demo product is already using the demo product identifier."
 msgstr "Un produit qui n’est pas une démonstration utilise déjà l’identifiant du produit de démonstration."
 
-#: inc/class-openbb-maintenance.php:47
-#: inc/class-openbb-maintenance.php:59
+#: inc/class-openbb-maintenance.php:47 inc/class-openbb-maintenance.php:59
 #: inc/class-openbb-maintenance.php:123
 msgid "[DEMO] Sample bulk beans"
 msgstr "[DÉMO] Haricots en vrac — exemple"
@@ -481,8 +464,7 @@ msgstr "[DÉMO] Haricots en vrac — exemple"
 msgid "Test data generated by Open Bulk Buying."
 msgstr "Données de test générées par Open Bulk Buying."
 
-#: inc/class-openbb-maintenance.php:61
-#: inc/class-openbb-maintenance.php:124
+#: inc/class-openbb-maintenance.php:61 inc/class-openbb-maintenance.php:124
 msgid "Demo supplier"
 msgstr "Fournisseur de démonstration"
 
@@ -506,8 +488,7 @@ msgstr "La commande de démonstration n’a pas pu être générée."
 msgid "The demo order line could not be populated."
 msgstr "La ligne de commande de démonstration n’a pas pu être générée."
 
-#: inc/class-openbb-maintenance.php:167
-#: inc/class-openbb-maintenance.php:181
+#: inc/class-openbb-maintenance.php:167 inc/class-openbb-maintenance.php:181
 #: inc/class-openbb-maintenance.php:186
 msgid "Open Bulk Buying data could not be deleted."
 msgstr "Les données d’Open Bulk Buying n’ont pas pu être supprimées."
@@ -572,6 +553,70 @@ msgstr ""
 msgid "[%s] We received your membership application"
 msgstr "[%s] Nous avons reçu votre demande d’adhésion"
 
+#: inc/emails/class-openbb-order-emails.php:74
+#: src/admin/screens/orders/editor.js:479
+msgid "Subtotal"
+msgstr "Sous-total"
+
+#: inc/emails/class-openbb-order-emails.php:75
+#: inc/emails/class-openbb-order-emails.php:89 inc/emails/order-event.php:48
+#: src/admin/screens/orders/editor.js:485
+msgid "Container credit"
+msgstr "Crédit pour contenant"
+
+#: inc/emails/class-openbb-order-emails.php:76
+#: inc/frontend/templates/order-totals.php:28
+#: src/admin/screens/orders/editor.js:499
+#: src/admin/screens/orders/editor.js:565
+msgid "Donation"
+msgstr "Don"
+
+#: inc/emails/class-openbb-order-emails.php:77
+#: inc/frontend/templates/order-totals.php:24
+msgid "Financial aid"
+msgstr "Aide financière"
+
+#: inc/emails/class-openbb-order-emails.php:78
+#: src/admin/screens/members/panel.js:194
+#: src/admin/screens/orders/editor.js:455
+#: src/admin/screens/orders/editor.js:508 src/admin/screens/orders/index.js:110
+msgid "Total"
+msgstr "Total"
+
+#: inc/emails/class-openbb-order-emails.php:87 inc/emails/order-event.php:48
+msgid "Unit price"
+msgstr "Prix unitaire"
+
+#: inc/emails/class-openbb-order-emails.php:88 inc/emails/order-event.php:48
+#: src/admin/screens/orders/editor.js:179
+msgid "Own container"
+msgstr "Contenant personnel"
+
+#: inc/emails/class-openbb-order-emails.php:88 inc/emails/order-event.php:62
+#: inc/privacy/class-openbb-privacy-profile-fields.php:90
+#: src/admin/screens/members/profile.js:108
+#: src/admin/screens/members/profile.js:142
+msgid "Yes"
+msgstr "Oui"
+
+#: inc/emails/class-openbb-order-emails.php:88 inc/emails/order-event.php:62
+#: src/admin/screens/members/profile.js:109
+#: src/admin/screens/members/profile.js:143
+msgid "No"
+msgstr "Non"
+
+#: inc/emails/class-openbb-order-emails.php:90 inc/emails/order-event.php:48
+msgid "Line total"
+msgstr "Total de la ligne"
+
+#: inc/emails/class-openbb-order-emails.php:120
+msgid "Member note"
+msgstr "Note du membre"
+
+#: inc/emails/class-openbb-order-emails.php:121
+msgid "Financial aid request"
+msgstr "Demande d’aide financière"
+
 #. translators: 1: site name, 2: the code.
 #: inc/emails/login-code.php:12
 #, php-format
@@ -609,6 +654,60 @@ msgstr ""
 "\n"
 "Pour choisir un mot de passe, utilisez « Mot de passe oublié? » :\n"
 "%2$s"
+
+#: inc/emails/order-event.php:14
+msgid "Order created"
+msgstr "Commande créée"
+
+#: inc/emails/order-event.php:15
+msgid "Order updated"
+msgstr "Commande modifiée"
+
+#: inc/emails/order-event.php:16
+msgid "Order marked as prepaid"
+msgstr "Commande marquée comme payée d’avance"
+
+#: inc/emails/order-event.php:17
+msgid "Order cancelled"
+msgstr "Commande annulée"
+
+#: inc/emails/order-event.php:18
+msgid "Order fulfilled"
+msgstr "Commande remise"
+
+#. translators: 1: site name, 2: order event, 3: order ID.
+#: inc/emails/order-event.php:21
+#, php-format
+msgid "[%1$s] %2$s (#%3$d)"
+msgstr "[%1$s] %2$s (no %3$d)"
+
+#: inc/emails/order-event.php:37 src/admin/screens/products/inventory.js:222
+msgid "Change"
+msgstr "Variation"
+
+#: inc/emails/order-event.php:37
+msgid "Before"
+msgstr "Avant"
+
+#: inc/emails/order-event.php:37
+msgid "After"
+msgstr "Après"
+
+#: inc/emails/order-event.php:48 inc/model/product/post-type.php:22
+#: src/admin/screens/orders/editor.js:452
+#: src/admin/screens/products/index.js:243
+msgid "Product"
+msgstr "Produit"
+
+#: inc/emails/order-event.php:48
+msgid "Package"
+msgstr "Format"
+
+#: inc/emails/order-event.php:48 src/admin/screens/orders/editor.js:160
+#: src/admin/screens/orders/editor.js:453
+#: src/admin/screens/products/inventory.js:76
+msgid "Quantity"
+msgstr "Quantité"
 
 #. translators: %s: site name.
 #: inc/emails/password-required.php:12
@@ -749,8 +848,7 @@ msgstr "Rester connecté"
 #: src/admin/screens/cycles/financial-aid.js:23
 #: src/admin/screens/cycles/financial-aid.js:87
 #: src/admin/screens/members/panel.js:191
-#: src/admin/screens/orders/editor.js:277
-#: src/admin/screens/orders/index.js:55
+#: src/admin/screens/orders/editor.js:283 src/admin/screens/orders/index.js:55
 msgid "Order"
 msgstr "Commande"
 
@@ -993,8 +1091,7 @@ msgid "About you"
 msgstr "À votre sujet"
 
 #: inc/frontend/class-openbb-signup-view.php:137
-#: inc/frontend/templates/signup.php:158
-#: inc/frontend/templates/signup.php:162
+#: inc/frontend/templates/signup.php:158 inc/frontend/templates/signup.php:162
 msgid "Co-op rules"
 msgstr "Règles de la coopérative"
 
@@ -1101,8 +1198,7 @@ msgstr "Les inscriptions sont fermées en ce moment."
 msgid "Open signups in the co-op settings."
 msgstr "Ouvrez les inscriptions dans les réglages de la coopérative."
 
-#: inc/frontend/fields.php:275
-#: src/admin/screens/members/profile.js:246
+#: inc/frontend/fields.php:275 src/admin/screens/members/profile.js:246
 #: src/admin/screens/settings/profile-fields/preview.js:52
 msgid "Choose…"
 msgstr "Choisir…"
@@ -1120,8 +1216,7 @@ msgstr "Vous êtes connecté en tant que %s."
 
 #: inc/frontend/templates/login-message.php:24
 #: inc/frontend/templates/signup-message.php:19
-#: inc/frontend/templates/signup.php:49
-#: inc/frontend/templates/signup.php:233
+#: inc/frontend/templates/signup.php:49 inc/frontend/templates/signup.php:233
 msgid "Continue"
 msgstr "Continuer"
 
@@ -1129,8 +1224,7 @@ msgstr "Continuer"
 msgid "Log out"
 msgstr "Se déconnecter"
 
-#: inc/frontend/templates/login.php:59
-#: inc/frontend/templates/login.php:83
+#: inc/frontend/templates/login.php:59 inc/frontend/templates/login.php:83
 #: inc/frontend/templates/login.php:133
 #: inc/frontend/templates/signup-message.php:24
 #: inc/frontend/templates/signup.php:132
@@ -1161,8 +1255,7 @@ msgstr "Me connecter plutôt avec un mot de passe"
 msgid "New to the co-op?"
 msgstr "Vous découvrez la coopérative?"
 
-#: inc/frontend/templates/login.php:109
-#: inc/frontend/templates/signup.php:176
+#: inc/frontend/templates/login.php:109 inc/frontend/templates/signup.php:176
 msgid "Check your email"
 msgstr "Consultez vos courriels"
 
@@ -1180,14 +1273,12 @@ msgid_plural "The code works once and expires in %d minutes."
 msgstr[0] "Le code est à usage unique et expire dans %d minute."
 msgstr[1] "Le code est à usage unique et expire dans %d minutes."
 
-#: inc/frontend/templates/login.php:135
-#: inc/frontend/templates/signup.php:214
+#: inc/frontend/templates/login.php:135 inc/frontend/templates/signup.php:214
 msgid "Send a new code"
 msgstr "Envoyer un nouveau code"
 
 #. translators: %s: number of seconds, updated live.
-#: inc/frontend/templates/login.php:139
-#: inc/frontend/templates/signup.php:218
+#: inc/frontend/templates/login.php:139 inc/frontend/templates/signup.php:218
 #, php-format
 msgid "(in %ss)"
 msgstr "(dans %ss)"
@@ -1196,8 +1287,7 @@ msgstr "(dans %ss)"
 msgid "Change email or login method"
 msgstr "Changer d’adresse courriel ou de méthode de connexion"
 
-#: inc/frontend/templates/login.php:145
-#: inc/frontend/templates/signup.php:224
+#: inc/frontend/templates/login.php:145 inc/frontend/templates/signup.php:224
 msgid "No email? Check your spam folder, or send a new code."
 msgstr "Vous n’avez pas reçu de courriel? Vérifiez votre dossier de pourriels ou envoyez un nouveau code."
 
@@ -1315,16 +1405,6 @@ msgstr "Dans votre panier :"
 msgid "Own containers"
 msgstr "Contenants personnels"
 
-#: inc/frontend/templates/order-totals.php:24
-msgid "Financial aid"
-msgstr "Aide financière"
-
-#: inc/frontend/templates/order-totals.php:28
-#: src/admin/screens/orders/editor.js:493
-#: src/admin/screens/orders/editor.js:559
-msgid "Donation"
-msgstr "Don"
-
 #: inc/frontend/templates/order-totals.php:32
 msgid "Total to pay at pickup"
 msgstr "Total à payer au ramassage"
@@ -1338,8 +1418,7 @@ msgstr "Vous avez demandé une aide financière. Si votre demande est approuvée
 msgid "Already have an account?"
 msgstr "Vous avez déjà un compte?"
 
-#: inc/frontend/templates/signup.php:52
-#: src/admin/components/side-panel.js:119
+#: inc/frontend/templates/signup.php:52 src/admin/components/side-panel.js:119
 msgid "Back"
 msgstr "Retour"
 
@@ -1373,8 +1452,7 @@ msgid_plural "Enter it below within %d minutes to finish signing up."
 msgstr[0] "Saisissez-le ci-dessous dans un délai de %d minute pour terminer votre inscription."
 msgstr[1] "Saisissez-le ci-dessous dans un délai de %d minutes pour terminer votre inscription."
 
-#: inc/frontend/templates/signup.php:212
-#: src/admin/screens/orders/editor.js:661
+#: inc/frontend/templates/signup.php:212 src/admin/screens/orders/editor.js:667
 msgid "Confirm"
 msgstr "Confirmer"
 
@@ -1859,7 +1937,7 @@ msgstr "Ce membre a déjà une commande dans ce cycle. Modifiez plutôt cette co
 msgid "Stock is being updated by someone else. Please try again."
 msgstr "Une autre personne met les stocks à jour. Veuillez réessayer."
 
-#: inc/model/order/class-openbb-order-editor.php:143
+#: inc/model/order/class-openbb-order-editor.php:157
 #: inc/model/order/class-openbb-order-lifecycle.php:27
 #: inc/rest/admin/class-openbb-rest-orders.php:264
 #: inc/rest/admin/class-openbb-rest-orders.php:286
@@ -1868,74 +1946,74 @@ msgstr "Une autre personne met les stocks à jour. Veuillez réessayer."
 msgid "Order not found."
 msgstr "Commande introuvable."
 
-#: inc/model/order/class-openbb-order-editor.php:149
+#: inc/model/order/class-openbb-order-editor.php:163
 msgid "This order was changed by someone else. Reload it and try again."
 msgstr "Cette commande a été modifiée par une autre personne. Rechargez-la et réessayez."
 
-#: inc/model/order/class-openbb-order-editor.php:209
+#: inc/model/order/class-openbb-order-editor.php:225
 msgid "Explain why this order is being changed."
 msgstr "Expliquez pourquoi cette commande est modifiée."
 
 #. translators: 1: date, 2: staff name, 3: reason.
-#: inc/model/order/class-openbb-order-editor.php:215
+#: inc/model/order/class-openbb-order-editor.php:231
 #, php-format
 msgid "[%1$s, %2$s] %3$s"
 msgstr "[%1$s, %2$s] %3$s"
 
-#: inc/model/order/class-openbb-order-editor.php:217
+#: inc/model/order/class-openbb-order-editor.php:233
 #: inc/rest/class-openbb-rest-controller.php:278
 msgid "(deleted user)"
 msgstr "(compte supprimé)"
 
-#: inc/model/order/class-openbb-order-editor.php:234
+#: inc/model/order/class-openbb-order-editor.php:250
 msgid "The order could not be saved."
 msgstr "La commande n’a pas pu être enregistrée."
 
-#: inc/model/order/class-openbb-order-editor.php:289
-#: inc/model/order/class-openbb-order-editor.php:306
-#: inc/model/order/class-openbb-order-editor.php:335
+#: inc/model/order/class-openbb-order-editor.php:305
+#: inc/model/order/class-openbb-order-editor.php:322
+#: inc/model/order/class-openbb-order-editor.php:351
 #: src/admin/screens/orders/editor.js:264
 msgid "Purchase quantities must be non-negative whole numbers of selling packages."
 msgstr "Les quantités achetées doivent être des nombres entiers positifs ou nuls de lots de vente."
 
-#: inc/model/order/class-openbb-order-editor.php:293
+#: inc/model/order/class-openbb-order-editor.php:313
 msgid "An order line no longer exists. Reload the order and try again."
 msgstr "Une ligne de commande n’existe plus. Rechargez la commande et réessayez."
 
-#: inc/model/order/class-openbb-order-editor.php:296
+#: inc/model/order/class-openbb-order-editor.php:316
 msgid "Each line can only be listed once."
 msgstr "Chaque ligne ne peut figurer qu’une seule fois."
 
 #. translators: %s: product name.
-#: inc/model/order/class-openbb-order-editor.php:309
+#: inc/model/order/class-openbb-order-editor.php:333
 #, php-format
 msgid "\"%s\" has already been prepared and cannot be changed here."
 msgstr "« %s » a déjà été préparé et ne peut pas être modifié ici."
 
-#: inc/model/order/class-openbb-order-editor.php:327
+#: inc/model/order/class-openbb-order-editor.php:354
 msgid "A product can only appear once on an order. Change the existing line instead."
 msgstr "Un produit ne peut figurer qu’une seule fois dans une commande. Modifiez plutôt la ligne existante."
 
-#: inc/model/order/class-openbb-order-editor.php:330
+#: inc/model/order/class-openbb-order-editor.php:357
 msgid "Enter a quantity for each new line."
 msgstr "Saisissez une quantité pour chaque nouvelle ligne."
 
-#: inc/model/order/class-openbb-order-editor.php:334
+#: inc/model/order/class-openbb-order-editor.php:361
 msgid "Only active products can be added to an order."
 msgstr "Seuls les produits actifs peuvent être ajoutés à une commande."
 
 #. translators: %s: product name.
-#: inc/model/order/class-openbb-order-editor.php:363
+#: inc/model/order/class-openbb-order-editor.php:390
 #, php-format
 msgid "\"%s\" has already been prepared and cannot be removed here."
 msgstr "« %s » a déjà été préparé et ne peut pas être retiré ici."
 
-#: inc/model/order/class-openbb-order-editor.php:418
+#: inc/model/order/class-openbb-order-editor.php:445
 msgid "Your financial aid request has already been decided and can no longer be changed."
 msgstr "Une décision a déjà été prise concernant votre demande d’aide financière; celle-ci ne peut plus être modifiée."
 
 #. translators: 1: product name, 2: quantity available, 3: unit label.
-#: inc/model/order/class-openbb-order-editor.php:455
+#: inc/model/order/class-openbb-order-editor.php:482
 #, php-format
 msgid "Not enough stock for \"%1$s\": at most %2$s × %3$s can be ordered."
 msgstr "Stock insuffisant pour « %1$s » : au plus %2$s × %3$s peuvent être commandés."
@@ -1961,11 +2039,11 @@ msgstr "Cette commande n’a pas de devise de référence valide. Corrigez sa de
 msgid "The recorded payment does not settle this order. Resolve the payment before fulfillment."
 msgstr "Le paiement consigné ne règle pas cette commande. Résolvez le paiement avant de remettre la commande."
 
-#: inc/model/order/class-openbb-order-lifecycle.php:78
+#: inc/model/order/class-openbb-order-lifecycle.php:79
 msgid "Recorded stock is insufficient for this handoff. Reconcile inventory first."
 msgstr "Le stock consigné est insuffisant pour cette remise. Régularisez d’abord les stocks."
 
-#: inc/model/order/class-openbb-order-lifecycle.php:130
+#: inc/model/order/class-openbb-order-lifecycle.php:132
 msgid "The confirmation could not be saved. No payment or stock change was recorded."
 msgstr "La confirmation n’a pas pu être enregistrée. Aucun paiement ni changement de stock n’a été consigné."
 
@@ -2015,8 +2093,7 @@ msgid "Draft"
 msgstr "Brouillon"
 
 #: inc/model/order/class-openbb-order.php:96
-#: src/admin/screens/orders/editor.js:393
-#: src/admin/screens/orders/index.js:126
+#: src/admin/screens/orders/editor.js:399 src/admin/screens/orders/index.js:126
 msgid "Submitted"
 msgstr "Soumis"
 
@@ -2025,14 +2102,12 @@ msgid "Cancelled"
 msgstr "Annulé"
 
 #: inc/model/order/class-openbb-order.php:98
-#: src/admin/screens/cycles/list.js:170
-#: src/admin/screens/cycles/list.js:303
+#: src/admin/screens/cycles/list.js:170 src/admin/screens/cycles/list.js:303
 msgid "Prepaid"
 msgstr "Payé d’avance"
 
 #: inc/model/order/class-openbb-order.php:99
-#: src/admin/screens/cycles/list.js:178
-#: src/admin/screens/cycles/list.js:305
+#: src/admin/screens/cycles/list.js:178 src/admin/screens/cycles/list.js:305
 msgid "Fulfilled"
 msgstr "Remis"
 
@@ -2090,12 +2165,6 @@ msgstr "Ce produit a des commandes ou un historique de stock. Désactivez-le plu
 msgid "The product could not be deleted."
 msgstr "Le produit n’a pas pu être supprimé."
 
-#: inc/model/product/post-type.php:22
-#: src/admin/screens/orders/editor.js:446
-#: src/admin/screens/products/index.js:243
-msgid "Product"
-msgstr "Produit"
-
 #: inc/model/product/post-type.php:41
 msgid "Product Categories"
 msgstr "Catégories de produits"
@@ -2108,8 +2177,7 @@ msgstr "Catégorie de produit"
 msgid "Suppliers"
 msgstr "Fournisseurs"
 
-#: inc/model/product/post-type.php:60
-#: src/admin/screens/products/fields.js:311
+#: inc/model/product/post-type.php:60 src/admin/screens/products/fields.js:311
 #: src/admin/screens/products/index.js:135
 msgid "Supplier"
 msgstr "Fournisseur"
@@ -2177,12 +2245,6 @@ msgstr "Les règles n’ont pas pu être publiées."
 #: inc/privacy/class-openbb-privacy-profile-fields.php:24
 msgid "Co-op profile fields"
 msgstr "Champs de profil de la coopérative"
-
-#: inc/privacy/class-openbb-privacy-profile-fields.php:90
-#: src/admin/screens/members/profile.js:108
-#: src/admin/screens/members/profile.js:142
-msgid "Yes"
-msgstr "Oui"
 
 #: inc/rest/admin/class-openbb-rest-cycles.php:152
 #: inc/rest/admin/class-openbb-rest-cycles.php:164
@@ -2397,12 +2459,10 @@ msgstr "Vous êtes déjà connecté. Rechargez la page pour continuer."
 msgid "Co-op sections"
 msgstr "Sections de la coopérative"
 
-#: src/admin/components/confirm-body.js:49
-#: src/admin/components/edit-form.js:38
+#: src/admin/components/confirm-body.js:49 src/admin/components/edit-form.js:38
 #: src/admin/screens/members/index.js:282
-#: src/admin/screens/orders/editor.js:668
-#: src/admin/screens/orders/editor.js:686
-#: src/admin/screens/orders/index.js:252
+#: src/admin/screens/orders/editor.js:674
+#: src/admin/screens/orders/editor.js:692 src/admin/screens/orders/index.js:252
 #: src/admin/screens/products/index.js:199
 #: src/admin/screens/settings/profile-fields/field-panel.js:457
 #: src/admin/screens/settings/profile-fields/index.js:121
@@ -2410,8 +2470,7 @@ msgstr "Sections de la coopérative"
 msgid "Cancel"
 msgstr "Annuler"
 
-#: src/admin/components/edit-form.js:37
-#: src/admin/screens/cycles/list.js:344
+#: src/admin/components/edit-form.js:37 src/admin/screens/cycles/list.js:344
 #: src/admin/screens/products/index.js:211
 #: src/admin/screens/products/index.js:267
 #: src/admin/screens/settings/profile-fields/field-panel.js:469
@@ -2431,7 +2490,7 @@ msgid "Back to %s"
 msgstr "Retour à %s"
 
 #: src/admin/components/side-panel.js:129
-#: src/admin/screens/orders/editor.js:687
+#: src/admin/screens/orders/editor.js:693
 #: src/admin/screens/settings/roles/role-panel.js:207
 msgid "Close"
 msgstr "Fermer"
@@ -2458,15 +2517,13 @@ msgstr "Descendre %s"
 msgid "Keep editing"
 msgstr "Continuer à modifier"
 
-#: src/admin/hooks/use-discard-guard.js:36
-#: src/admin/router/index.js:94
+#: src/admin/hooks/use-discard-guard.js:36 src/admin/router/index.js:94
 msgid "You have unsaved changes. Discard them?"
 msgstr "Vous avez des modifications non enregistrées. Les abandonner?"
 
 #: src/admin/screens/cycles/financial-aid.js:29
 #: src/admin/screens/members/panel.js:238
-#: src/admin/screens/orders/editor.js:378
-#: src/admin/screens/orders/index.js:63
+#: src/admin/screens/orders/editor.js:384 src/admin/screens/orders/index.js:63
 #: src/admin/screens/orders/index.js:178
 msgid "Member"
 msgstr "Membre"
@@ -2560,8 +2617,7 @@ msgstr "Décision d’aide enregistrée."
 msgid "Not set"
 msgstr "Non défini"
 
-#: src/admin/screens/cycles/list.js:88
-#: src/admin/screens/members/fields.js:61
+#: src/admin/screens/cycles/list.js:88 src/admin/screens/members/fields.js:61
 #: src/admin/screens/members/fields.js:179
 #: src/admin/screens/members/index.js:82
 #: src/admin/screens/products/fields.js:193
@@ -2570,14 +2626,12 @@ msgstr "Non défini"
 msgid "Name"
 msgstr "Nom"
 
-#: src/admin/screens/cycles/list.js:96
-#: src/admin/screens/members/fields.js:112
+#: src/admin/screens/cycles/list.js:96 src/admin/screens/members/fields.js:112
 #: src/admin/screens/members/index.js:249
 #: src/admin/screens/members/panel.js:113
 #: src/admin/screens/members/panel.js:193
-#: src/admin/screens/orders/editor.js:541
 #: src/admin/screens/orders/editor.js:547
-#: src/admin/screens/orders/index.js:85
+#: src/admin/screens/orders/editor.js:553 src/admin/screens/orders/index.js:85
 #: src/admin/screens/products/fields.js:338
 msgid "Status"
 msgstr "Statut"
@@ -2604,8 +2658,7 @@ msgstr "Consignes de ramassage (%s)"
 msgid "Unfulfilled"
 msgstr "Non remis"
 
-#: src/admin/screens/cycles/list.js:186
-#: src/admin/screens/cycles/list.js:307
+#: src/admin/screens/cycles/list.js:186 src/admin/screens/cycles/list.js:307
 msgid "Order total"
 msgstr "Total de la commande"
 
@@ -2677,10 +2730,8 @@ msgstr "%s (copie)"
 msgid "View orders"
 msgstr "Voir les commandes"
 
-#: src/admin/screens/cycles/list.js:461
-#: src/admin/screens/cycles/list.js:482
-#: src/admin/screens/orders/index.js:333
-#: src/admin/screens/orders/index.js:346
+#: src/admin/screens/cycles/list.js:461 src/admin/screens/cycles/list.js:482
+#: src/admin/screens/orders/index.js:333 src/admin/screens/orders/index.js:346
 #: src/admin/screens/products/index.js:398
 #: src/admin/screens/products/index.js:409
 #: src/admin/screens/settings/roles/index.js:185
@@ -2757,8 +2808,7 @@ msgid "Site default"
 msgstr "Langue par défaut du site"
 
 #: src/admin/screens/members/fields.js:126
-#: src/admin/screens/members/index.js:93
-#: src/admin/screens/members/panel.js:119
+#: src/admin/screens/members/index.js:93 src/admin/screens/members/panel.js:119
 #: src/admin/screens/settings/index.js:33
 #: src/admin/screens/settings/roles/index.js:230
 msgid "Team roles"
@@ -2830,14 +2880,12 @@ msgstr "Compte"
 msgid "Search the site’s users who are not members yet, by name or email."
 msgstr "Recherchez par nom ou courriel les comptes du site qui ne sont pas encore membres."
 
-#: src/admin/screens/members/index.js:354
-#: src/admin/screens/orders/index.js:326
+#: src/admin/screens/members/index.js:354 src/admin/screens/orders/index.js:326
 #: src/admin/screens/products/index.js:366
 msgid "Edit"
 msgstr "Modifier"
 
-#: src/admin/screens/members/index.js:354
-#: src/admin/screens/orders/index.js:326
+#: src/admin/screens/members/index.js:354 src/admin/screens/orders/index.js:326
 msgid "View"
 msgstr "Voir"
 
@@ -2888,29 +2936,16 @@ msgid "No orders yet."
 msgstr "Aucune commande pour le moment."
 
 #: src/admin/screens/members/panel.js:192
-#: src/admin/screens/orders/editor.js:376
-#: src/admin/screens/orders/index.js:76
+#: src/admin/screens/orders/editor.js:382 src/admin/screens/orders/index.js:76
 #: src/admin/screens/orders/index.js:229
 msgid "Cycle"
 msgstr "Cycle"
-
-#: src/admin/screens/members/panel.js:194
-#: src/admin/screens/orders/editor.js:449
-#: src/admin/screens/orders/editor.js:502
-#: src/admin/screens/orders/index.js:110
-msgid "Total"
-msgstr "Total"
 
 #. translators: %s: option label.
 #: src/admin/screens/members/profile.js:95
 #, js-format
 msgid "%s (archived)"
 msgstr "%s (archivé)"
-
-#: src/admin/screens/members/profile.js:109
-#: src/admin/screens/members/profile.js:143
-msgid "No"
-msgstr "Non"
 
 #: src/admin/screens/members/profile.js:199
 msgid "No longer defined"
@@ -2949,20 +2984,10 @@ msgstr "contenant"
 msgid "Prepared: %s"
 msgstr "Quantité préparée : %s"
 
-#: src/admin/screens/orders/editor.js:160
-#: src/admin/screens/orders/editor.js:447
-#: src/admin/screens/products/inventory.js:76
-msgid "Quantity"
-msgstr "Quantité"
-
 #: src/admin/screens/orders/editor.js:170
 #, js-format
 msgid "Max %s"
 msgstr "Maximum %s"
-
-#: src/admin/screens/orders/editor.js:179
-msgid "Own container"
-msgstr "Contenant personnel"
 
 #. translators: %s: product name.
 #: src/admin/screens/orders/editor.js:258
@@ -2971,101 +2996,93 @@ msgid "Enter a quantity for \"%s\"."
 msgstr "Saisissez une quantité pour « %s »."
 
 #. translators: 1: product name, 2: maximum quantity, 3: unit.
-#: src/admin/screens/orders/editor.js:263
+#: src/admin/screens/orders/editor.js:269
 #, js-format
 msgid "Not enough stock for \"%1$s\": at most %2$s × %3$s."
 msgstr "Stock insuffisant pour « %1$s » : au plus %2$s × %3$s."
 
 #. translators: 1: order number, 2: member name.
-#: src/admin/screens/orders/editor.js:371
+#: src/admin/screens/orders/editor.js:377
 #, js-format
 msgid "Order #%1$d — %2$s"
 msgstr "Commande no %1$d — %2$s"
 
-#: src/admin/screens/orders/editor.js:397
+#: src/admin/screens/orders/editor.js:403
 msgid "Payment settled"
 msgstr "Paiement réglé"
 
-#: src/admin/screens/orders/editor.js:405
+#: src/admin/screens/orders/editor.js:411
 msgid "Collected"
 msgstr "Récupéré"
 
-#: src/admin/screens/orders/editor.js:422
+#: src/admin/screens/orders/editor.js:428
 msgid "This order is locked against quantity, amount, and status edits. Staff can still update its note."
 msgstr "Les quantités, les montants et le statut de cette commande sont verrouillés. Le personnel peut encore modifier sa note."
 
-#: src/admin/screens/orders/editor.js:430
+#: src/admin/screens/orders/editor.js:436
 msgid "This order was not collected before its hold expired. It is abandoned and no longer reserves stock. Its payment status is retained."
 msgstr "Cette commande n’a pas été récupérée avant l’expiration de sa réservation. Elle est abandonnée et ne réserve plus de stock. Son statut de paiement est conservé."
 
-#: src/admin/screens/orders/editor.js:438
+#: src/admin/screens/orders/editor.js:444
 msgid "Member note:"
 msgstr "Note du membre :"
 
-#: src/admin/screens/orders/editor.js:448
+#: src/admin/screens/orders/editor.js:454
 msgid "Container"
 msgstr "Contenant"
 
-#: src/admin/screens/orders/editor.js:451
+#: src/admin/screens/orders/editor.js:457
 msgid "Actions"
 msgstr "Actions"
 
-#: src/admin/screens/orders/editor.js:458
+#: src/admin/screens/orders/editor.js:464
 msgid "No products yet."
 msgstr "Aucun produit pour le moment."
 
-#: src/admin/screens/orders/editor.js:473
-msgid "Subtotal"
-msgstr "Sous-total"
-
-#: src/admin/screens/orders/editor.js:479
-msgid "Container credit"
-msgstr "Crédit pour contenant"
-
-#: src/admin/screens/orders/editor.js:501
+#: src/admin/screens/orders/editor.js:507
 msgid "Estimated total"
 msgstr "Total estimé"
 
-#: src/admin/screens/orders/editor.js:571
-#: src/admin/screens/orders/editor.js:580
+#: src/admin/screens/orders/editor.js:577
+#: src/admin/screens/orders/editor.js:586
 msgid "Staff note"
 msgstr "Note du personnel"
 
-#: src/admin/screens/orders/editor.js:572
+#: src/admin/screens/orders/editor.js:578
 msgid "Only visible to staff."
 msgstr "Visible uniquement par le personnel."
 
-#: src/admin/screens/orders/editor.js:588
+#: src/admin/screens/orders/editor.js:594
 msgid "Reason for the change (required)"
 msgstr "Motif de la modification (obligatoire)"
 
-#: src/admin/screens/orders/editor.js:589
+#: src/admin/screens/orders/editor.js:595
 msgid "Added to the staff note with your name and the date."
 msgstr "Ajouté à la note du personnel avec votre nom et la date."
 
-#: src/admin/screens/orders/editor.js:615
+#: src/admin/screens/orders/editor.js:621
 msgid "Mark prepaid"
 msgstr "Marquer comme payé d’avance"
 
-#: src/admin/screens/orders/editor.js:624
+#: src/admin/screens/orders/editor.js:630
 msgid "Fulfill order"
 msgstr "Remettre la commande"
 
-#: src/admin/screens/orders/editor.js:630
+#: src/admin/screens/orders/editor.js:636
 msgid "Save your changes before confirming payment or fulfillment."
 msgstr "Enregistrez vos modifications avant de confirmer le paiement ou la remise."
 
-#: src/admin/screens/orders/editor.js:641
+#: src/admin/screens/orders/editor.js:647
 #, js-format
 msgid "Confirm that the full amount due (%s) is settled. Stock will remain reserved; no goods are handed over."
 msgstr "Confirmez que le montant total dû (%s) est réglé. Le stock restera réservé; aucune marchandise n’est remise."
 
-#: src/admin/screens/orders/editor.js:648
+#: src/admin/screens/orders/editor.js:654
 #, js-format
 msgid "Confirm that the full amount due (%s) is settled and the listed quantities have been handed over. This deducts stock and cannot be undone here."
 msgstr "Confirmez que le montant total dû (%s) est réglé et que les quantités indiquées ont été remises. Cette action déduit les stocks et ne peut pas être annulée ici."
 
-#: src/admin/screens/orders/editor.js:703
+#: src/admin/screens/orders/editor.js:709
 msgid "Save order"
 msgstr "Enregistrer la commande"
 
@@ -3107,8 +3124,7 @@ msgstr "Supprimer la commande no %1$d de %2$s? Envisagez plutôt de l’annuler 
 msgid "Order deleted."
 msgstr "Commande supprimée."
 
-#: src/admin/screens/orders/index.js:394
-#: src/admin/screens/related-panels.js:18
+#: src/admin/screens/orders/index.js:394 src/admin/screens/related-panels.js:18
 msgid "Order saved."
 msgstr "Commande enregistrée."
 
@@ -3433,10 +3449,6 @@ msgstr "× %s"
 #: src/admin/screens/products/inventory.js:208
 msgid "Date"
 msgstr "Date"
-
-#: src/admin/screens/products/inventory.js:222
-msgid "Change"
-msgstr "Variation"
 
 #: src/admin/screens/products/inventory.js:240
 msgid "By"

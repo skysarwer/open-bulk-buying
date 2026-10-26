@@ -94,11 +94,25 @@ class OPENBB_Order_Editor {
 			return new WP_Error( 'openbb_busy', __( 'Stock is being updated by someone else. Please try again.', 'open-bulk-buying' ), array( 'status' => 503 ) );
 		}
 
+		$before = null;
 		try {
-			return self::apply_locked( $order, $changes, $actor_id, $by_member );
+			$saved = self::apply_locked( $order, $changes, $actor_id, $by_member, $before );
+			if ( $saved instanceof OPENBB_Order ) {
+				$saved->get_lines();
+			}
 		} finally {
 			OPENBB_Inventory::unlock();
 		}
+		if ( $saved instanceof OPENBB_Order ) {
+			/**
+			 * Fires after an editor save commits and releases the inventory lock.
+			 *
+			 * @param OPENBB_Order      $order  Saved order.
+			 * @param OPENBB_Order|null $before Previous snapshot; null for a new order.
+			 */
+			do_action( 'openbb_order_saved', $saved, $before && $before->id ? $before : null );
+		}
+		return $saved;
 	}
 
 	/**
@@ -133,7 +147,7 @@ class OPENBB_Order_Editor {
 	/**
 	 * @return OPENBB_Order|WP_Error
 	 */
-	private static function apply_locked( OPENBB_Order $order, array $changes, int $actor_id, bool $by_member ) {
+	private static function apply_locked( OPENBB_Order $order, array $changes, int $actor_id, bool $by_member, ?OPENBB_Order &$before ) {
 		$is_new = ! $order->id;
 
 		// Re-read under the lock so the checks below see the latest saved state.
@@ -150,6 +164,8 @@ class OPENBB_Order_Editor {
 			}
 		}
 
+		// Freeze the line snapshots before save_with_lines() replaces database rows.
+		$order->get_lines();
 		$before     = clone $order;
 		$old_status = $order->status;
 		$new_status = isset( $changes['status'] ) ? (string) $changes['status'] : $old_status;
