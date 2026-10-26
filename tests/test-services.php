@@ -73,6 +73,57 @@ class Test_OPENBB_Services extends OPENBB_TestCase {
 		$this->assertEquals( 2, $second->get_error_data()['max_qty'] );
 	}
 
+	public function test_purchase_quantities_are_whole_packages_but_measurements_and_stock_can_be_fractional(): void {
+		$product = $this->make_product();
+		update_post_meta( $product->id, OPENBB_META_PREFIX . 'active', false );
+		update_post_meta( $product->id, OPENBB_META_PREFIX . 'unit_amount', 1.5 );
+		update_post_meta( $product->id, OPENBB_META_PREFIX . 'unit_type', 'kg' );
+		update_post_meta( $product->id, OPENBB_META_PREFIX . 'active', true );
+		$product = OPENBB_Product::get( $product->id );
+		$this->assertInstanceOf( OPENBB_Stock_Move::class, OPENBB_Inventory::record_manual_move( $product, 8250.5, 'receipt' ) );
+		$cycle_id = $this->make_cycle( OPENBB_Cycle::STATUS_ORDERING );
+		$order = $this->start_order( $cycle_id );
+		foreach ( array( 0.5, 1.5, 1.0001, -1, 'not-a-number', INF ) as $qty ) {
+			$result = OPENBB_Order_Editor::apply(
+				$order,
+				array( 'lines' => array( array( 'product_id' => $product->id, 'qty' => $qty ) ) ),
+				$this->actor
+			);
+			$this->assertWPError( $result );
+			$this->assertSame( 'openbb_invalid_order', $result->get_error_code() );
+			$this->assertCount( 0, OPENBB_Orders::get_lines( $order->id ) );
+		}
+		$order = $this->submit( $order, $product->id, 2 );
+		$this->assertInstanceOf( OPENBB_Order::class, $order );
+		$this->assertSame( 3000.0, $order->get_lines()[0]->get_base_quantity() );
+		$line = $order->get_lines()[0];
+		foreach ( array( 2.5, 2.0001 ) as $qty ) {
+			$result = OPENBB_Order_Editor::apply(
+				$order,
+				array( 'reason' => 'Change packages', 'lines' => array( array( 'id' => $line->id, 'qty' => $qty ) ) ),
+				$this->actor
+			);
+			$this->assertWPError( $result );
+		}
+		$this->assertSame( 2.0, OPENBB_Orders::get_lines( $order->id )[0]->qty_requested );
+	}
+
+	public function test_legacy_fractional_purchase_can_be_retained_but_not_changed_to_another_fraction(): void {
+		$product = $this->make_product( 10 );
+		$order = $this->submit( $this->start_order( $this->make_cycle( OPENBB_Cycle::STATUS_ORDERING ) ), $product->id, 2 );
+		$line = $order->get_lines()[0];
+		$line->qty_requested = 2.5;
+		$this->assertTrue( $line->save() );
+		$order = OPENBB_Orders::get( $order->id );
+		$changes = array( 'reason' => 'Keep historical quantity', 'lines' => array( array( 'id' => $line->id, 'qty' => 2.5 ) ) );
+		$order = OPENBB_Order_Editor::apply( $order, $changes, $this->actor );
+		$this->assertInstanceOf( OPENBB_Order::class, $order );
+		$changes['lines'][0]['qty'] = 1.5;
+		$this->assertWPError( OPENBB_Order_Editor::apply( $order, $changes, $this->actor ) );
+		$changes['lines'][0]['qty'] = 3;
+		$this->assertInstanceOf( OPENBB_Order::class, OPENBB_Order_Editor::apply( $order, $changes, $this->actor ) );
+	}
+
 	public function test_order_editor_requires_a_reason_to_change_a_submitted_order(): void {
 		$product  = $this->make_product( 5 );
 		$cycle_id = $this->make_cycle( OPENBB_Cycle::STATUS_ORDERING );

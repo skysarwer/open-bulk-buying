@@ -105,7 +105,12 @@ class Test_OPENBB_Order_Lifecycle extends OPENBB_TestCase {
 
 	public function test_fulfillment_settles_payment_and_deducts_stock_once(): void {
 		global $wpdb;
-		$order = $this->order( 2.5 );
+		$order = $this->order();
+		// Historical fractional purchases remain fulfillable, without enabling new ones.
+		$line = $order->get_lines()[0];
+		$line->qty_requested = 2.5;
+		$this->assertTrue( $line->save() );
+		$order = OPENBB_Orders::get( $order->id );
 		$done  = $this->confirm( $order, 'fulfill' );
 		$this->assertInstanceOf( OPENBB_Order::class, $done );
 		$saved = OPENBB_Orders::get( $order->id );

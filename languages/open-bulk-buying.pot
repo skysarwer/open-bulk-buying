@@ -1860,6 +1860,13 @@ msgstr ""
 msgid "The order could not be saved."
 msgstr ""
 
+#: inc/model/order/class-openbb-order-editor.php:289
+#: inc/model/order/class-openbb-order-editor.php:306
+#: inc/model/order/class-openbb-order-editor.php:335
+#: src/admin/screens/orders/editor.js:264
+msgid "Purchase quantities must be non-negative whole numbers of selling packages."
+msgstr ""
+
 #: inc/model/order/class-openbb-order-editor.php:293
 msgid "An order line no longer exists. Reload the order and try again."
 msgstr ""

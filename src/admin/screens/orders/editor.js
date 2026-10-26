@@ -18,7 +18,7 @@ import { ErrorNotice, RecordLink, SidePanel } from '../../components';
 import { discardUnsavedChanges, useDebouncedValue, useUnsavedChanges } from '../../hooks';
 import { request } from '../../utils/api';
 import { can, config } from '../../utils/config';
-import { formatMoney, formatQty, roundQty, toMajor, toMinor } from '../../utils/format';
+import { formatMoney, formatQty, toMajor, toMinor } from '../../utils/format';
 
 const EPSILON = 0.0005;
 
@@ -53,7 +53,7 @@ const fromProduct = ( product ) => ( {
 	unit_price: product.price,
 	container_charge: product.container_charge,
 	own_container: false,
-	qty: Math.min( 1, product.max_qty ),
+	qty: 1,
 	is_prepared: false,
 	max_qty: product.max_qty,
 } );
@@ -70,7 +70,7 @@ const lineCredit = ( line ) =>
 
 const isLineChanged = ( line ) =>
 	! line.id ||
-	Math.abs( ( Number( line.qty ) || 0 ) - line.original_qty ) > EPSILON ||
+	( Number( line.qty ) || 0 ) !== line.original_qty ||
 	line.own_container !== line.original_own;
 
 function ProductPicker( { orderId, excluded, onPick } ) {
@@ -101,7 +101,7 @@ function ProductPicker( { orderId, excluded, onPick } ) {
 				formatMoney( product.price ),
 				formatQty( product.max_qty )
 			),
-			disabled: product.max_qty <= 0,
+			disabled: product.max_qty < 1,
 		} ) );
 
 	return (
@@ -117,7 +117,7 @@ function ProductPicker( { orderId, excluded, onPick } ) {
 				onFilterValueChange={ setSearch }
 				onChange={ ( id ) => {
 					const product = products.find( ( item ) => item.id === id );
-					if ( product && product.max_qty > 0 ) {
+					if ( product && product.max_qty >= 1 ) {
 						onPick( product );
 					}
 				} }
@@ -160,8 +160,8 @@ function LineRow( { line, isLocked, onChange, onRemove } ) {
 							label={ __( 'Quantity', 'open-bulk-buying' ) }
 							hideLabelFromVision
 							min={ 0 }
-							max={ line.max_qty }
-							step="any"
+							max={ Math.max( Math.floor( line.max_qty ), line.original_qty || 0 ) }
+							step={ 1 }
 							value={ line.qty }
 							onChange={ ( value ) => onChange( { qty: value ?? '' } ) }
 						/>
@@ -256,6 +256,12 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 			if ( ! line.id && ! ( qty > 0 ) ) {
 				/* translators: %s: product name. */
 				found.push( sprintf( __( 'Enter a quantity for "%s".', 'open-bulk-buying' ), line.product_name ) );
+			} else if (
+				! line.is_prepared &&
+				( ! line.id || qty !== line.original_qty ) &&
+				( ! Number.isInteger( qty ) || qty < 0 )
+			) {
+				found.push( __( 'Purchase quantities must be non-negative whole numbers of selling packages.', 'open-bulk-buying' ) );
 			} else if ( ! line.is_prepared && qty > line.max_qty + EPSILON ) {
 				found.push(
 					sprintf(
@@ -309,7 +315,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 			data.status = status;
 			data.lines = visibleLines.map( ( line ) => ( {
 				...( line.id ? { id: line.id } : { product_id: line.product_id } ),
-				qty: roundQty( line.qty ),
+				qty: Number( line.qty ),
 				own_container: !! line.own_container,
 			} ) );
 		}
@@ -525,7 +531,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 												? {
 														...line,
 														removed: false,
-														qty: line.original_qty || Math.min( 1, line.max_qty ),
+														qty: line.original_qty || 1,
 												  }
 												: line
 									  )

@@ -172,6 +172,24 @@ class Test_OPENBB_REST_Admin extends OPENBB_TestCase {
 		$this->assertEquals( 3, wp_list_pluck( $products, 'max_qty', 'id' )[ $product_id ] );
 	}
 
+	public function test_staff_cannot_purchase_fractional_selling_packages(): void {
+		$product_id = $this->make_stocked_product( 5 );
+		$order_id = $this->new_order( $this->make_open_cycle() );
+		foreach ( array( 0.5, 1.5, 1.0001 ) as $qty ) {
+			$response = $this->submit( $order_id, $product_id, $qty );
+			$this->assertSame( 400, $response->get_status() );
+			$this->assertSame( 'openbb_invalid_order', $response->as_error()->get_error_code() );
+		}
+		$this->assertSame( 200, $this->submit( $order_id, $product_id, 2 )->get_status() );
+		$line = OPENBB_Orders::get_lines( $order_id )[0];
+		$response = $this->api( 'PUT', "/orders/{$order_id}", array(
+			'reason' => 'Member requested a different quantity',
+			'lines' => array( array( 'id' => $line->id, 'qty' => 2.0001 ) ),
+		) );
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 2.0, OPENBB_Orders::get_lines( $order_id )[0]->qty_requested );
+	}
+
 	public function test_orders_in_a_setup_cycle_reserve_stock(): void {
 		$product_id = $this->make_stocked_product( 5 );
 		$cycle      = new OPENBB_Cycle(

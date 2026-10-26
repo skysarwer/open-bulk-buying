@@ -284,7 +284,11 @@ class OPENBB_Order_Editor {
 		foreach ( $input as $row ) {
 			$row     = (array) $row;
 			$line_id = (int) ( $row['id'] ?? 0 );
-			$qty     = round( max( 0.0, (float) ( $row['qty'] ?? 0 ) ), 3 );
+			$qty     = $row['qty'] ?? 0;
+			if ( ! is_numeric( $qty ) || ! is_finite( (float) $qty ) || $qty < 0 ) {
+				return self::invalid( __( 'Purchase quantities must be non-negative whole numbers of selling packages.', 'open-bulk-buying' ) );
+			}
+			$qty     = (float) $qty;
 			$own     = ! empty( $row['own_container'] );
 
 			if ( $line_id ) {
@@ -297,6 +301,10 @@ class OPENBB_Order_Editor {
 				}
 				$keep[ $line_id ] = true;
 
+				// Keep historical fractional quantities readable and unchanged.
+				if ( $qty !== $line->qty_requested && floor( $qty ) !== $qty ) {
+					return self::invalid( __( 'Purchase quantities must be non-negative whole numbers of selling packages.', 'open-bulk-buying' ) );
+				}
 				$is_prepared = null !== $line->qty_prepared || null !== $line->qty_final;
 				$unchanged   = abs( $line->qty_requested - $qty ) < self::EPSILON && $line->own_container === $own;
 				if ( $unchanged ) {
@@ -323,6 +331,9 @@ class OPENBB_Order_Editor {
 			}
 
 			$product_id = (int) ( $row['product_id'] ?? 0 );
+			if ( floor( $qty ) !== $qty ) {
+				return self::invalid( __( 'Purchase quantities must be non-negative whole numbers of selling packages.', 'open-bulk-buying' ) );
+			}
 			if ( isset( $products_on_order[ $product_id ] ) ) {
 				return self::invalid( __( 'A product can only appear once on an order. Change the existing line instead.', 'open-bulk-buying' ) );
 			}

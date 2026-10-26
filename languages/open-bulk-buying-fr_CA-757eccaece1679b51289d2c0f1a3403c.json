@@ -1411,6 +1411,9 @@
             ],
             "Something went wrong. Please try again.": [
                 "Un probl\u00e8me est survenu. Veuillez r\u00e9essayer."
+            ],
+            "Purchase quantities must be non-negative whole numbers of selling packages.": [
+                "Les quantit\u00e9s achet\u00e9es doivent \u00eatre des nombres entiers positifs ou nuls de lots de vente."
             ]
         }
     }
