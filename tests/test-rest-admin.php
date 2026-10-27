@@ -152,6 +152,26 @@ class Test_OPENBB_REST_Admin extends OPENBB_TestCase {
 		}
 	}
 
+	public function test_administrators_can_update_their_own_membership_and_details(): void {
+		$admin = $this->make_user( 'member', 'administrator' );
+		wp_set_current_user( $admin );
+
+		$response = $this->api(
+			'PUT',
+			"/members/{$admin}",
+			array(
+				'first_name' => 'Co-op',
+				'phone'      => '555-0100',
+				'status'     => 'inactive',
+			)
+		);
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'inactive', $response->get_data()['status'] );
+		$this->assertSame( 'Co-op', get_user_meta( $admin, 'first_name', true ) );
+		$this->assertSame( '555-0100', openbb_get_member_field( $admin, 'phone' ) );
+	}
+
 	public function test_orders_are_limited_to_available_stock(): void {
 		$product_id = $this->make_stocked_product( 5 );
 		$cycle_id   = $this->make_open_cycle();

@@ -401,8 +401,8 @@ class OPENBB_Access {
 			case 'openbb_set_member_status':
 				$status = self::sanitize_status( $value );
 				$old    = self::get_status( $target_id );
-				// Nobody changes their own status, and it never goes back to "not a member".
-				if ( $is_self || '' === $status || ! in_array( $status, self::TRANSITIONS[ $old ] ?? array(), true ) || self::is_protected_from( $target_id, $user_id ) ) {
+				// Only administrators may change their own status; it never goes back to "not a member".
+				if ( ( $is_self && ! user_can( $user_id, 'manage_options' ) ) || '' === $status || ! in_array( $status, self::TRANSITIONS[ $old ] ?? array(), true ) || self::is_protected_from( $target_id, $user_id ) ) {
 					return array( 'do_not_allow' );
 				}
 				if ( '' === $old ) {

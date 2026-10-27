@@ -170,14 +170,18 @@ class Test_OPENBB_Access extends OPENBB_TestCase {
 		$this->assertTrue( OPENBB_Access::set_status( $outsider, 'active' ) );
 	}
 
-	public function test_nobody_changes_their_own_status(): void {
+	public function test_only_administrators_change_their_own_status(): void {
 		$manager = $this->make_user( 'manager' );
 		$admin   = $this->make_user( 'member', 'administrator' );
 
 		wp_set_current_user( $manager );
 		$this->assertWPError( OPENBB_Access::set_status( $manager, 'inactive' ) );
+
 		wp_set_current_user( $admin );
-		$this->assertWPError( OPENBB_Access::set_status( $admin, 'inactive' ) );
+		$this->assertTrue( OPENBB_Access::set_status( $admin, 'inactive' ) );
+		$this->assertSame( 'inactive', OPENBB_Access::get_status( $admin ) );
+		$this->assertTrue( OPENBB_Access::set_status( $admin, 'active' ) );
+		$this->assertSame( 'active', OPENBB_Access::get_status( $admin ) );
 	}
 
 	public function test_deactivating_someone_with_roles_needs_manage_access(): void {
