@@ -23,7 +23,7 @@ import {
 import { useDiscardGuard, useList, useNotify, useRecord } from '../../hooks';
 import { request } from '../../utils/api';
 import runForEach from '../../utils/run-for-each';
-import { can, queryArg } from '../../utils/config';
+import { can, localizedRecordField, queryArg } from '../../utils/config';
 import relatedPanels from '../related-panels';
 import { buildProductFields, NEW_PRODUCT, productForm, WRITABLE } from './fields';
 import { AdjustStockModal, InventoryPanel } from './inventory';
@@ -240,7 +240,7 @@ function ProductPanel( { productId, tab, fields, onClose, onSaved } ) {
 		<SidePanel
 			title={
 				productId
-					? product?.name || __( 'Product', 'open-bulk-buying' )
+					? localizedRecordField( product, 'name' ) || __( 'Product', 'open-bulk-buying' )
 					: __( 'New product', 'open-bulk-buying' )
 			}
 			onClose={ onClose }
@@ -327,6 +327,18 @@ export default function ProductsScreen() {
 		() => ( terms ? buildProductFields( terms ) : [] ),
 		[ terms ]
 	);
+	const listFields = useMemo(
+		() => fields.map( ( field ) => {
+			if ( field.id === 'name' ) {
+				return { ...field, label: __( 'Name', 'open-bulk-buying' ) };
+			}
+			if ( field.id === 'description' ) {
+				return { ...field, label: __( 'Description', 'open-bulk-buying' ) };
+			}
+			return field;
+		} ),
+		[ fields ]
+	);
 
 	const setActive = useCallback(
 		async ( items, active ) => {
@@ -353,7 +365,7 @@ export default function ProductsScreen() {
 				);
 			}
 			failed.forEach( ( { item, error } ) =>
-				notify.error( `${ item.name }: ${ error.message }` )
+				notify.error( `${ localizedRecordField( item, 'name' ) }: ${ error.message }` )
 			);
 		},
 		[ list, notify ]
@@ -404,7 +416,7 @@ export default function ProductsScreen() {
 						message={ sprintf(
 							/* translators: %s: product name. */
 							__( 'Delete "%s"? Products with orders or stock history can only be deactivated.', 'open-bulk-buying' ),
-							item.name
+							localizedRecordField( item, 'name' )
 						) }
 						confirmLabel={ __( 'Delete', 'open-bulk-buying' ) }
 						isDestructive
@@ -473,7 +485,7 @@ export default function ProductsScreen() {
 			{ discardDialog }
 			<DataViews
 				data={ list.items }
-				fields={ fields }
+				fields={ listFields }
 				view={ view }
 				onChangeView={ setView }
 				actions={ actions }

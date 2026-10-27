@@ -14,7 +14,7 @@ import {
 import { useDiscardGuard, useList, useNotify } from '../../hooks';
 import { Link, navigate } from '../../router';
 import { request } from '../../utils/api';
-import { can, config, languageLabel, toElements } from '../../utils/config';
+import { can, config, localizedFieldLabel, localizedRecordField, toElements } from '../../utils/config';
 import { formatMoney } from '../../utils/format';
 
 const DATE_FIELDS = [
@@ -123,18 +123,18 @@ const cycleFields = [
 	},
 	{
 		id: 'pickup_instructions',
-		label: __( 'Pickup instructions', 'open-bulk-buying' ),
+		label: localizedFieldLabel( __( 'Pickup instructions', 'open-bulk-buying' ) ),
 		type: 'text',
+		render: ( { item } ) => localizedRecordField( item, 'pickup_instructions' ),
 		Edit: { control: 'textarea', rows: 3 },
 		enableSorting: false,
 		filterBy: false,
 	},
 	...config.translationLanguages.map( ( lang ) => ( {
 		id: `pickup_instructions_${ lang }`,
-		/* translators: %s: language code. */
-		label: sprintf(
-			__( 'Pickup instructions (%s)', 'open-bulk-buying' ),
-			languageLabel( lang )
+		label: localizedFieldLabel(
+			__( 'Pickup instructions', 'open-bulk-buying' ),
+			lang
 		),
 		type: 'text',
 		Edit: { control: 'textarea', rows: 3 },
@@ -552,7 +552,11 @@ export default function CyclesList() {
 			{ discardDialog }
 			<DataViews
 				data={ list.items }
-				fields={ cycleFields }
+				fields={ cycleFields.map( ( field ) =>
+					field.id === 'pickup_instructions'
+						? { ...field, label: __( 'Pickup instructions', 'open-bulk-buying' ) }
+						: field
+				) }
 				view={ view }
 				onChangeView={ setView }
 				actions={ actions }

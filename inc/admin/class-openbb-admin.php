@@ -193,6 +193,11 @@ class OPENBB_Admin {
 			$languages[] = $language;
 		}
 
+		$default_language = apply_filters( 'wpml_default_language', null );
+		$default_language = is_string( $default_language ) && '' !== $default_language
+			? sanitize_key( $default_language )
+			: sanitize_key( strtok( get_locale(), '_' ) );
+
 		return array(
 			'screen'               => $screen,
 			'currency'             => openbb_currency(),
@@ -200,6 +205,7 @@ class OPENBB_Admin {
 			'unitTypes'            => openbb_unit_types(),
 			'unitConversions'      => openbb_unit_conversions(),
 			'languages'            => $languages,
+			'defaultLanguage'      => $default_language,
 			'translationLanguages' => OPENBB_REST_Controller::translation_languages(),
 			'memberStatuses'       => OPENBB_Access::status_labels(),
 			'coopRoles'            => OPENBB_Roles::labels(),

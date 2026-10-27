@@ -35,7 +35,7 @@ import {
 	useUnsavedChanges,
 } from '../../hooks';
 import { request } from '../../utils/api';
-import { config, languageLabel } from '../../utils/config';
+import { config, languageLabel, localized, localizedFieldLabel } from '../../utils/config';
 import Section from './section';
 import SettingsPage from './settings-page';
 
@@ -354,7 +354,7 @@ function RulesEditor( { record, setRecord, onHistory } ) {
 							<strong>{ ruleLabel( index ) }</strong>
 							<p>
 								{ decodeEntities(
-									item.text.default.replace( /<[^>]*>/g, ' ' )
+									localized( item.text ).replace( /<[^>]*>/g, ' ' )
 								)
 									.replace( /\s+/g, ' ' )
 									.trim() ||
@@ -477,21 +477,10 @@ function RulesEditor( { record, setRecord, onHistory } ) {
 						<RichEditor
 							key={ `${ selected.id }-${ language }` }
 							id={ `openbb-rule-${ selected.id }-${ language }` }
-							label={
-								language === 'default'
-									? __(
-											'Default rule text',
-											'open-bulk-buying'
-									  )
-									: sprintf(
-											/* translators: %s: language code. */
-											__(
-												'Rule text (%s)',
-												'open-bulk-buying'
-											),
-											languageLabel( language )
-									  )
-							}
+							label={ localizedFieldLabel(
+								__( 'Text', 'open-bulk-buying' ),
+								language
+							) }
 							value={ selected.text[ language ] || '' }
 							onChange={ ( html ) =>
 								setItems( ( previous ) =>

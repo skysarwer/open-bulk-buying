@@ -2,9 +2,7 @@ import {
 	TextControl,
 	__experimentalVStack as VStack,
 } from '@wordpress/components';
-import { __, sprintf } from '@wordpress/i18n';
-
-import { config, languageLabel } from '../../../utils/config';
+import { config, localizedFieldLabel } from '../../../utils/config';
 
 /**
  * Inputs for a localized text map: the default text plus one input per
@@ -36,9 +34,11 @@ export default function LocalizedTextControl( {
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 				id={ id }
-				label={ label }
+				label={ localizedFieldLabel( label ) }
 				hideLabelFromVision={ hideLabelFromVision }
-				placeholder={ placeholder }
+				placeholder={
+					placeholder ? localizedFieldLabel( placeholder ) : undefined
+				}
 				value={ value?.default || '' }
 				onChange={ ( text ) => set( 'default', text ) }
 				help={ help }
@@ -48,23 +48,11 @@ export default function LocalizedTextControl( {
 					key={ lang }
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
-					/* translators: 1: field name, 2: language code. */
-					label={ sprintf(
-						__( '%1$s (%2$s)', 'open-bulk-buying' ),
-						label,
-						languageLabel( lang )
-					) }
+					label={ localizedFieldLabel( label, lang ) }
 					hideLabelFromVision={ hideLabelFromVision }
 					placeholder={
-						hideLabelFromVision
-							? sprintf(
-									/* translators: %s: language code. */
-									__(
-										'Translation (%s)',
-										'open-bulk-buying'
-									),
-									languageLabel( lang )
-							  )
+						hideLabelFromVision && placeholder
+							? localizedFieldLabel( placeholder, lang )
 							: undefined
 					}
 					value={ value?.[ lang ] || '' }

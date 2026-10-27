@@ -12,7 +12,7 @@ import { DataViews } from '@wordpress/dataviews/wp';
 import { FormModal, ErrorNotice, RecordLink } from '../../components';
 import { useList } from '../../hooks';
 import { request, requestKey } from '../../utils/api';
-import { can, config } from '../../utils/config';
+import { can, config, localizedRecordField } from '../../utils/config';
 import { formatQty } from '../../utils/format';
 
 const REASON_RECEIPT = 'receipt';
@@ -158,7 +158,7 @@ export function AdjustStockModal( { product, onClose, onDone } ) {
 	return (
 		<FormModal
 			/* translators: %s: product name. */
-			title={ sprintf( __( 'Update stock: %s', 'open-bulk-buying' ), product.name ) }
+			title={ sprintf( __( 'Update stock: %s', 'open-bulk-buying' ), localizedRecordField( product, 'name' ) ) }
 			fields={ ( data ) => fieldsByReason[ data.reason ] || fieldsByReason[ '' ] }
 			form={ form }
 			validate={ validate }

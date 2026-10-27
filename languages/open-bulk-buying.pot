@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-26T18:44:05+00:00\n"
+"POT-Creation-Date: 2026-10-26T18:54:50+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: open-bulk-buying\n"
@@ -39,14 +39,14 @@ msgid "Applicant"
 msgstr ""
 
 #: inc/access/class-openbb-access.php:54
-#: src/admin/screens/products/fields.js:342
-#: src/admin/screens/products/fields.js:352
+#: src/admin/screens/products/fields.js:340
+#: src/admin/screens/products/fields.js:350
 msgid "Active"
 msgstr ""
 
 #: inc/access/class-openbb-access.php:55
-#: src/admin/screens/products/fields.js:343
-#: src/admin/screens/products/fields.js:353
+#: src/admin/screens/products/fields.js:341
+#: src/admin/screens/products/fields.js:351
 msgid "Inactive"
 msgstr ""
 
@@ -256,8 +256,8 @@ msgstr ""
 
 #: inc/access/class-openbb-roles.php:159
 #: inc/admin/class-openbb-admin.php:75
-#: src/admin/screens/cycles/list.js:146
-#: src/admin/screens/cycles/list.js:285
+#: src/admin/screens/cycles/list.js:145
+#: src/admin/screens/cycles/list.js:284
 #: src/admin/screens/members/fields.js:137
 #: src/admin/screens/members/panel.js:232
 #: src/admin/screens/orders/index.js:402
@@ -390,7 +390,7 @@ msgid "Products"
 msgstr ""
 
 #: inc/admin/class-openbb-admin.php:74
-#: src/admin/screens/cycles/list.js:516
+#: src/admin/screens/cycles/list.js:515
 msgid "Cycles"
 msgstr ""
 
@@ -1502,12 +1502,12 @@ msgid "Choose a valid cycle status."
 msgstr ""
 
 #: inc/model/cycle/class-openbb-cycle.php:124
-#: src/admin/screens/cycles/list.js:274
+#: src/admin/screens/cycles/list.js:273
 msgid "Ordering must close after it opens."
 msgstr ""
 
 #: inc/model/cycle/class-openbb-cycle.php:127
-#: src/admin/screens/cycles/list.js:277
+#: src/admin/screens/cycles/list.js:276
 msgid "Pickup must end after it starts."
 msgstr ""
 
@@ -2112,19 +2112,19 @@ msgid "Cancelled"
 msgstr ""
 
 #: inc/model/order/class-openbb-order.php:98
-#: src/admin/screens/cycles/list.js:170
-#: src/admin/screens/cycles/list.js:303
+#: src/admin/screens/cycles/list.js:169
+#: src/admin/screens/cycles/list.js:302
 msgid "Prepaid"
 msgstr ""
 
 #: inc/model/order/class-openbb-order.php:99
-#: src/admin/screens/cycles/list.js:178
-#: src/admin/screens/cycles/list.js:305
+#: src/admin/screens/cycles/list.js:177
+#: src/admin/screens/cycles/list.js:304
 msgid "Fulfilled"
 msgstr ""
 
 #: inc/model/order/class-openbb-order.php:108
-#: src/admin/screens/products/fields.js:321
+#: src/admin/screens/products/fields.js:319
 #: src/admin/screens/settings/general.js:151
 msgid "None"
 msgstr ""
@@ -2190,7 +2190,7 @@ msgid "Suppliers"
 msgstr ""
 
 #: inc/model/product/post-type.php:60
-#: src/admin/screens/products/fields.js:311
+#: src/admin/screens/products/fields.js:309
 #: src/admin/screens/products/index.js:135
 msgid "Supplier"
 msgstr ""
@@ -2486,7 +2486,7 @@ msgid "Cancel"
 msgstr ""
 
 #: src/admin/components/edit-form.js:37
-#: src/admin/screens/cycles/list.js:344
+#: src/admin/screens/cycles/list.js:343
 #: src/admin/screens/products/index.js:211
 #: src/admin/screens/products/index.js:267
 #: src/admin/screens/settings/profile-fields/field-panel.js:469
@@ -2639,7 +2639,8 @@ msgstr ""
 #: src/admin/screens/members/fields.js:61
 #: src/admin/screens/members/fields.js:179
 #: src/admin/screens/members/index.js:82
-#: src/admin/screens/products/fields.js:193
+#: src/admin/screens/products/fields.js:160
+#: src/admin/screens/products/fields.js:191
 #: src/admin/screens/products/index.js:175
 #: src/admin/screens/settings/roles/role-panel.js:140
 msgid "Name"
@@ -2653,7 +2654,7 @@ msgstr ""
 #: src/admin/screens/orders/editor.js:547
 #: src/admin/screens/orders/editor.js:553
 #: src/admin/screens/orders/index.js:85
-#: src/admin/screens/products/fields.js:338
+#: src/admin/screens/products/fields.js:336
 msgid "Status"
 msgstr ""
 
@@ -2667,93 +2668,89 @@ msgid "Pickup location"
 msgstr ""
 
 #: src/admin/screens/cycles/list.js:126
+#: src/admin/screens/cycles/list.js:135
 msgid "Pickup instructions"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:136
-#, js-format
-msgid "Pickup instructions (%s)"
-msgstr ""
-
-#: src/admin/screens/cycles/list.js:162
+#: src/admin/screens/cycles/list.js:161
 msgid "Unfulfilled"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:186
-#: src/admin/screens/cycles/list.js:307
+#: src/admin/screens/cycles/list.js:185
+#: src/admin/screens/cycles/list.js:306
 msgid "Order total"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:222
+#: src/admin/screens/cycles/list.js:221
 msgid "Ordering window"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:225
+#: src/admin/screens/cycles/list.js:224
 msgid "Opens"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:226
+#: src/admin/screens/cycles/list.js:225
 msgid "Closes"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:231
+#: src/admin/screens/cycles/list.js:230
 msgid "Pickup window"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:236
+#: src/admin/screens/cycles/list.js:235
 msgid "Starts"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:240
+#: src/admin/screens/cycles/list.js:239
 msgid "Ends"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:268
+#: src/admin/screens/cycles/list.js:267
 msgid "Set the ordering window before moving the cycle out of setup."
 msgstr ""
 
 #. translators: %d: number of committed, unfulfilled orders.
-#: src/admin/screens/cycles/list.js:299
+#: src/admin/screens/cycles/list.js:298
 #, js-format
 msgid "%d unfulfilled"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:345
+#: src/admin/screens/cycles/list.js:344
 msgid "Create cycle"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:357
+#: src/admin/screens/cycles/list.js:356
 msgid "New cycle"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:372
+#: src/admin/screens/cycles/list.js:371
 #: src/admin/screens/cycles/workspace.js:46
 msgid "Manage cycle"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:414
+#: src/admin/screens/cycles/list.js:413
 msgid "Manage"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:423
+#: src/admin/screens/cycles/list.js:422
 msgid "Edit details"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:429
+#: src/admin/screens/cycles/list.js:428
 msgid "Duplicate"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:436
+#: src/admin/screens/cycles/list.js:435
 #, js-format
 msgid "%s (copy)"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:451
+#: src/admin/screens/cycles/list.js:450
 msgid "View orders"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:461
-#: src/admin/screens/cycles/list.js:482
+#: src/admin/screens/cycles/list.js:460
+#: src/admin/screens/cycles/list.js:481
 #: src/admin/screens/orders/index.js:333
 #: src/admin/screens/orders/index.js:346
 #: src/admin/screens/products/index.js:398
@@ -2762,34 +2759,34 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:465
+#: src/admin/screens/cycles/list.js:464
 msgid "Delete cycle"
 msgstr ""
 
 #. translators: %s: cycle name.
-#: src/admin/screens/cycles/list.js:476
+#: src/admin/screens/cycles/list.js:475
 #, js-format
 msgid "Delete \"%s\"? This cannot be undone."
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:499
+#: src/admin/screens/cycles/list.js:498
 msgid "Cycle deleted."
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:532
+#: src/admin/screens/cycles/list.js:531
 msgid "Cycle created."
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:533
+#: src/admin/screens/cycles/list.js:532
 #: src/admin/screens/cycles/workspace.js:116
 msgid "Cycle saved."
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:546
+#: src/admin/screens/cycles/list.js:545
 msgid "Add cycle"
 msgstr ""
 
-#: src/admin/screens/cycles/list.js:576
+#: src/admin/screens/cycles/list.js:575
 msgid "Search cycles"
 msgstr ""
 
@@ -3209,95 +3206,85 @@ msgstr ""
 msgid "Deactivate the product to change its unit."
 msgstr ""
 
-#. translators: %s: language code.
-#: src/admin/screens/products/fields.js:161
-#, js-format
-msgid "Name (%s)"
+#: src/admin/screens/products/fields.js:168
+#: src/admin/screens/products/fields.js:217
+msgid "Description"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:170
-#, js-format
-msgid "Description (%s)"
-msgstr ""
-
-#: src/admin/screens/products/fields.js:183
+#: src/admin/screens/products/fields.js:181
 msgid "Image"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:201
+#: src/admin/screens/products/fields.js:199
 #: src/admin/screens/products/index.js:185
 msgid "Display order"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:204
+#: src/admin/screens/products/fields.js:202
 msgid "Lower numbers appear first. Products with the same order sort by name."
 msgstr ""
 
-#: src/admin/screens/products/fields.js:212
+#: src/admin/screens/products/fields.js:210
 msgid "Brand"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:219
-msgid "Description"
-msgstr ""
-
-#: src/admin/screens/products/fields.js:228
+#: src/admin/screens/products/fields.js:226
 msgid "Unit amount"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:239
+#: src/admin/screens/products/fields.js:237
 msgid "Unit type"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:250
+#: src/admin/screens/products/fields.js:248
 msgid "Sold per"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:257
+#: src/admin/screens/products/fields.js:255
 msgid "Price"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:258
+#: src/admin/screens/products/fields.js:256
 msgid "Price per selling unit."
 msgstr ""
 
-#: src/admin/screens/products/fields.js:261
+#: src/admin/screens/products/fields.js:259
 msgid "Container charge"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:263
+#: src/admin/screens/products/fields.js:261
 msgid "Charged per unit unless the member brings their own container."
 msgstr ""
 
-#: src/admin/screens/products/fields.js:270
+#: src/admin/screens/products/fields.js:268
 #: src/admin/screens/products/inventory.js:179
 msgid "Available"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:279
+#: src/admin/screens/products/fields.js:277
 #: src/admin/screens/products/inventory.js:177
 msgid "On hand"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:288
+#: src/admin/screens/products/fields.js:286
 #: src/admin/screens/products/inventory.js:178
 msgid "Reserved"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:297
+#: src/admin/screens/products/fields.js:295
 msgid "Categories"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:356
+#: src/admin/screens/products/fields.js:354
 msgid "Only active products can be ordered."
 msgstr ""
 
-#: src/admin/screens/products/fields.js:379
+#: src/admin/screens/products/fields.js:377
 #: src/admin/screens/products/inventory.js:83
 msgid "Unit"
 msgstr ""
 
-#: src/admin/screens/products/fields.js:385
+#: src/admin/screens/products/fields.js:383
 msgid "Pricing"
 msgstr ""
 
@@ -3702,6 +3689,7 @@ msgid "Populate demo data"
 msgstr ""
 
 #: src/admin/screens/settings/profile-fields/field-panel.js:34
+#: src/admin/screens/settings/rules.js:481
 msgid "Text"
 msgstr ""
 
@@ -3920,17 +3908,6 @@ msgstr ""
 
 #: src/admin/screens/settings/profile-fields/index.js:421
 msgid "Field and its data deleted."
-msgstr ""
-
-#: src/admin/screens/settings/profile-fields/localized-text-control.js:53
-#, js-format
-msgid "%1$s (%2$s)"
-msgstr ""
-
-#. translators: %s: language code.
-#: src/admin/screens/settings/profile-fields/localized-text-control.js:62
-#, js-format
-msgid "Translation (%s)"
 msgstr ""
 
 #. translators: %d: group number.
@@ -4315,54 +4292,50 @@ msgstr ""
 msgid "Leave a translation empty to use the default text."
 msgstr ""
 
-#: src/admin/screens/settings/rules.js:482
-msgid "Default rule text"
-msgstr ""
-
-#. translators: %s: language code.
-#: src/admin/screens/settings/rules.js:488
-#, js-format
-msgid "Rule text (%s)"
-msgstr ""
-
-#: src/admin/screens/settings/rules.js:513
+#: src/admin/screens/settings/rules.js:502
 msgid "Changes are kept in this draft. Use Save draft after closing the editor."
 msgstr ""
 
-#: src/admin/screens/settings/rules.js:522
+#: src/admin/screens/settings/rules.js:511
 msgid "Done"
 msgstr ""
 
-#: src/admin/screens/settings/rules.js:545
+#: src/admin/screens/settings/rules.js:534
 msgid "Publish"
 msgstr ""
 
-#: src/admin/screens/settings/rules.js:546
+#: src/admin/screens/settings/rules.js:535
 msgid "Discard"
 msgstr ""
 
-#: src/admin/screens/settings/rules.js:551
+#: src/admin/screens/settings/rules.js:540
 msgid "Publish this saved draft? This creates an immutable version visible to members."
 msgstr ""
 
-#: src/admin/screens/settings/rules.js:555
+#: src/admin/screens/settings/rules.js:544
 msgid "Remove this rule from the draft?"
 msgstr ""
 
-#: src/admin/screens/settings/rules.js:559
+#: src/admin/screens/settings/rules.js:548
 msgid "Discard all unpublished edits and return to the current published rules?"
 msgstr ""
 
 #. translators: %d: published version ID.
-#: src/admin/screens/settings/rules.js:587
+#: src/admin/screens/settings/rules.js:576
 #, js-format
 msgid "Rules version %d"
 msgstr ""
 
-#: src/admin/screens/settings/rules.js:594
+#: src/admin/screens/settings/rules.js:583
 msgid "This rules version is no longer available."
 msgstr ""
 
 #: src/admin/utils/api.js:26
 msgid "Something went wrong. Please try again."
+msgstr ""
+
+#. translators: 1: field name, 2: language code.
+#: src/admin/utils/config.js:57
+#, js-format
+msgid "%1$s (%2$s)"
 msgstr ""

@@ -5,6 +5,7 @@
  * Mirrors the rules in OPENBB_Profile_Fields; the server checks them again.
  */
 import { __, sprintf } from '@wordpress/i18n';
+import { localized as localizedText } from '../../../utils/config';
 
 export const KEY_MAX_LENGTH = 40;
 export const KEY_PATTERN = /^[a-z][a-z0-9_]{0,39}$/;
@@ -83,7 +84,7 @@ export function uniqueKey( base, taken, fallback ) {
  * @return {string} Text.
  */
 export const localized = ( value, lang = '' ) =>
-	( lang && value?.[ lang ] ) || value?.default || '';
+	localizedText( value, lang );
 
 const isBlank = ( value ) => ! ( value?.default || '' ).trim();
 

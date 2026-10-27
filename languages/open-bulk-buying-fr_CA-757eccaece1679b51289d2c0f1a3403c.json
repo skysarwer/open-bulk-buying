@@ -256,9 +256,6 @@
             "Pickup instructions": [
                 "Consignes de ramassage"
             ],
-            "Pickup instructions (%s)": [
-                "Consignes de ramassage (%s)"
-            ],
             "Unfulfilled": [
                 "Non remis"
             ],
@@ -615,12 +612,6 @@
             ],
             "Deactivate the product to change its unit.": [
                 "D\u00e9sactivez le produit pour modifier son unit\u00e9."
-            ],
-            "Name (%s)": [
-                "Nom (%s)"
-            ],
-            "Description (%s)": [
-                "Description (%s)"
             ],
             "Image": [
                 "Image"
@@ -1119,9 +1110,6 @@
             "%1$s (%2$s)": [
                 "%1$s (%2$s)"
             ],
-            "Translation (%s)": [
-                "Traduction (%s)"
-            ],
             "Group %d": [
                 "Groupe %d"
             ],
@@ -1378,12 +1366,6 @@
             ],
             "Leave a translation empty to use the default text.": [
                 "Laissez une traduction vide pour utiliser le texte par d\u00e9faut."
-            ],
-            "Default rule text": [
-                "Texte par d\u00e9faut de la r\u00e8gle"
-            ],
-            "Rule text (%s)": [
-                "Texte de la r\u00e8gle (%s)"
             ],
             "Changes are kept in this draft. Use Save draft after closing the editor.": [
                 "Les modifications sont conserv\u00e9es dans ce brouillon. Utilisez Enregistrer le brouillon apr\u00e8s avoir ferm\u00e9 l\u2019\u00e9diteur."

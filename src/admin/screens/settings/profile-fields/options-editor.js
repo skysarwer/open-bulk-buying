@@ -9,6 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { plus, trash } from '@wordpress/icons';
 
 import { SortableList, moveItem } from '../../../components';
+import { localized } from '../../../utils/config';
 import LocalizedTextControl from './localized-text-control';
 import {
 	cleanKeyInput,
@@ -213,7 +214,7 @@ export default function OptionsEditor( { rows, onChange } ) {
 				<SortableList
 					items={ rows }
 					getKey={ ( row ) => row.id }
-					getLabel={ ( row ) => row.label.default || names[ row.id ] }
+					getLabel={ ( row ) => localized( row.label ) || names[ row.id ] }
 					onMove={ ( from, to ) =>
 						onChange( moveItem( rows, from, to ) )
 					}

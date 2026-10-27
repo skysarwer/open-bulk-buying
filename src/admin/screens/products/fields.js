@@ -4,9 +4,9 @@ import {
 	SelectControl,
 	__experimentalHStack as HStack,
 } from '@wordpress/components';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
-import { can, config, languageLabel, toElements } from '../../utils/config';
+import { can, config, localizedFieldLabel, localizedRecordField, toElements } from '../../utils/config';
 import { formatMoney, formatQty, minorFactor, toMajor, toMinor } from '../../utils/format';
 
 /** Keys the products API accepts on create/update. */
@@ -157,18 +157,16 @@ export function buildProductFields( { categories, suppliers } ) {
 	const translations = config.translationLanguages.flatMap( ( lang ) => [
 		{
 			id: `name_${ lang }`,
-			/* translators: %s: language code. */
-			label: sprintf( __( 'Name (%s)', 'open-bulk-buying' ), languageLabel( lang ) ),
+			label: localizedFieldLabel( __( 'Name', 'open-bulk-buying' ), lang ),
 			type: 'text',
 			enableSorting: false,
 			filterBy: false,
 		},
 		{
 			id: `description_${ lang }`,
-			/* translators: %s: language code. */
-			label: sprintf(
-				__( 'Description (%s)', 'open-bulk-buying' ),
-				languageLabel( lang )
+			label: localizedFieldLabel(
+				__( 'Description', 'open-bulk-buying' ),
+				lang
 			),
 			type: 'text',
 			Edit: { control: 'textarea', rows: 3 },
@@ -190,8 +188,9 @@ export function buildProductFields( { categories, suppliers } ) {
 		},
 		{
 			id: 'name',
-			label: __( 'Name', 'open-bulk-buying' ),
+			label: localizedFieldLabel( __( 'Name', 'open-bulk-buying' ) ),
 			type: 'text',
+			render: ( { item } ) => localizedRecordField( item, 'name' ),
 			enableHiding: false,
 			isValid: { required: true },
 			filterBy: false,
@@ -216,8 +215,9 @@ export function buildProductFields( { categories, suppliers } ) {
 		},
 		{
 			id: 'description',
-			label: __( 'Description', 'open-bulk-buying' ),
+			label: localizedFieldLabel( __( 'Description', 'open-bulk-buying' ) ),
 			type: 'text',
+			render: ( { item } ) => localizedRecordField( item, 'description' ),
 			Edit: { control: 'textarea', rows: 4 },
 			enableSorting: false,
 			filterBy: false,

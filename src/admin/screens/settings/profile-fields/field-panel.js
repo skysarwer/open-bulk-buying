@@ -27,6 +27,7 @@ import {
 	toDraft,
 	uniqueKey,
 } from './utils';
+import { localized } from '../../../utils/config';
 
 const STALE = 'openbb_profile_fields_stale';
 
@@ -156,7 +157,7 @@ export default function FieldPanel( {
 
 	const title = isNew
 		? __( 'New profile field', 'open-bulk-buying' )
-		: draft.label.default || field.key;
+		: localized( draft.label ) || field.key;
 
 	return (
 		<SidePanel title={ title } onClose={ onClose }>
