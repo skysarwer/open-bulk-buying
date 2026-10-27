@@ -139,7 +139,7 @@ final class OPENBB_Signup_View {
 		}
 
 		$form_steps = array( 'details' );
-		if ( $profile_fields || $rules ) {
+		if ( $profile_fields ) {
 			$form_steps[] = 'profile';
 		}
 		$steps = array_merge( $form_steps, $user_id ? array() : array( 'code' ), array( 'done' ) );
@@ -157,7 +157,7 @@ final class OPENBB_Signup_View {
 
 		$labels = array(
 			'details' => __( 'Your details', 'open-bulk-buying' ),
-			'profile' => $profile_fields ? __( 'About you', 'open-bulk-buying' ) : __( 'Co-op rules', 'open-bulk-buying' ),
+			'profile' => __( 'About you', 'open-bulk-buying' ),
 			'code'    => __( 'Confirm your email', 'open-bulk-buying' ),
 		);
 

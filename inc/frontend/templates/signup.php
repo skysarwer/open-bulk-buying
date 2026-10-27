@@ -133,6 +133,22 @@ $openbb_actions = static function ( string $step ) use ( $view, $openbb_last ): 
 				</label>
 			</div>
 
+			<?php if ( $view['rules_field'] ) : ?>
+				<div class="openbb-signup__rules">
+					<?php
+					printf(
+						'<%1$s class="openbb-signup__rules-title">%2$s</%1$s>',
+						'h2' === $openbb_h ? 'h3' : 'h4',
+						esc_html__( 'Co-op rules', 'open-bulk-buying' )
+					);
+					?>
+					<div class="openbb-rules" tabindex="0" role="region" aria-label="<?php esc_attr_e( 'Co-op rules', 'open-bulk-buying' ); ?>">
+						<?php echo wp_kses_post( $view['rules'] ); ?>
+					</div>
+					<?php echo openbb_render_field( $view['rules_field'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</div>
+			<?php endif; ?>
+
 			<?php echo $openbb_actions( 'details' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
 			<?php if ( $view['can_switch'] ) : ?>
@@ -154,24 +170,6 @@ $openbb_actions = static function ( string $step ) use ( $view, $openbb_last ): 
 							echo openbb_render_field( $openbb_field ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						}
 						?>
-					</div>
-				<?php endif; ?>
-
-				<?php if ( $view['rules_field'] ) : ?>
-					<div class="openbb-signup__rules">
-						<?php if ( $view['profile_fields'] ) : ?>
-							<?php
-							printf(
-								'<%1$s class="openbb-signup__rules-title">%2$s</%1$s>',
-								'h2' === $openbb_h ? 'h3' : 'h4',
-								esc_html__( 'Co-op rules', 'open-bulk-buying' )
-							);
-							?>
-						<?php endif; ?>
-						<div class="openbb-rules" tabindex="0" role="region" aria-label="<?php esc_attr_e( 'Co-op rules', 'open-bulk-buying' ); ?>">
-							<?php echo wp_kses_post( $view['rules'] ); ?>
-						</div>
-						<?php echo openbb_render_field( $view['rules_field'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
 				<?php endif; ?>
 
