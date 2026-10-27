@@ -310,20 +310,20 @@ export function buildProductFields( { categories, suppliers } ) {
 			id: 'supplier_id',
 			label: __( 'Supplier', 'open-bulk-buying' ),
 			type: 'integer',
-			elements: supplierElements,
+			elements: [
+				{ value: 0, label: __( 'None', 'open-bulk-buying' ) },
+				...supplierElements,
+			],
 			Edit: ( { data, field, onChange } ) => (
 				<SelectControl
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
 					label={ field.label }
 					value={ String( data.supplier_id || 0 ) }
-					options={ [
-						{ value: '0', label: __( 'None', 'open-bulk-buying' ) },
-						...supplierElements.map( ( el ) => ( {
-							value: String( el.value ),
-							label: el.label,
-						} ) ),
-					] }
+					options={ field.elements.map( ( el ) => ( {
+						value: String( el.value ),
+						label: el.label,
+					} ) ) }
 					onChange={ ( value ) => onChange( { supplier_id: Number( value ) } ) }
 				/>
 			),

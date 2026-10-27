@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Open Bulk Buying
  * Description: Inventory management, order cycles and order forms for Food Coops
- * Version: 1.1
+ * Version: 1.2
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Evan Buckiewicz
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define('OPENBB_VERSION', '1.1');
+define('OPENBB_VERSION', '1.2');
 define('OPENBB_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('OPENBB_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('OPENBB_META_PREFIX', 'openbb_');
