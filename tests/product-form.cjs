@@ -20,6 +20,15 @@ function loadModule( filename, options = {} ) {
 	runInNewContext( code, {
 		exports,
 		require: ( name ) => {
+			if ( name === '../constants' ) {
+				return {};
+			}
+			if ( name.startsWith( './utils/' ) ) {
+				return loadModule(
+					path.resolve( path.dirname( filename ), `${ name }.ts` ),
+					{ presets: [ '@babel/preset-typescript' ] }
+				);
+			}
 			if ( name === '@wordpress/components' ) {
 				return {};
 			}
@@ -27,6 +36,7 @@ function loadModule( filename, options = {} ) {
 				return {
 					config: { translationLanguages: [], unitTypes: { unit: 'Unit' } },
 					localizedFieldLabel: ( label ) => label,
+					localizedRecordField: ( item, key ) => item[ key ],
 					toElements: ( map ) =>
 						Object.entries( map ).map( ( [ value, label ] ) => ( { value, label } ) ),
 				};
@@ -47,6 +57,13 @@ const { default: isValidElements } = loadModule(
 	path.join(
 		__dirname, '..', 'node_modules', '@wordpress', 'dataviews',
 		'src', 'field-types', 'utils', 'is-valid-elements.ts'
+	),
+	{ presets: [ '@babel/preset-typescript' ] }
+);
+const { default: arrayType } = loadModule(
+	path.join(
+		__dirname, '..', 'node_modules', '@wordpress', 'dataviews',
+		'src', 'field-types', 'array.tsx'
 	),
 	{ presets: [ '@babel/preset-typescript' ] }
 );
@@ -74,4 +91,38 @@ test( 'existing supplier IDs stay valid and unknown IDs stay invalid', () => {
 	assert.equal( isValidElements( { supplier_id: 12 }, field ), true );
 	assert.equal( isValidElements( { supplier_id: 99 }, field ), false );
 	assert.equal( isValidElements( { supplier_id: '12' }, field ), false );
+} );
+
+test( 'numeric category IDs pass DataForm array and element validation', () => {
+	const field = buildProductFields( {
+		categories: [ { id: 30, name: 'Coffee' }, { id: 31, name: 'Pantry' } ],
+		suppliers: [],
+	} ).find( ( candidate ) => candidate.id === 'category_ids' );
+	for ( const category_ids of [ [], [ 30 ], [ 30, 31 ] ] ) {
+		const item = { ...NEW_PRODUCT, category_ids };
+		assert.equal( arrayType.validate.custom( item, field ), null );
+		assert.equal( isValidElements( item, field ), true );
+		assert.deepEqual(
+			Array.from( field.setValue( { value: field.getValue( { item } ) } ).category_ids ),
+			category_ids
+		);
+	}
+	assert.equal( field.render( { item: { category_ids: [ 30, 31 ] } } ), 'Coffee, Pantry' );
+	assert.equal( isValidElements( { category_ids: [ 99 ] }, field ), false );
+	assert.equal(
+		arrayType.validate.custom(
+			{ category_ids: [ 30 ] },
+			{ ...field, getValue: ( { item } ) => item.category_ids }
+		),
+		'Every value must be a string.'
+	);
+} );
+
+test( 'category edits keep integer IDs in REST payloads', () => {
+	const field = buildProductFields( {
+		categories: [ { id: 30, name: 'Coffee' } ],
+		suppliers: [],
+	} ).find( ( candidate ) => candidate.id === 'category_ids' );
+	assert.deepEqual( Array.from( field.setValue( { value: [ '30' ] } ).category_ids ), [ 30 ] );
+	assert.deepEqual( Array.from( field.setValue( { value: [] } ).category_ids ), [] );
 } );

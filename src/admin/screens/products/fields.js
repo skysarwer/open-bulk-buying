@@ -146,7 +146,7 @@ const money = ( id, label ) => ( {
  */
 export function buildProductFields( { categories, suppliers } ) {
 	const categoryElements = categories.map( ( term ) => ( {
-		value: term.id,
+		value: String( term.id ),
 		label: localizedRecordField( term, 'name' ),
 	} ) );
 	const supplierElements = suppliers.map( ( term ) => ( {
@@ -298,9 +298,11 @@ export function buildProductFields( { categories, suppliers } ) {
 			type: 'array',
 			Edit: 'array',
 			elements: categoryElements,
+			getValue: ( { item } ) => item.category_ids.map( String ),
+			setValue: ( { value } ) => ( { category_ids: value.map( Number ) } ),
 			render: ( { item } ) =>
 				categoryElements
-					.filter( ( el ) => item.category_ids?.includes( el.value ) )
+					.filter( ( el ) => item.category_ids?.includes( Number( el.value ) ) )
 					.map( ( el ) => el.label )
 					.join( ', ' ),
 			filterBy: { operators: [ 'isAny' ] },
