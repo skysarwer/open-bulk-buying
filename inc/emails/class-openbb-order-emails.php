@@ -20,6 +20,8 @@ final class OPENBB_Order_Emails {
 				return;
 			}
 			$event = $order->status;
+		} elseif ( ! $order->cycle_id && ! $before && OPENBB_Order::STATUS_FULFILLED === $order->status ) {
+			$event = 'fulfilled';
 		} elseif ( $before && in_array( $order->status, OPENBB_Order::COMMITTED_STATUSES, true ) ) {
 			$event = 'updated';
 		} else {

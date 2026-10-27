@@ -384,14 +384,14 @@ export default function MembersScreen() {
 				key={ panel }
 				memberId={ panel }
 				onClose={ closePanel }
-				onSaved={ ( item ) => {
+				onSaved={ ( item, message ) => {
 					if ( item.removed ) {
 						setPanel( null );
 						list.reload();
 					} else {
 						list.replaceItem( item );
 					}
-					notify.success( __( 'Member saved.', 'open-bulk-buying' ) );
+					notify.success( message || __( 'Member saved.', 'open-bulk-buying' ) );
 				} }
 			/>
 		);

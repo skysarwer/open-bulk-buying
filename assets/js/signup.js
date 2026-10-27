@@ -98,7 +98,11 @@ function signupBody( values, ctx, form ) {
 	for ( const [ name, value ] of Object.entries(
 		JSON.parse( JSON.stringify( values ) )
 	) ) {
-		if ( name === state.rulesField ) {
+		if (
+			name === state.rulesField ||
+			name === 'membership_fee_claim' ||
+			name === 'membership_fee_reference'
+		) {
 			continue;
 		}
 		( state.accountFields.includes( name ) ? account : profile )[ name ] =
@@ -109,6 +113,10 @@ function signupBody( values, ctx, form ) {
 		account,
 		profile,
 		rules_version: values[ state.rulesField ] ? ctx.rulesVersion : 0,
+		membership_fee_claim: Boolean( values.membership_fee_claim ),
+		membership_fee_reference: values.membership_fee_claim
+			? values.membership_fee_reference || ''
+			: '',
 		[ state.honeypot ]: form.elements[ state.honeypot ]?.value || '',
 		captcha: captchaFields( form ),
 	};

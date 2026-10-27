@@ -404,6 +404,8 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 					'pickup_location'  => $cycle->pickup_location,
 					'finalized_at'     => self::to_local_datetime( $cycle->finalized_at ),
 					'finalized_by'     => $cycle->finalized_by,
+					'cleanup_locked_at' => self::to_local_datetime( $cycle->cleanup_locked_at ),
+					'preparation_cleanup' => $cycle->allows_preparation_cleanup(),
 					'unpaid_hold_until' => self::to_local_datetime( $cycle->unpaid_hold_until ),
 					'prepaid_hold_until' => self::to_local_datetime( $cycle->prepaid_hold_until ),
 				),

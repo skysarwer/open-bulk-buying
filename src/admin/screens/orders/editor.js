@@ -28,6 +28,7 @@ const toLine = ( line ) => ( {
 	key: `line-${ line.id }`,
 	id: line.id,
 	product_id: line.product_id,
+	line_type: line.line_type,
 	product_name: line.product_name,
 	brand: line.brand,
 	unit_label: line.unit_label,
@@ -129,7 +130,7 @@ function ProductPicker( { orderId, excluded, onPick } ) {
 function LineRow( { line, isLocked, onChange, onRemove } ) {
 	const qty = Number( line.qty ) || 0;
 	const overLimit = ! line.is_prepared && qty > line.max_qty + EPSILON;
-	const readOnly = isLocked || line.is_prepared;
+	const readOnly = isLocked || line.is_prepared || line.line_type === 'membership_fee';
 
 	return (
 		<tr className={ overLimit ? 'is-invalid' : undefined }>
@@ -292,7 +293,10 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 	const credit = visibleLines.reduce( ( sum, line ) => sum + lineCredit( line ), 0 );
 	// Aid isn't always visible; recover it from the saved totals.
 	const aid = Math.max( 0, order.subtotal - order.container_credit - ( order.total - order.donation ) );
-	const total = Math.max( 0, subtotal - credit - aid ) + donation;
+	const membershipFee = visibleLines
+		.filter( ( line ) => line.line_type === 'membership_fee' )
+		.reduce( ( sum, line ) => sum + lineTotal( line ), 0 );
+	const total = Math.max( 0, subtotal - credit - membershipFee - aid ) + membershipFee + donation;
 
 	const updateLine = ( key, changes ) =>
 		setLines( ( prev ) =>
@@ -361,6 +365,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 					confirmed: true,
 					expected_updated_at: order.updated_at,
 					expected_revision: order.revision,
+					...( confirmation === 'reopen' ? { reason } : {} ),
 				},
 			} );
 			load( saved );
@@ -425,10 +430,14 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 
 				{ order.is_locked && (
 					<Notice status="info" isDismissible={ false }>
-						{ __(
-							'This order is locked against quantity, amount, and status edits. Staff can still update its note.',
-							'open-bulk-buying'
-						) }
+						{ order.can_reopen
+							? __( 'This order is cancelled. Reopen it as a draft before changing its contents. Staff can still update its note.', 'open-bulk-buying' )
+							: __( 'This order is locked against quantity, amount, and status edits. Staff can still update its note.', 'open-bulk-buying' ) }
+					</Notice>
+				) }
+				{ order.preparation_cleanup && (
+					<Notice status="info" isDismissible={ false }>
+						{ __( 'Preparation cleanup is available while this cycle is in Setup and no committed order activity has occurred outside Setup. Eligible orders can be permanently deleted from the orders list.', 'open-bulk-buying' ) }
 					</Notice>
 				) }
 				{ order.is_abandoned && (
@@ -609,6 +618,40 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 					</Notice>
 				) }
 
+				{ order.can_reopen && (
+					<VStack spacing={ 3 }>
+						<Button
+							variant="secondary"
+							disabled={ isBusy || changed || noteChanged }
+							onClick={ () => setConfirmation( 'reopen' ) }
+						>
+							{ __( 'Reopen as draft', 'open-bulk-buying' ) }
+						</Button>
+						{ confirmation === 'reopen' && (
+							<Notice status="warning" isDismissible={ false }>
+								<p>{ __( 'Reopen this cancelled order as a draft? Its items and history will be retained, but no stock is reserved until it is submitted again. Availability will be checked on submission.', 'open-bulk-buying' ) }</p>
+								<TextareaControl
+									__nextHasNoMarginBottom
+									label={ __( 'Reason for reopening (required)', 'open-bulk-buying' ) }
+									value={ reason }
+									onChange={ setReason }
+									rows={ 2 }
+								/>
+								<Button
+									variant="primary"
+									isBusy={ isBusy }
+									disabled={ isBusy || changed || noteChanged || ! reason.trim() }
+									onClick={ confirmOrder }
+								>
+									{ __( 'Confirm reopening', 'open-bulk-buying' ) }
+								</Button>
+								<Button variant="tertiary" disabled={ isBusy } onClick={ () => setConfirmation( null ) }>
+									{ __( 'Cancel', 'open-bulk-buying' ) }
+								</Button>
+							</Notice>
+						) }
+					</VStack>
+				) }
 				{ ( order.can_prepay || order.can_fulfill ) && (
 					<VStack spacing={ 3 }>
 						<HStack justify="flex-start">

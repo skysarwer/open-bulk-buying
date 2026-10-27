@@ -143,7 +143,7 @@ class OPENBB_Order extends OPENBB_Entity {
 		return $this->save_row(
 			$wpdb->openbb_orders,
 			array(
-				'cycle_id'         => $this->cycle_id,
+				'cycle_id'         => $this->cycle_id ? $this->cycle_id : null,
 				'user_id'          => $this->user_id,
 				'status'           => $this->status,
 				'language'         => $this->language,
@@ -242,8 +242,8 @@ class OPENBB_Order extends OPENBB_Entity {
 	}
 
 	/**
-	 * Removes a draft order and its lines. Submitted/history-bearing
-	 * orders are preserved; stock moves referring to the order also prevent deletion.
+	 * Removes eligible drafts or Setup preparation orders and their dependent rows.
+	 * Operational history always prevents deletion.
 	 *
 	 * @return true|WP_Error
 	 */
@@ -269,11 +269,9 @@ class OPENBB_Order extends OPENBB_Entity {
 		if ( ! $order ) {
 			return new WP_Error( 'openbb_order_not_found', __( 'This order no longer exists.', 'open-bulk-buying' ) );
 		}
-		if ( ! OPENBB_Order_Policy::can_delete( $order ) ) {
-			return new WP_Error( 'openbb_order_not_deletable', __( 'Only drafts without operational history can be deleted.', 'open-bulk-buying' ) );
-		}
-		if ( (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->openbb_stock_moves} WHERE order_id = %d", $order->id ) ) > 0 ) {
-			return new WP_Error( 'openbb_order_has_stock_history', __( 'An order with stock history cannot be deleted.', 'open-bulk-buying' ) );
+		$valid = OPENBB_Order_Policy::validate_delete( $order );
+		if ( is_wp_error( $valid ) ) {
+			return $valid;
 		}
 
 		if ( false === $wpdb->query( 'START TRANSACTION' ) ) {
@@ -299,20 +297,30 @@ class OPENBB_Order extends OPENBB_Entity {
 	/**
 	 * Recomputes subtotal, container_credit and total from the lines; call before
 	 * every save so the stored amounts never drift from the lines. Approved aid can
-	 * reduce the amount owed for goods to zero but not below, and never offsets the donation.
+	 * reduce the amount owed for goods to zero but not below, and never offsets fees or donations.
 	 *
 	 * @param OPENBB_Order_Line[]|null $lines Defaults to the saved lines.
 	 */
 	public function recalculate_totals( ?array $lines = null ): void {
 		$subtotal         = 0;
 		$container_credit = 0;
+		$membership_fee   = 0;
 		foreach ( $lines ?? $this->get_lines() as $line ) {
 			$subtotal         += $line->calculate_total();
 			$container_credit += $line->calculate_container_credit();
+			if ( $line->is_membership_fee() ) {
+				$membership_fee += $line->calculate_total();
+			}
 		}
 
 		$this->subtotal         = $subtotal;
 		$this->container_credit = $container_credit;
-		$this->total            = max( 0, $subtotal - $container_credit - $this->aid_approved ) + $this->donation;
+		$this->total            = max( 0, $subtotal - $container_credit - $membership_fee - $this->aid_approved ) + $membership_fee + $this->donation;
+	}
+
+	public function membership_fee(): int {
+		return array_sum( array_map( static function ( OPENBB_Order_Line $line ): int {
+			return $line->is_membership_fee() ? $line->calculate_total() : 0;
+		}, $this->get_lines() ) );
 	}
 }

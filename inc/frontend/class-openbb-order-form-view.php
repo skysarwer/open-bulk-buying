@@ -86,6 +86,17 @@ final class OPENBB_Order_Form_View {
 	}
 
 	private static function form( OPENBB_Cycle $cycle, array $cycles, OPENBB_Member $member, ?OPENBB_Order $order ): string {
+		if ( $order && OPENBB_Order::STATUS_CANCELLED === $order->status ) {
+			return OPENBB_Frontend::template(
+				'order-cancelled',
+				array(
+					'id'         => self::ID,
+					'order'      => $order,
+					'cycle_name' => $cycle->name,
+					'cycles'     => count( $cycles ) > 1 ? self::cycle_links( $cycles, $cycle ) : array(),
+				)
+			);
+		}
 		OPENBB_Frontend::enqueue( array( OPENBB_Frontend::MODULE_ORDER ) );
 		OPENBB_Frontend::forms_state();
 
@@ -243,6 +254,8 @@ final class OPENBB_Order_Form_View {
 				'aidStatus'      => $order_state['aid_status'],
 				'aidApproved'    => $order_state['aid_approved'],
 				'donation'       => $order_state['donation'],
+				'membershipFee'  => $order_state['membership_fee'],
+				'membershipPending' => $order_state['membership_pending'],
 				'products'       => (object) $products,
 				'items'          => $items,
 				'step'           => 'basket',
@@ -320,7 +333,9 @@ final class OPENBB_Order_Form_View {
 				'aidText'        => $money( -min( $order_state['aid_approved'], $totals['subtotal'] - $totals['credit'] ) ),
 				'hasDonation'    => $order_state['donation'] > 0,
 				'donationText'   => $money( $order_state['donation'] ),
-				'totalText'      => $money( $goods + $order_state['donation'] ),
+				'hasMembershipFee' => $order_state['membership_fee'] > 0 && $totals['count'] > 0,
+				'membershipFeeText' => $money( $order_state['membership_fee'] ),
+				'totalText'      => $money( $goods + $order_state['donation'] + ( $totals['count'] > 0 ? $order_state['membership_fee'] : 0 ) ),
 				'isSubmitted'    => OPENBB_Order::STATUS_SUBMITTED === $order_state['status'],
 				'locked'         => ! $order_state['editable'],
 				'canFinalize'    => $order_state['editable'] && $totals['count'] > 0,

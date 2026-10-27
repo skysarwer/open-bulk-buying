@@ -204,10 +204,11 @@ final class OPENBB_Signup {
 	/**
 	 * Self-signup of a new account. Call only once the person has proven they own the email
 	 * (OPENBB_Email_Code); the input is validated again, as settings may have changed since.
+	 * An optional membership fee claim is submitted for staff review, never approved here.
 	 *
 	 * @return array{user_id: int, status: string}|WP_Error
 	 */
-	public static function register( array $account, array $profile, int $rules_version ) {
+	public static function register( array $account, array $profile, int $rules_version, bool $membership_fee_claim = false, string $membership_fee_reference = '' ) {
 		if ( ! self::is_open() ) {
 			return self::closed();
 		}
@@ -227,6 +228,9 @@ final class OPENBB_Signup {
 
 		$status = self::signup_status();
 		$result = self::complete_signup( $user_id, $signup, $status );
+		if ( ! is_wp_error( $result ) && $membership_fee_claim ) {
+			$result = OPENBB_Membership_Fees::claim( $user_id, $membership_fee_reference );
+		}
 		if ( is_wp_error( $result ) ) {
 			return self::undo_insert( $user_id, $result );
 		}
@@ -243,10 +247,11 @@ final class OPENBB_Signup {
 	/**
 	 * Self-signup of a signed-in user who isn't a member yet. Only empty account and
 	 * profile fields are filled in; the user's email and WordPress role are kept.
+	 * An optional membership fee claim is submitted only after membership is saved.
 	 *
 	 * @return array{user_id: int, status: string}|WP_Error
 	 */
-	public static function join( int $user_id, array $account, array $profile, int $rules_version ) {
+	public static function join( int $user_id, array $account, array $profile, int $rules_version, bool $membership_fee_claim = false, string $membership_fee_reference = '' ) {
 		if ( ! self::is_open() ) {
 			return self::closed();
 		}
@@ -262,8 +267,10 @@ final class OPENBB_Signup {
 			return $signup;
 		}
 
+		$before = self::join_snapshot( $user_id, $signup );
+
 		// Users of another site in the network join this one as subscribers.
-		if ( is_multisite() && ! is_user_member_of_blog( $user_id ) && ! add_user_to_blog( get_current_blog_id(), $user_id, 'subscriber' ) ) {
+		if ( $before['add_to_blog'] && is_wp_error( add_user_to_blog( get_current_blog_id(), $user_id, 'subscriber' ) ) ) {
 			return self::save_failed();
 		}
 
@@ -276,14 +283,17 @@ final class OPENBB_Signup {
 			}
 			$updated = wp_update_user( wp_slash( array( 'ID' => $user_id ) + $names ) );
 			if ( is_wp_error( $updated ) ) {
-				return self::save_failed();
+				return self::undo_join( $user_id, $before, self::save_failed() );
 			}
 		}
 
 		$status = self::signup_status();
 		$result = self::complete_signup( $user_id, $signup, $status );
+		if ( ! is_wp_error( $result ) && $membership_fee_claim ) {
+			$result = OPENBB_Membership_Fees::claim( $user_id, $membership_fee_reference );
+		}
 		if ( is_wp_error( $result ) ) {
-			return $result;
+			return self::undo_join( $user_id, $before, $result );
 		}
 
 		self::created( $user_id, OPENBB_Profile_Fields::CONTEXT_SIGNUP );
@@ -463,6 +473,51 @@ final class OPENBB_Signup {
 		if ( ! isset( ( (array) $error->get_error_data() )['status'] ) ) {
 			$error->add_data( array( 'status' => 'openbb_forbidden' === $error->get_error_code() ? 403 : 500 ) );
 		}
+
+		return $error;
+	}
+
+	/**
+	 * Profile saves own their transaction, so joining uses a compensating rollback.
+	 */
+	private static function join_snapshot( int $user_id, array $signup ): array {
+		$user = get_userdata( $user_id );
+		$keys = array( 'first_name', 'last_name' );
+		foreach ( array( 'phone', 'language', 'rules_version', 'rules_accepted_at', 'status', 'joined_at' ) as $field ) {
+			$keys[] = openbb_member_meta_key( $field );
+		}
+		foreach ( array_keys( $signup['profile'] ) as $field ) {
+			$keys[] = OPENBB_Profile_Fields::meta_key( $field );
+		}
+
+		$meta = array();
+		foreach ( $keys as $key ) {
+			$meta[ $key ] = get_user_meta( $user_id, $key );
+		}
+
+		return array(
+			'display_name' => $user->display_name,
+			'meta'         => $meta,
+			'add_to_blog'  => is_multisite() && ! is_user_member_of_blog( $user_id ),
+		);
+	}
+
+	private static function undo_join( int $user_id, array $before, WP_Error $error ): WP_Error {
+		if ( $before['add_to_blog'] ) {
+			remove_user_from_blog( $user_id, get_current_blog_id() );
+		}
+		wp_update_user( wp_slash( array( 'ID' => $user_id, 'display_name' => $before['display_name'] ) ) );
+		foreach ( $before['meta'] as $key => $values ) {
+			if ( get_user_meta( $user_id, $key ) === $values ) {
+				continue;
+			}
+			delete_user_meta( $user_id, $key );
+			foreach ( $values as $value ) {
+				add_user_meta( $user_id, $key, wp_slash( $value ) );
+			}
+		}
+		clean_user_cache( $user_id );
+		OPENBB_Access::flush_cache();
 
 		return $error;
 	}

@@ -38,6 +38,7 @@ class OPENBB_Cycle extends OPENBB_Entity {
 	public $finalized_by        = null;
 	public $unpaid_hold_until   = null;
 	public $prepaid_hold_until  = null;
+	public $cleanup_locked_at   = null;
 
 	protected function cast(): void {
 		$this->id                  = (int) $this->id;
@@ -173,6 +174,11 @@ class OPENBB_Cycle extends OPENBB_Entity {
 
 	public function is_active(): bool {
 		return in_array( $this->status, self::ACTIVE_STATUSES, true );
+	}
+
+	public function allows_preparation_cleanup(): bool {
+		return self::STATUS_SETUP === $this->status && null === $this->cleanup_locked_at
+			&& OPENBB_Installer::DB_VERSION === get_option( OPENBB_Installer::DB_VERSION_OPTION );
 	}
 
 	public function hold_until( string $order_status ): ?string {

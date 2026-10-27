@@ -31,6 +31,7 @@ class OPENBB_Cycles {
 				finalized_by bigint(20) unsigned NULL default NULL,
 				unpaid_hold_until datetime NULL default NULL,
 				prepaid_hold_until datetime NULL default NULL,
+				cleanup_locked_at datetime NULL default NULL,
 				PRIMARY KEY  (id),
 				KEY status (status),
 				KEY ordering_window (opens_at,closes_at)
@@ -67,7 +68,7 @@ class OPENBB_Cycles {
 			if ( $existing && OPENBB_Cycle::STATUS_COMPLETE === $old_status && $cycle->status !== $old_status ) {
 				return new WP_Error( 'openbb_cycle_finalized', __( 'A completed cycle cannot be reopened.', 'open-bulk-buying' ), array( 'status' => 409 ) );
 			}
-			foreach ( array( 'finalized_at', 'finalized_by', 'unpaid_hold_until', 'prepaid_hold_until' ) as $field ) {
+			foreach ( array( 'finalized_at', 'finalized_by', 'unpaid_hold_until', 'prepaid_hold_until', 'cleanup_locked_at' ) as $field ) {
 				$cycle->$field = $existing ? $existing->$field : null;
 			}
 			if ( OPENBB_Cycle::STATUS_COMPLETE === $cycle->status && OPENBB_Cycle::STATUS_COMPLETE !== $old_status ) {
@@ -104,6 +105,28 @@ class OPENBB_Cycles {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Called inside the order transaction under the inventory lock. Cycle saves
+	 * deliberately omit this field so stale cycle objects cannot clear it.
+	 */
+	public static function lock_cleanup_for_order( OPENBB_Order $order, array $event ): bool {
+		global $wpdb;
+
+		$committed = array( OPENBB_Order::STATUS_SUBMITTED, OPENBB_Order::STATUS_PREPAID, OPENBB_Order::STATUS_FULFILLED );
+		if ( ! $order->cycle_id || ( ! in_array( $order->status, $committed, true ) && ! in_array( $event['from_status'], $committed, true ) ) ) {
+			return true;
+		}
+		return false !== $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->openbb_cycles} SET cleanup_locked_at = %s
+				WHERE id = %d AND status != %s AND cleanup_locked_at IS NULL",
+				current_time( 'mysql', true ),
+				$order->cycle_id,
+				OPENBB_Cycle::STATUS_SETUP
+			)
+		);
 	}
 
 	/**

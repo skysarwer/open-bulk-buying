@@ -33,24 +33,34 @@ class OPENBB_REST_Signup extends OPENBB_REST_Controller {
 				'callback'            => array( $this, 'start' ),
 				'permission_callback' => array( __CLASS__, 'can_sign_up' ),
 				'args'                => array(
-					'account'       => array(
+					'account'                  => array(
 						'type'    => 'object',
 						'default' => array(),
 					),
-					'profile'       => array(
+					'profile'                  => array(
 						'type'    => 'object',
 						'default' => array(),
 					),
-					'rules_version' => array(
+					'rules_version'            => array(
 						'type'    => 'integer',
 						'default' => 0,
 						'minimum' => 0,
 					),
-					self::HONEYPOT  => array(
+					'membership_fee_claim'     => array(
+						'type'    => 'boolean',
+						'default' => false,
+					),
+					'membership_fee_reference' => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+						'maxLength'         => 500,
+					),
+					self::HONEYPOT             => array(
 						'type'    => 'string',
 						'default' => '',
 					),
-					'captcha'       => array(
+					'captcha'                  => array(
 						'type'    => 'object',
 						'default' => array(),
 					),
@@ -109,9 +119,11 @@ class OPENBB_REST_Signup extends OPENBB_REST_Controller {
 		$account       = (array) $request['account'];
 		$profile       = (array) $request['profile'];
 		$rules_version = (int) $request['rules_version'];
+		$fee_claim     = (bool) $request['membership_fee_claim'];
+		$fee_reference = (string) $request['membership_fee_reference'];
 
 		if ( is_user_logged_in() ) {
-			$joined = OPENBB_Signup::join( get_current_user_id(), $account, $profile, $rules_version );
+			$joined = OPENBB_Signup::join( get_current_user_id(), $account, $profile, $rules_version, $fee_claim, $fee_reference );
 			if ( is_wp_error( $joined ) ) {
 				return $joined;
 			}
@@ -141,9 +153,11 @@ class OPENBB_REST_Signup extends OPENBB_REST_Controller {
 			OPENBB_Email_Code::PURPOSE_SIGNUP,
 			$email,
 			array(
-				'account'       => $account,
-				'profile'       => $profile,
-				'rules_version' => $rules_version,
+				'account'                  => $account,
+				'profile'                  => $profile,
+				'rules_version'            => $rules_version,
+				'membership_fee_claim'     => $fee_claim,
+				'membership_fee_reference' => $fee_reference,
 			),
 			$deliverable
 		);
@@ -207,7 +221,9 @@ class OPENBB_REST_Signup extends OPENBB_REST_Controller {
 		$registered = OPENBB_Signup::register(
 			array( 'email' => $verified['email'] ) + (array) ( $payload['account'] ?? array() ),
 			(array) ( $payload['profile'] ?? array() ),
-			(int) ( $payload['rules_version'] ?? 0 )
+			(int) ( $payload['rules_version'] ?? 0 ),
+			(bool) ( $payload['membership_fee_claim'] ?? false ),
+			(string) ( $payload['membership_fee_reference'] ?? '' )
 		);
 		if ( is_wp_error( $registered ) ) {
 			return $registered;

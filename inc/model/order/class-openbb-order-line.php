@@ -21,11 +21,14 @@ class OPENBB_Order_Line extends OPENBB_Entity {
 
 	const SOURCE_MEMBER  = 'member';
 	const SOURCE_WALK_UP = 'walk_up';
+	const TYPE_PRODUCT = 'product';
+	const TYPE_MEMBERSHIP_FEE = 'membership_fee';
 
 	public $id               = 0;
 	public $order_id         = 0;
 	public $product_id       = 0;
 	public $source           = self::SOURCE_MEMBER;
+	public $line_type        = self::TYPE_PRODUCT;
 	public $product_name     = '';
 	public $brand            = '';
 	public $unit_amount      = OPENBB_UNIT_AMOUNT_DEFAULT;
@@ -102,6 +105,7 @@ class OPENBB_Order_Line extends OPENBB_Entity {
 				'order_id'         => $this->order_id,
 				'product_id'       => $this->product_id,
 				'source'           => $this->source,
+				'line_type'        => $this->line_type,
 				'product_name'     => $this->product_name,
 				'brand'            => $this->brand,
 				'unit_amount'      => $this->unit_amount,
@@ -118,7 +122,7 @@ class OPENBB_Order_Line extends OPENBB_Entity {
 				'updated_at'       => $this->updated_at,
 			),
 			array(
-				'%d', '%d', '%s', '%s', '%s', '%f', '%s', '%f', '%d', '%d',
+				'%d', '%d', '%s', '%s', '%s', '%s', '%f', '%s', '%f', '%d', '%d',
 				'%d', '%f', '%f', '%f', '%d', '%s', '%s',
 			)
 		);
@@ -176,7 +180,14 @@ class OPENBB_Order_Line extends OPENBB_Entity {
 	}
 
 	public function get_base_quantity(): float {
+		if ( $this->is_membership_fee() ) {
+			return 0.0;
+		}
 		return round( $this->get_quantity() * $this->base_per_unit, 3 );
+	}
+
+	public function is_membership_fee(): bool {
+		return self::TYPE_MEMBERSHIP_FEE === $this->line_type;
 	}
 
 	/**

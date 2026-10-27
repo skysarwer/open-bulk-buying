@@ -244,6 +244,8 @@ function applyOrder( data ) {
 	state.editable = data.editable;
 	state.aidStatus = data.aid_status;
 	state.aidApproved = data.aid_approved;
+	state.membershipFee = data.membership_fee;
+	state.membershipPending = data.membership_pending;
 	state.notice = '';
 	state.canRetry = false;
 }
@@ -286,6 +288,9 @@ function failed( result ) {
 			state.conflict = true;
 			return false;
 		case 'openbb_order_locked':
+			state.conflict = true;
+			state.editable = false;
+			return false;
 		case 'openbb_ordering_closed':
 		case 'openbb_not_member':
 			state.editable = false;
@@ -491,8 +496,15 @@ const { state } = store( 'openbb/order', {
 		get totalText() {
 			const { goods } = totals();
 			return money(
-				Math.max( 0, goods - state.aidApproved ) + state.donation
+				Math.max( 0, goods - state.aidApproved ) + state.donation +
+				( totals().count > 0 ? state.membershipFee : 0 )
 			);
+		},
+		get hasMembershipFee() {
+			return totals().count > 0 && state.membershipFee > 0;
+		},
+		get membershipFeeText() {
+			return money( state.membershipFee );
 		},
 		get hasAidPending() {
 			return state.aidStatus === 'pending';

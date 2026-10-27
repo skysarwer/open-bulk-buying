@@ -15,6 +15,13 @@ class OPENBB_Order_Lifecycle {
 	public static function confirm( int $order_id, string $action, int $actor_id, string $expected_updated_at = '', ?int $expected_revision = null ) {
 		global $wpdb;
 
+		$standalone = OPENBB_Orders::get( $order_id );
+		if ( $standalone && ! $standalone->cycle_id ) {
+			if ( 'fulfill' !== $action ) {
+				return new WP_Error( 'openbb_invalid_action', __( 'Confirm this membership payment from the member screen.', 'open-bulk-buying' ), array( 'status' => 400 ) );
+			}
+			return OPENBB_Membership_Fees::review( $standalone->user_id, $standalone->id, $actor_id );
+		}
 		if ( ! isset( OPENBB_Order_Policy::CONFIRMATION_STATUSES[ $action ] ) ) {
 			return new WP_Error( 'openbb_invalid_action', __( 'Choose a payment or fulfillment action.', 'open-bulk-buying' ), array( 'status' => 400 ) );
 		}
@@ -41,8 +48,14 @@ class OPENBB_Order_Lifecycle {
 				return $valid;
 			}
 			$lines = $order->get_lines();
+			if ( OPENBB_Order::STATUS_SUBMITTED === $order->status ) {
+				list( $fee_changes ) = OPENBB_Membership_Fees::synchronize( $order, $lines, array(), array() );
+				if ( $fee_changes ) {
+					return new WP_Error( 'openbb_membership_fee_changed', __( 'Membership fee eligibility changed. Save and review the updated order before recording payment.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+				}
+			}
 			if ( ! array_filter( $lines, static function ( OPENBB_Order_Line $line ): bool {
-				return $line->get_quantity() > 0;
+				return ! $line->is_membership_fee() && $line->get_quantity() > 0;
 			} ) ) {
 				return new WP_Error( 'openbb_empty_order', __( 'An empty order cannot be paid or fulfilled.', 'open-bulk-buying' ), array( 'status' => 409 ) );
 			}
@@ -70,6 +83,9 @@ class OPENBB_Order_Lifecycle {
 			if ( 'fulfill' === $action ) {
 				$wanted = array();
 				foreach ( $lines as $line ) {
+					if ( $line->is_membership_fee() ) {
+						continue;
+					}
 					$wanted[ $line->product_id ] = ( $wanted[ $line->product_id ] ?? 0.0 ) + $line->get_base_quantity();
 				}
 				$on_hand = OPENBB_Inventory::get_on_hand_for( array_keys( $wanted ) );
@@ -80,6 +96,9 @@ class OPENBB_Order_Lifecycle {
 					}
 				}
 				foreach ( $lines as $line ) {
+					if ( $line->is_membership_fee() ) {
+						continue;
+					}
 					$line->qty_final = $line->get_quantity();
 					if ( ! $line->write_row() ) {
 						$wpdb->query( 'ROLLBACK' );

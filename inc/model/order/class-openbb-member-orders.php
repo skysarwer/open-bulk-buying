@@ -109,6 +109,9 @@ class OPENBB_Member_Orders {
 
 		$order = OPENBB_Orders::get_for_member( $cycle->id, $user_id );
 		if ( $order && ! self::can_edit( $order, $cycle ) ) {
+			if ( OPENBB_Order::STATUS_CANCELLED === $order->status ) {
+				return new WP_Error( 'openbb_order_locked', __( 'This order was cancelled. Reload the page to view its summary, or contact the co-op to have it reopened.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+			}
 			return new WP_Error( 'openbb_order_locked', __( 'This order can no longer be changed here. Contact the co-op if something needs fixing.', 'open-bulk-buying' ), array( 'status' => 409 ) );
 		}
 
@@ -260,7 +263,7 @@ class OPENBB_Member_Orders {
 	public static function state( ?OPENBB_Order $order, OPENBB_Cycle $cycle ): array {
 		$lines = array();
 		foreach ( $order ? $order->get_lines() : array() as $line ) {
-			if ( $line->qty_requested <= 0 ) {
+			if ( $line->is_membership_fee() || $line->qty_requested <= 0 ) {
 				continue;
 			}
 			$lines[] = array(
@@ -274,6 +277,10 @@ class OPENBB_Member_Orders {
 			);
 		}
 
+		$user_id = $order ? $order->user_id : get_current_user_id();
+		$fee_due = OPENBB_Membership_Fees::due_amount( $user_id, $order ? $order->id : 0 );
+		$fee     = $order && ! self::can_edit( $order, $cycle ) ? $order->membership_fee() : ( $fee_due > 0 ? ( $order && $order->membership_fee() > 0 ? $order->membership_fee() : $fee_due ) : 0 );
+		$summary = OPENBB_Membership_Fees::summary( $user_id );
 		return array(
 			'id'            => $order ? $order->id : 0,
 			'status'        => $order ? $order->status : OPENBB_Order::STATUS_DRAFT,
@@ -281,6 +288,8 @@ class OPENBB_Member_Orders {
 			'editable'      => self::can_edit( $order, $cycle ),
 			'lines'         => $lines,
 			'donation'      => $order ? $order->donation : 0,
+			'membership_fee' => $fee,
+			'membership_pending' => 'pending' === $summary['status'],
 			'aid_status'    => $order ? $order->aid_status : OPENBB_Order::AID_NONE,
 			'aid_approved'  => $order ? $order->aid_approved : 0,
 			'aid_reason'    => $order ? $order->aid_reason : '',

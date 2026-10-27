@@ -67,7 +67,7 @@ class Test_OPENBB_Model_Persistence extends OPENBB_TestCase {
 
 	public function test_order_history_cannot_be_deleted(): void {
 		$user_id = $this->make_user( 'member' );
-		$cycle   = new OPENBB_Cycle( array( 'name' => 'Submitted order cycle' ) );
+		$cycle   = new OPENBB_Cycle( array( 'name' => 'Submitted order cycle', 'status' => OPENBB_Cycle::STATUS_ORDERING ) );
 		$this->assertTrue( $cycle->save() );
 
 		$order = new OPENBB_Order(

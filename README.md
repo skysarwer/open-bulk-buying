@@ -181,8 +181,39 @@ Save edits before using either confirmation. Zero-balance orders are supported.
 
 Prepaid quantities, amounts, and cancellations are locked until payment
 adjustments/refunds are supported. Unpaid orders can be cancelled with a reason.
-Cancelled orders are retained; only drafts without operational history can be
-deleted.
+Members see a read-only cancellation summary rather than a disabled checkout form.
+Staff with order-edit permission can use **Reopen as draft** on cancelled orders
+in active cycles, with confirmation and a required reason. This preserves the
+order's items, price snapshots, submission timestamp and audit history. Drafts
+reserve no stock; resubmission checks availability again. Paid, collected,
+stock-history-bearing, and aid-allocated orders cannot be reopened or deleted.
+System-managed membership fee lines are retained when reopening, are not treated
+as stock products, and are synchronized again during normal editing/submission.
+Members cannot cancel or reopen orders themselves; they must contact the co-op.
+
+**Setup preparation cleanup:** never-submitted drafts remain deletable. Submitted
+and cancelled orders may also be permanently deleted while their cycle is in
+Setup, provided preparation cleanup has not been permanently locked and the order
+has no operational history. Deletion removes the order, lines and events together,
+releasing any reservation without changing on-hand inventory.
+
+Members can order only during **Ordering** and within its ordering dates. Staff
+can create and submit orders during Setup, Ordering, Processing and Distribution.
+The first commitment or substantive update to a committed order outside Setup
+permanently sets the cycle's `cleanup_locked_at` timestamp, including cancellation
+of a submitted order outside Setup. Payment/fulfillment
+and aid decisions on committed orders outside Setup also lock cleanup. Draft
+autosaves, note-only edits, and merely changing cycle stage do not. Returning to
+Setup or cancelling/deleting an order cannot clear the lock. Setup is preparation,
+not an isolated test environment: submitted orders reserve real stock and normal
+order emails still apply.
+
+On upgrade, cycles with existing submission, cancellation or operational history
+are conservatively locked because old events do not record the cycle stage.
+That timestamp means "protected since migration", not the original order date.
+There is no UI override to reclassify historical orders as tests; existing test
+data requires separately reviewed cleanup. If the upgrade fails, preparation
+cleanup stays disabled, the failure is logged, and the next request retries it.
 
 Marking a cycle **Complete** finalizes distribution, records fixed hold deadlines,
 and immediately releases its uncollected orders' reservations. Submitted/prepaid
@@ -220,8 +251,49 @@ setting does not change existing members or accounts created by staff.
 
 Membership fees can be **One time** or **Recurring**. Enter an amount in the
 co-op's currency; recurring fees also specify the number of orders between fees.
-An amount of zero means no membership fee. The signup form shows the fee, but
-fees are not charged yet.
+An amount of zero means no membership fee. When a fee is due, it appears as a
+separate, system-managed line on the member's cycle order. Its price is saved
+with the order; later settings changes do not rewrite that price. Fees do not
+reserve stock, need preparation, or receive container credits. Financial aid
+reduces goods only, not membership fees or donations.
+
+The first fee is due before any confirmed membership payment. For recurring
+fees, **paid cycle orders count, including prepaid orders awaiting pickup**.
+Unpaid, cancelled, and membership-only orders do not advance the count. A fee
+paid on a cycle order covers that order and the remaining orders in its
+interval. A standalone payment covers the next interval of cycle orders.
+
+### Recording and reviewing membership payments
+
+In **Co-op > Members**, open a member's details to record a membership payment
+collected separately, with an optional reference. Staff need both permission to
+record payments and permission to edit that member. This creates a cycle-free
+order containing a membership-fee line. Confirmed membership-only orders are
+stored as **Fulfilled** and displayed as **Paid**, without a physical collection
+or inventory movement. The member screen includes the fee status and history.
+
+When a fee is configured, signup offers **I already paid** and an optional
+reference. This is a claim, never proof of payment: after successful signup it
+creates a **Submitted** membership-only order awaiting staff verification.
+Verification is required whether membership approval is enabled or not.
+
+For an applicant with a claim, authorized staff can select **Confirm claimed
+membership payment** (off by default) and approve membership and payment in one
+action. Both changes commit together, with separate audit events. Membership
+can also be approved separately, leaving the claim pending. Active members
+remain active while payment verification is pending.
+
+A pending claim suppresses another membership charge on cycle orders. Confirming
+it records payment; rejecting it retains the cancelled claim as history and
+makes the fee due again. Recording a separate payment removes an outstanding
+fee from unpaid cycle orders, updates their totals and revisions, and records
+the reconciliation. Paid orders are not rewritten. If fee eligibility changes
+before a cycle order is paid, staff must save and review the updated order
+before confirming payment.
+
+Payment confirmations are retry-safe. Paid membership records cannot be
+unchecked or erased through a toggle; refunds and payment reversals are not
+implemented in this release.
 
 ## Member signup
 

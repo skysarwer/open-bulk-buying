@@ -184,6 +184,9 @@ class OPENBB_Inventory {
 
 		$reserved = array();
 		foreach ( $order->get_lines() as $line ) {
+			if ( $line->is_membership_fee() ) {
+				continue;
+			}
 			$reserved[ $line->product_id ] = ( $reserved[ $line->product_id ] ?? 0.0 ) + $line->get_base_quantity();
 		}
 

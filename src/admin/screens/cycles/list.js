@@ -306,6 +306,16 @@ export function CycleSummary( { cycle } ) {
 			<dd>{ cycle.fulfilled_count }</dd>
 			<dt>{ __( 'Order total', 'open-bulk-buying' ) }</dt>
 			<dd>{ formatMoney( cycle.orders_total ) }</dd>
+			<dt>{ __( 'Preparation cleanup', 'open-bulk-buying' ) }</dt>
+			<dd>
+				{ cycle.cleanup_locked_at
+					? __( 'Permanently locked', 'open-bulk-buying' )
+					: cycle.status === 'complete'
+						? __( 'Unavailable in completed cycles', 'open-bulk-buying' )
+						: cycle.preparation_cleanup
+							? __( 'Available in Setup', 'open-bulk-buying' )
+							: __( 'Available only after returning to Setup', 'open-bulk-buying' ) }
+			</dd>
 		</dl>
 	);
 }

@@ -44,6 +44,13 @@ $openbb_actions = static function ( string $step ) use ( $view, $openbb_last ): 
 	if ( $step === $openbb_last && '' !== $view['fee'] ) {
 		$html = '<p class="openbb-notice openbb-notice--info openbb-signup__fee">' . esc_html( $view['fee'] ) . '</p>' . $html;
 	}
+	if ( $step === $openbb_last && $view['claim_fields'] ) {
+		$claims = '';
+		foreach ( $view['claim_fields'] as $field ) {
+			$claims .= openbb_render_field( $field );
+		}
+		$html = '<div class="openbb-fields openbb-signup__fee-claim">' . $claims . '</div>' . $html;
+	}
 	$html .= sprintf(
 		'<button type="submit" class="openbb-button openbb-button--primary" data-wp-bind--disabled="context.busy">%s</button>',
 		esc_html( $step === $openbb_last ? $view['submit_label'] : __( 'Continue', 'open-bulk-buying' ) )

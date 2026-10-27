@@ -21,8 +21,79 @@ class OPENBB_Order_Policy {
 			&& true === self::validate_content_change( $order, true, $order->donation );
 	}
 
-	public static function can_delete( OPENBB_Order $order ): bool {
-		return OPENBB_Order::STATUS_DRAFT === $order->status && ! $order->submitted_at && ! $order->paid_at && ! $order->is_collected();
+	public static function can_delete( OPENBB_Order $order, ?OPENBB_Cycle $cycle = null ): bool {
+		return true === self::validate_delete( $order, $cycle );
+	}
+
+	/** @return true|WP_Error */
+	public static function validate_delete( OPENBB_Order $order, ?OPENBB_Cycle $cycle = null ) {
+		global $wpdb;
+
+		$cycle = $cycle ?? ( $order->cycle_id ? OPENBB_Cycles::get( $order->cycle_id ) : null );
+		$draft = OPENBB_Order::STATUS_DRAFT === $order->status && ! $order->submitted_at;
+		$preparation = $cycle && $cycle->allows_preparation_cleanup()
+			&& in_array( $order->status, self::EDITABLE_STATUSES, true );
+		if ( ! $draft && ! $preparation ) {
+			return new WP_Error( 'openbb_order_not_deletable', __( 'Only never-submitted drafts or preparation orders in an unlocked Setup cycle can be deleted.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+		}
+		if ( ! $preparation && $order->id ) {
+			$history = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$wpdb->openbb_order_events} WHERE order_id = %d
+					AND (from_status IN ('submitted', 'cancelled') OR to_status IN ('submitted', 'cancelled'))",
+					$order->id
+				)
+			);
+			if ( null === $history ) {
+				return new WP_Error( 'openbb_order_history_failed', __( 'The order history could not be checked. Please try again.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+			}
+			if ( (int) $history > 0 ) {
+				return new WP_Error( 'openbb_order_not_deletable', __( 'This draft has submission or cancellation history and cannot be deleted outside preparation cleanup.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+			}
+		}
+		return self::validate_no_operational_history( $order );
+	}
+
+	public static function can_reopen( OPENBB_Order $order, ?OPENBB_Cycle $cycle ): bool {
+		return true === self::validate_reopen( $order, $cycle );
+	}
+
+	/** @return true|WP_Error */
+	public static function validate_reopen( OPENBB_Order $order, ?OPENBB_Cycle $cycle ) {
+		if ( OPENBB_Order::STATUS_CANCELLED !== $order->status || ! $cycle || ! $cycle->is_active() ) {
+			return new WP_Error( 'openbb_order_not_reopenable', __( 'Only cancelled orders in an active cycle can be reopened as drafts.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+		}
+		return self::validate_no_operational_history( $order );
+	}
+
+	/** @return true|WP_Error */
+	private static function validate_no_operational_history( OPENBB_Order $order ) {
+		global $wpdb;
+
+		if ( null !== $order->paid_at || null !== $order->paid_by || null !== $order->paid_amount
+			|| null !== $order->paid_currency || $order->is_collected() || null !== $order->collected_by
+			|| $order->aid_approved > 0
+			|| in_array( $order->status, array( OPENBB_Order::STATUS_PREPAID, OPENBB_Order::STATUS_FULFILLED ), true ) ) {
+			return new WP_Error( 'openbb_order_has_operational_history', __( 'Orders with payment, collection, or allocated aid history cannot be deleted or reopened.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+		}
+		if ( $order->id ) {
+			$count = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT (SELECT COUNT(*) FROM {$wpdb->openbb_stock_moves} WHERE order_id = %d)
+						+ (SELECT COUNT(*) FROM {$wpdb->openbb_order_events} WHERE order_id = %d
+							AND (from_status IN ('prepaid', 'fulfilled') OR to_status IN ('prepaid', 'fulfilled')))",
+					$order->id,
+					$order->id
+				)
+			);
+			if ( null === $count ) {
+				return new WP_Error( 'openbb_order_history_failed', __( 'The order history could not be checked. Please try again.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+			}
+			if ( (int) $count > 0 ) {
+				return new WP_Error( 'openbb_order_has_stock_history', __( 'An order with stock or settlement history cannot be deleted or reopened.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+			}
+		}
+		return true;
 	}
 
 	public static function needs_reason( OPENBB_Order $order, string $new_status ): bool {
@@ -54,11 +125,19 @@ class OPENBB_Order_Policy {
 	public static function validate_edit( OPENBB_Order $order, ?OPENBB_Cycle $cycle, array $changes ) {
 		$status = isset( $changes['status'] ) ? (string) $changes['status'] : $order->status;
 		$writes = isset( $changes['lines'] ) || $status !== $order->status || isset( $changes['donation'] );
+		if ( ! empty( $changes['reopen'] ) && OPENBB_Order::STATUS_DRAFT === $status ) {
+			return self::validate_reopen( $order, $cycle );
+		}
 		if ( self::is_terminal( $order ) && $writes ) {
 			return new WP_Error( 'openbb_order_locked', __( 'This order is locked. Only the staff note can be changed.', 'open-bulk-buying' ), array( 'status' => 409 ) );
 		}
 		if ( ! in_array( $status, self::EDITABLE_STATUSES, true ) && $status !== $order->status ) {
 			return new WP_Error( 'openbb_invalid_order', __( 'That status cannot be set here.', 'open-bulk-buying' ), array( 'status' => 400 ) );
+		}
+		if ( ! $order->cycle_id && ! $cycle ) {
+			return $writes
+				? new WP_Error( 'openbb_membership_order_locked', __( 'Review membership payments from the member screen.', 'open-bulk-buying' ), array( 'status' => 409 ) )
+				: true;
 		}
 		if ( $status !== $order->status && (
 			OPENBB_Order::STATUS_DRAFT === $status

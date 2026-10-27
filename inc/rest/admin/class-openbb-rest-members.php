@@ -156,6 +156,47 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 				),
 			)
 		);
+
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/members/(?P<id>\d+)/membership-payment',
+			array(
+				'args' => self::id_arg(),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'membership_payment' ),
+					// Per-member checks (openbb_edit_member, status change) are made by OPENBB_Membership_Fees.
+					'permission_callback' => static function () {
+						$allowed = self::authorize( 'openbb_record_payments' );
+						return true === $allowed ? self::authorize( 'openbb_edit_members' ) : $allowed;
+					},
+					'args'                => array(
+						'reference'      => array(
+							'description'       => __( 'Payment reference, e.g. a cheque or e-transfer number.', 'open-bulk-buying' ),
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'order_id'       => array(
+							'description' => __( 'A pending membership fee claim to review. Leave out to record a new payment.', 'open-bulk-buying' ),
+							'type'        => 'integer',
+							'minimum'     => 0,
+							'default'     => 0,
+						),
+						'approve_member' => array(
+							'description' => __( 'With order_id: also approve the applicant, together with the payment.', 'open-bulk-buying' ),
+							'type'        => 'boolean',
+							'default'     => false,
+						),
+						'reject'         => array(
+							'description' => __( 'With order_id: reject the claimed payment instead of confirming it.', 'open-bulk-buying' ),
+							'type'        => 'boolean',
+							'default'     => false,
+						),
+					),
+				),
+			)
+		);
 	}
 
 	public function get_items( WP_REST_Request $request ): WP_REST_Response {
@@ -449,6 +490,67 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 	}
 
 	/**
+	 * Records a membership fee payment, or reviews (confirms or rejects) a pending claim.
+	 *
+	 * Without order_id: records a paid membership fee. With order_id: confirms that claim,
+	 * or with reject cancels it; approve_member also approves the applicant in the same step.
+	 * Responds with the refreshed member, plus the order that was written.
+	 */
+	public function membership_payment( WP_REST_Request $request ) {
+		$member = OPENBB_Member::get( (int) $request['id'] );
+		if ( ! $member ) {
+			return self::not_found( __( 'Member not found.', 'open-bulk-buying' ) );
+		}
+
+		$order_id = (int) $request['order_id'];
+		$approve  = (bool) $request['approve_member'];
+		$reject   = (bool) $request['reject'];
+		$actor_id = get_current_user_id();
+
+		if ( $order_id <= 0 && ( $approve || $reject ) ) {
+			return self::invalid( __( 'Choose the claimed payment to approve or reject.', 'open-bulk-buying' ) );
+		}
+		if ( $approve && $reject ) {
+			return self::invalid( __( 'A membership can\'t be approved while its payment is rejected.', 'open-bulk-buying' ) );
+		}
+		if ( $order_id <= 0 ) {
+			$order = OPENBB_Membership_Fees::record( $member->user_id, $actor_id, (string) $request['reference'] );
+		} else {
+			$order = OPENBB_Membership_Fees::review( $member->user_id, $order_id, $actor_id, $approve, $reject );
+		}
+
+		if ( is_wp_error( $order ) ) {
+			$data = $order->get_error_data();
+			if ( ! is_array( $data ) || empty( $data['status'] ) ) {
+				$order->add_data( array_merge( is_array( $data ) ? $data : array(), array( 'status' => 400 ) ) );
+			}
+			return $order;
+		}
+		if ( ! $order instanceof OPENBB_Order ) {
+			return new WP_Error( 'openbb_membership_payment_failed', __( 'The membership payment could not be saved.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+		}
+
+		$saved = OPENBB_Member::get( $member->user_id );
+		if ( ! $saved ) {
+			return rest_ensure_response(
+				array(
+					'id'      => $member->user_id,
+					'removed' => true,
+				)
+			);
+		}
+
+		$item           = $this->prepare_member( $saved );
+		$item['orders'] = current_user_can( 'openbb_view_orders' ) ? $this->member_orders( $saved->user_id ) : array();
+		$item['order']  = array(
+			'id'     => (int) $order->id,
+			'status' => (string) $order->status,
+		);
+
+		return rest_ensure_response( $item );
+	}
+
+	/**
 	 * Users of this site who aren't members, for the "Add member" picker.
 	 */
 	public function get_candidates( WP_REST_Request $request ): WP_REST_Response {
@@ -498,7 +600,52 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 	 * One member, as in lists.
 	 */
 	private function prepare_member( OPENBB_Member $member ): array {
-		return $this->prepare_members( array( $member ) )[0];
+		$item = $this->prepare_members( array( $member ) )[0];
+
+		// Single members only: the summary queries the member's fee orders.
+		$item['membership_fee']                = $this->membership_fee_summary( $member->user_id );
+		$item['can_record_membership_payment'] = current_user_can( 'openbb_record_payments' )
+			&& current_user_can( 'openbb_edit_members' )
+			&& current_user_can( 'openbb_edit_member', $member->user_id );
+
+		return $item;
+	}
+
+	/**
+	 * The member's membership fee status, with status labels and local dates on the history.
+	 */
+	private function membership_fee_summary( int $user_id ): array {
+		$summary = OPENBB_Membership_Fees::summary( $user_id );
+		$labels  = OPENBB_Order::status_labels();
+
+		return array(
+			'status'           => (string) ( $summary['status'] ?? 'not_applicable' ),
+			'amount'           => (int) ( $summary['amount'] ?? 0 ),
+			'amount_formatted' => openbb_format_money( $summary['amount'], $summary['currency'] ),
+			'currency'         => (string) ( $summary['currency'] ?? '' ),
+			'pending_order_id' => (int) ( $summary['pending_order_id'] ?? 0 ),
+			'history'          => array_values(
+				array_map(
+					static function ( $row ) use ( $labels ): array {
+						$row     = (array) $row;
+						$status  = (string) ( $row['status'] ?? '' );
+						$paid_at = isset( $row['paid_at'] ) ? (string) $row['paid_at'] : '';
+						return array(
+							'id'           => (int) ( $row['id'] ?? 0 ),
+							'status'       => $status,
+							// In fee history, a fulfilled order means the fee was paid.
+							'status_label' => self::order_status_label( $status, true, $labels ),
+							'total'        => (int) ( $row['total'] ?? 0 ),
+							'total_formatted' => openbb_format_money( $row['total'], $row['currency'] ),
+							'currency'     => (string) ( $row['currency'] ?? '' ),
+							'paid_at'      => self::to_local_datetime( '' === $paid_at ? null : $paid_at ),
+							'reference'    => (string) ( $row['reference'] ?? '' ),
+						);
+					},
+					(array) ( $summary['history'] ?? array() )
+				)
+			),
+		);
 	}
 
 	/**
@@ -574,6 +721,17 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 		return $items;
 	}
 
+	/**
+	 * A standalone membership payment is complete once fulfilled, so it reads "Paid".
+	 */
+	private static function order_status_label( string $status, bool $standalone, array $labels ): string {
+		if ( $standalone && OPENBB_Order::STATUS_FULFILLED === $status ) {
+			return __( 'Paid', 'open-bulk-buying' );
+		}
+
+		return $labels[ $status ] ?? $status;
+	}
+
 	private function member_orders( int $user_id ): array {
 		global $wpdb;
 
@@ -594,12 +752,15 @@ class OPENBB_REST_Members extends OPENBB_REST_Controller {
 
 		return array_map(
 			static function ( array $row ) use ( $labels ): array {
+				// Orders without a cycle are standalone membership fee payments.
+				$standalone = empty( $row['cycle_id'] );
 				return array(
 					'id'           => (int) $row['id'],
 					'cycle_id'     => (int) $row['cycle_id'],
-					'cycle_name'   => (string) $row['cycle_name'],
+					'cycle_name'   => $standalone ? __( 'Membership payment', 'open-bulk-buying' ) : (string) $row['cycle_name'],
+					'standalone'   => $standalone,
 					'status'       => $row['status'],
-					'status_label' => $labels[ $row['status'] ] ?? $row['status'],
+					'status_label' => self::order_status_label( $row['status'], $standalone, $labels ),
 					'total'        => (int) $row['total'],
 					'submitted_at' => self::to_local_datetime( $row['submitted_at'] ),
 				);

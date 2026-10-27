@@ -99,6 +99,25 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 
 		register_rest_route(
 			self::API_NAMESPACE,
+			'/orders/(?P<id>\d+)/reopen',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'reopen_order' ),
+				'permission_callback' => static function ( WP_REST_Request $request ) {
+					return self::authorize( 'openbb_edit_order', (int) $request['id'] );
+				},
+				'args'                => array_merge(
+					self::id_arg(),
+					array(
+						'confirmed'         => array( 'type' => 'boolean', 'required' => true ),
+						'reason'            => array( 'type' => 'string', 'required' => true, 'sanitize_callback' => 'sanitize_textarea_field' ),
+						'expected_revision' => array( 'type' => 'integer', 'minimum' => 0, 'required' => true ),
+					)
+				),
+			)
+		);
+		register_rest_route(
+			self::API_NAMESPACE,
 			'/order-products',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
@@ -144,6 +163,27 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				),
 			)
 		);
+	}
+
+	public function reopen_order( WP_REST_Request $request ) {
+		if ( true !== $request['confirmed'] || '' === trim( (string) $request['reason'] ) ) {
+			return new WP_Error( 'openbb_confirmation_required', __( 'Confirm reopening and explain why this order is being reopened.', 'open-bulk-buying' ), array( 'status' => 400 ) );
+		}
+		$order = OPENBB_Orders::get( (int) $request['id'] );
+		if ( ! $order ) {
+			return self::not_found( __( 'Order not found.', 'open-bulk-buying' ) );
+		}
+		$saved = OPENBB_Order_Editor::apply(
+			$order,
+			array(
+				'reopen'            => true,
+				'status'            => OPENBB_Order::STATUS_DRAFT,
+				'reason'            => $request['reason'],
+				'expected_revision' => (int) $request['expected_revision'],
+			),
+			get_current_user_id()
+		);
+		return is_wp_error( $saved ) ? $saved : rest_ensure_response( $this->prepare_order_detail( $saved ) );
 	}
 
 	public function confirm_order( WP_REST_Request $request ) {
@@ -305,7 +345,9 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 
 		$deleted = $order->delete();
 		if ( is_wp_error( $deleted ) ) {
-			$deleted->add_data( array( 'status' => 'openbb_order_delete_failed' === $deleted->get_error_code() ? 500 : 409 ) );
+			if ( ! $deleted->get_error_data() ) {
+				$deleted->add_data( array( 'status' => 'openbb_order_delete_failed' === $deleted->get_error_code() ? 500 : 409 ) );
+			}
 			return $deleted;
 		}
 
@@ -441,15 +483,16 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 			$item   = array(
 				'id'               => $order->id,
 				'cycle_id'         => $order->cycle_id,
-				'cycle_name'       => $cycle ? $cycle->name : '',
+				'cycle_name'       => $cycle ? $cycle->name : __( 'Membership payment', 'open-bulk-buying' ),
 				'cycle_status'     => $cycle ? $cycle->status : '',
 				'user_id'          => $order->user_id,
 				'member'           => self::user_summary( $order->user_id ),
 				'status'           => $order->status,
-				'status_label'     => $labels[ $order->status ] ?? $order->status,
+				'status_label'     => ! $order->cycle_id && OPENBB_Order::STATUS_FULFILLED === $order->status ? __( 'Paid', 'open-bulk-buying' ) : ( $labels[ $order->status ] ?? $order->status ),
 				'language'         => $order->language,
 				'currency'         => $order->currency,
 				'subtotal'         => $order->subtotal,
+				'membership_fee'   => $order->membership_fee(),
 				'container_credit' => $order->container_credit,
 				'donation'         => $order->donation,
 				'total'            => $order->total,
@@ -466,7 +509,9 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				'can_edit_lines'   => $can_edit_contents && $can_edit,
 				'can_edit_amounts' => $can_edit_contents && $can_edit,
 				'can_cancel'       => OPENBB_Order_Policy::can_cancel( $order, $cycle ) && $can_edit,
-				'can_delete'       => OPENBB_Order_Policy::can_delete( $order ) && $can_edit,
+				'can_delete'       => $can_edit && OPENBB_Order_Policy::can_delete( $order, $cycle ),
+				'can_reopen'       => $can_edit && OPENBB_Order_Policy::can_reopen( $order, $cycle ),
+				'preparation_cleanup' => $cycle && $cycle->allows_preparation_cleanup(),
 				'is_abandoned'     => $order->is_abandoned( $cycle ),
 				'hold_until'       => $cycle ? self::to_local_datetime( $cycle->hold_until( $order->status ) ) : null,
 				'paid_at'          => self::to_local_datetime( $order->paid_at ),
@@ -512,6 +557,7 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				return array(
 					'id'               => $line->id,
 					'product_id'       => $line->product_id,
+					'line_type'        => $line->line_type,
 					'product_name'     => $line->product_name,
 					'brand'            => $line->brand,
 					'unit_label'       => $line->get_unit_label(),
@@ -524,7 +570,7 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 					'qty_final'        => $line->qty_final,
 					'line_total'       => $line->line_total,
 					'is_prepared'      => null !== $line->qty_prepared || null !== $line->qty_final,
-					'max_qty'          => OPENBB_Order_Editor::to_units( $limits[ $line->product_id ] ?? 0.0, $line->base_per_unit ),
+					'max_qty'          => $line->is_membership_fee() ? 1 : OPENBB_Order_Editor::to_units( $limits[ $line->product_id ] ?? 0.0, $line->base_per_unit ),
 				);
 			},
 			$lines

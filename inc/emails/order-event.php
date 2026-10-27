@@ -17,6 +17,11 @@ $titles  = array(
 	'cancelled' => __( 'Order cancelled', 'open-bulk-buying' ),
 	'fulfilled' => __( 'Order fulfilled', 'open-bulk-buying' ),
 );
+if ( ! $order->cycle_id ) {
+	$titles['created'] = __( 'Membership payment awaiting verification', 'open-bulk-buying' );
+	$titles['fulfilled'] = __( 'Membership payment confirmed', 'open-bulk-buying' );
+	$titles['cancelled'] = __( 'Membership payment claim rejected', 'open-bulk-buying' );
+}
 /* translators: 1: site name, 2: order event, 3: order ID. */
 $subject = sprintf( __( '[%1$s] %2$s (#%3$d)', 'open-bulk-buying' ), $site, $titles[ $event ], $order->id );
 $cycle   = OPENBB_Cycles::get( $order->cycle_id );

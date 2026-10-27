@@ -90,6 +90,9 @@ class OPENBB_Order_Editor {
 	 * @return OPENBB_Order|WP_Error The saved order, re-read.
 	 */
 	public static function apply( OPENBB_Order $order, array $changes, int $actor_id, bool $by_member = false ) {
+		if ( ! empty( $changes['reopen'] ) && ( $by_member || array_diff( array_keys( $changes ), array( 'reopen', 'status', 'reason', 'expected_updated_at', 'expected_revision' ) ) ) ) {
+			return self::invalid( __( 'Reopen the order separately before editing its contents.', 'open-bulk-buying' ) );
+		}
 		if ( ! OPENBB_Inventory::lock() ) {
 			return new WP_Error( 'openbb_busy', __( 'Stock is being updated by someone else. Please try again.', 'open-bulk-buying' ), array( 'status' => 503 ) );
 		}
@@ -179,15 +182,29 @@ class OPENBB_Order_Editor {
 		$lines      = array();
 		$delete_ids = array();
 		if ( $has_lines ) {
-			$planned = self::plan_lines( $order, (array) $changes['lines'], OPENBB_Order::STATUS_DRAFT === $new_status );
+			$planned = self::plan_lines( $order, (array) $changes['lines'], OPENBB_Order::STATUS_DRAFT === $new_status && ! $order->submitted_at );
 			if ( is_wp_error( $planned ) ) {
 				return $planned;
 			}
 			list( $lines, $delete_ids ) = $planned;
 		}
 
-		$lines_changed = $has_lines && ( $lines || $delete_ids );
-		if ( OPENBB_Order::STATUS_CANCELLED !== $new_status && ( $lines_changed || $new_status !== $old_status ) ) {
+		if ( empty( $changes['reopen'] ) && $order->cycle_id && in_array( $new_status, array( OPENBB_Order::STATUS_DRAFT, OPENBB_Order::STATUS_SUBMITTED ), true ) ) {
+			list( $lines, $delete_ids ) = OPENBB_Membership_Fees::synchronize( $order, self::final_lines( $order, $lines, $delete_ids ), $lines, $delete_ids );
+		}
+		$lines_changed = (bool) ( $lines || $delete_ids );
+		if ( OPENBB_Order::STATUS_DRAFT === $old_status && OPENBB_Order::STATUS_SUBMITTED === $new_status && $order->submitted_at ) {
+			foreach ( self::final_lines( $order, $lines, $delete_ids ) as $line ) {
+				if ( $line->is_membership_fee() || $line->get_quantity() <= 0 ) {
+					continue;
+				}
+				$product = OPENBB_Product::get( $line->product_id );
+				if ( ! $product || ! $product->is_active() ) {
+					return self::invalid( __( 'Remove unavailable products before resubmitting this order.', 'open-bulk-buying' ) );
+				}
+			}
+		}
+		if ( empty( $changes['reopen'] ) && OPENBB_Order::STATUS_CANCELLED !== $new_status && ( $lines_changed || $new_status !== $old_status ) ) {
 			$check = self::check_stock( $order, $lines, $delete_ids );
 			if ( is_wp_error( $check ) ) {
 				return $check;
@@ -237,6 +254,9 @@ class OPENBB_Order_Editor {
 		}
 
 		$event_type = $is_new ? 'created' : 'edited';
+		if ( ! empty( $changes['reopen'] ) ) {
+			$event_type = 'reopened';
+		}
 		if ( $by_member ) {
 			$event_type = OPENBB_Order::STATUS_SUBMITTED === $new_status && $new_status !== $old_status ? 'submitted' : 'member_' . $event_type;
 		}
@@ -316,6 +336,12 @@ class OPENBB_Order_Editor {
 					return self::invalid( __( 'Each line can only be listed once.', 'open-bulk-buying' ) );
 				}
 				$keep[ $line_id ] = true;
+				if ( $line->is_membership_fee() ) {
+					if ( abs( $qty - $line->qty_requested ) >= self::EPSILON || $own ) {
+						return self::invalid( __( 'Membership fees are managed from the member payment screen.', 'open-bulk-buying' ) );
+					}
+					continue;
+				}
 
 				// Keep historical fractional quantities readable and unchanged.
 				if ( $qty !== $line->qty_requested && floor( $qty ) !== $qty ) {
@@ -380,7 +406,7 @@ class OPENBB_Order_Editor {
 
 		$delete = array();
 		foreach ( $existing as $line_id => $line ) {
-			if ( isset( $keep[ $line_id ] ) ) {
+			if ( isset( $keep[ $line_id ] ) || $line->is_membership_fee() ) {
 				continue;
 			}
 			if ( null !== $line->qty_prepared || null !== $line->qty_final ) {
@@ -465,6 +491,9 @@ class OPENBB_Order_Editor {
 		$wanted = array();
 		$names  = array();
 		foreach ( self::final_lines( $order, $writes, $delete_ids ) as $line ) {
+			if ( $line->is_membership_fee() ) {
+				continue;
+			}
 			$wanted[ $line->product_id ] = ( $wanted[ $line->product_id ] ?? 0.0 ) + $line->get_base_quantity();
 			$names[ $line->product_id ]  = $line;
 		}

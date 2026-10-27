@@ -115,6 +115,29 @@ final class OPENBB_Signup_View {
 			);
 		}
 
+		$claim_fields = array();
+		if ( (int) OPENBB_Settings::get_general()['membership_fee_amount'] > 0 ) {
+			$claim_fields = array(
+				array(
+					'name'      => 'membership_fee_claim',
+					'kind'      => 'checkbox',
+					'label'     => __( 'I already paid the membership fee.', 'open-bulk-buying' ),
+					'help'      => __( 'Staff always review this payment claim separately from membership approval. It does not mark your fee as paid or approve your membership.', 'open-bulk-buying' ),
+					'value'     => (bool) ( $saved['membership_fee_claim'] ?? false ),
+					'id_prefix' => self::ID,
+				),
+				array(
+					'name'      => 'membership_fee_reference',
+					'kind'      => 'text',
+					'label'     => __( 'Membership fee payment reference (optional)', 'open-bulk-buying' ),
+					'help'      => __( 'If you already paid, provide a transfer reference or other details to help staff find your payment.', 'open-bulk-buying' ),
+					'maxlength' => 500,
+					'value'     => (string) ( $saved['membership_fee_reference'] ?? '' ),
+					'id_prefix' => self::ID,
+				),
+			);
+		}
+
 		$form_steps = array( 'details' );
 		if ( $profile_fields || $rules ) {
 			$form_steps[] = 'profile';
@@ -122,7 +145,7 @@ final class OPENBB_Signup_View {
 		$steps = array_merge( $form_steps, $user_id ? array() : array( 'code' ), array( 'done' ) );
 
 		$values = array();
-		foreach ( array_merge( $account_fields, $profile_fields, $rules_field ? array( $rules_field ) : array() ) as $field ) {
+		foreach ( array_merge( $account_fields, $profile_fields, $rules_field ? array( $rules_field ) : array(), $claim_fields ) as $field ) {
 			$values[ $field['name'] ] = $field['value'];
 		}
 		$language = openbb_current_language();
@@ -193,6 +216,7 @@ final class OPENBB_Signup_View {
 			'profile_fields' => $profile_fields,
 			'rules'          => $rules ? $rules->get_content( $language ) : '',
 			'rules_field'    => $rules_field,
+			'claim_fields'   => $claim_fields,
 			'fee'            => self::fee_notice(),
 			'submit_label'   => $user_id ? __( 'Join the co-op', 'open-bulk-buying' ) : __( 'Sign up', 'open-bulk-buying' ),
 			'code_length'    => OPENBB_Email_Code::LENGTH,

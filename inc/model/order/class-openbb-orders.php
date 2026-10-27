@@ -17,7 +17,7 @@ class OPENBB_Orders {
 		return array(
 			$wpdb->openbb_orders      => "CREATE TABLE {$wpdb->openbb_orders} (
 				id bigint(20) unsigned NOT NULL auto_increment,
-				cycle_id bigint(20) unsigned NOT NULL,
+				cycle_id bigint(20) unsigned NULL default NULL,
 				user_id bigint(20) unsigned NOT NULL,
 				status varchar(20) NOT NULL default 'draft',
 				language varchar(20) NOT NULL default '',
@@ -70,6 +70,7 @@ class OPENBB_Orders {
 				order_id bigint(20) unsigned NOT NULL,
 				product_id bigint(20) unsigned NOT NULL,
 				source varchar(20) NOT NULL default 'member',
+				line_type varchar(30) NOT NULL default 'product',
 				product_name varchar(255) NOT NULL default '',
 				brand varchar(255) NOT NULL default '',
 				unit_amount decimal(12,3) NOT NULL default 1,
@@ -114,6 +115,7 @@ class OPENBB_Orders {
 						return array(
 							'line_id'       => $line->id,
 							'product_id'    => $line->product_id,
+							'line_type'     => $line->line_type,
 							'quantity'      => $line->get_quantity(),
 							'base_per_unit' => $line->base_per_unit,
 							'line_total'    => $line->calculate_total(),
@@ -126,7 +128,7 @@ class OPENBB_Orders {
 		if ( false === $details ) {
 			return false;
 		}
-		return false !== $wpdb->insert(
+		return OPENBB_Cycles::lock_cleanup_for_order( $order, $event ) && false !== $wpdb->insert(
 			$wpdb->openbb_order_events,
 			array(
 				'order_id'    => $order->id,

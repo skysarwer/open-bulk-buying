@@ -7,6 +7,7 @@ import { request } from '../../utils/api';
 import { can, config } from '../../utils/config';
 import { formatMoney } from '../../utils/format';
 import { RolesEdit, formatDate, memberFields, memberForm } from './fields';
+import MembershipFee from './membership-fee';
 import {
 	PROFILE_PREFIX,
 	fieldLabel,
@@ -245,19 +246,25 @@ export default function MemberPanel( { memberId, onClose, onSaved } ) {
 				if ( tab.name === 'orders' ) {
 					return <MemberOrders orders={ member.orders || [] } />;
 				}
+				const saved = ( item, message ) => {
+					// The update response has no order history; keep the loaded one.
+					setRecord( ( prev ) => ( { ...prev, ...item } ) );
+					onSaved( item, message );
+				};
+				const fee = <MembershipFee member={ member } onSaved={ saved } />;
 				if ( ! Object.values( permissions( member ) ).some( Boolean ) ) {
-					return <MemberReadOnly member={ member } />;
+					return (
+						<>
+							<MemberReadOnly member={ member } />
+							{ fee }
+						</>
+					);
 				}
 				return (
-					<MemberDetailsForm
-						member={ member }
-						onCancel={ onClose }
-						onSaved={ ( saved ) => {
-							// The update response has no order history; keep the loaded one.
-							setRecord( ( prev ) => ( { ...prev, ...saved } ) );
-							onSaved( saved );
-						} }
-					/>
+					<>
+						<MemberDetailsForm member={ member } onCancel={ onClose } onSaved={ saved } />
+						{ fee }
+					</>
 				);
 			} }
 		</SidePanel>

@@ -142,7 +142,7 @@ class OPENBB_Access {
 	 *
 	 * @return true|WP_Error
 	 */
-	public static function set_status( int $user_id, string $status ) {
+	public static function set_status( int $user_id, string $status, bool $notify = true ) {
 		$status = self::sanitize_status( $status );
 		if ( '' === $status || ! get_userdata( $user_id ) ) {
 			return new WP_Error( 'openbb_invalid_status', __( 'That membership status or user does not exist.', 'open-bulk-buying' ), array( 'status' => 400 ) );
@@ -161,7 +161,7 @@ class OPENBB_Access {
 			return new WP_Error( 'openbb_forbidden', __( 'You are not allowed to change this person\'s membership status.', 'open-bulk-buying' ), array( 'status' => 403 ) );
 		}
 
-		return self::write_status( $user_id, $status, $old );
+		return self::write_status( $user_id, $status, $old, $notify );
 	}
 
 	/**
@@ -185,7 +185,7 @@ class OPENBB_Access {
 	/**
 	 * @return true|WP_Error
 	 */
-	private static function write_status( int $user_id, string $status, string $old ) {
+	private static function write_status( int $user_id, string $status, string $old, bool $notify = true ) {
 		if ( ! openbb_update_member_field( $user_id, 'status', $status ) ) {
 			return new WP_Error( 'openbb_save_failed', __( 'The membership status could not be saved.', 'open-bulk-buying' ) );
 		}
@@ -212,7 +212,9 @@ class OPENBB_Access {
 		 * @param string $old      Previous status; '' if they weren't a member.
 		 * @param int    $actor_id User who made the change.
 		 */
-		do_action( 'openbb_member_status_changed', $user_id, $status, $old, get_current_user_id() );
+		if ( $notify ) {
+			do_action( 'openbb_member_status_changed', $user_id, $status, $old, get_current_user_id() );
+		}
 
 		return true;
 	}

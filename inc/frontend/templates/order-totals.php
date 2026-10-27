@@ -28,10 +28,15 @@ defined( 'ABSPATH' ) || exit;
 		<dt><?php esc_html_e( 'Donation', 'open-bulk-buying' ); ?></dt>
 		<dd data-wp-text="state.donationText"></dd>
 	</div>
+	<div class="openbb-totals__row" data-wp-bind--hidden="!state.hasMembershipFee">
+		<dt><?php esc_html_e( 'Membership fee', 'open-bulk-buying' ); ?></dt>
+		<dd data-wp-text="state.membershipFeeText"></dd>
+	</div>
 	<div class="openbb-totals__row openbb-totals__row--total">
 		<dt><?php esc_html_e( 'Total to pay at pickup', 'open-bulk-buying' ); ?></dt>
 		<dd data-wp-text="state.totalText"></dd>
 	</div>
 </dl>
+<p class="openbb-totals__note" data-wp-bind--hidden="!state.membershipPending"><?php esc_html_e( 'Your membership payment claim is awaiting staff verification. The fee has not been added again.', 'open-bulk-buying' ); ?></p>
 <p class="openbb-totals__note" data-wp-bind--hidden="!state.hasAidPending"><?php esc_html_e( 'You asked for financial aid. If it is approved, the co-op will tell you how much comes off your total.', 'open-bulk-buying' ); ?></p>
 </div>

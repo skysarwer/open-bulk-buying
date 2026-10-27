@@ -339,11 +339,11 @@ export default function OrdersScreen() {
 					<ConfirmBody
 						message={ sprintf(
 							/* translators: 1: order number, 2: member name. */
-							__( 'Delete order #%1$d for %2$s? Consider cancelling it instead to keep its history.', 'open-bulk-buying' ),
+							__( 'Permanently delete order #%1$d for %2$s, including its items and history? Any stock reservation will be released. This cannot be undone. Cancel it instead if you need to keep its history.', 'open-bulk-buying' ),
 							item.id,
 							item.member.name
 						) }
-						confirmLabel={ __( 'Delete', 'open-bulk-buying' ) }
+						confirmLabel={ __( 'Delete permanently', 'open-bulk-buying' ) }
 						isDestructive
 						closeModal={ closeModal }
 						onConfirm={ async () => {
