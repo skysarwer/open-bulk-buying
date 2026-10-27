@@ -158,13 +158,16 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'create_term' ),
 					'permission_callback' => $can_manage,
-					'args'                => array(
-						'name' => array(
-							'type'              => 'string',
-							'required'          => true,
-							'sanitize_callback' => 'sanitize_text_field',
+					'args'                => array_merge(
+						array(
+							'name'  => array(
+								'type'              => 'string',
+								'required'          => true,
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+							'order' => array( 'type' => 'integer' ),
 						),
-						'order' => array( 'type' => 'integer' ),
+						self::term_translation_args()
 					),
 				),
 			)
@@ -172,17 +175,42 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 
 		register_rest_route(
 			self::API_NAMESPACE,
-			'/product-terms/categories/(?P<id>\d+)',
+			'/product-terms/(?P<taxonomy>categories|suppliers)/(?P<id>\d+)',
 			array(
-				'methods'             => WP_REST_Server::EDITABLE,
-				'callback'            => array( $this, 'update_category' ),
-				'permission_callback' => $can_manage,
-				'args'                => array_merge(
-					self::id_arg(),
-					array( 'order' => array( 'type' => 'integer', 'required' => true ) )
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_term' ),
+					'permission_callback' => $can_manage,
+					'args'                => array_merge(
+						self::id_arg(),
+						array(
+							'name'  => array(
+								'type'              => 'string',
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+							'order' => array( 'type' => 'integer' ),
+						),
+						self::term_translation_args()
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_term' ),
+					'permission_callback' => $can_manage,
+					'args'                => self::id_arg(),
 				),
 			)
 		);
+	}
+
+	/**
+	 * Translations of a term's name: "name_{language}" params.
+	 */
+	private static function term_translation_args(): array {
+		$args = self::localized_args( 'name' );
+		unset( $args['name'] );
+
+		return $args;
 	}
 
 	private function write_args(): array {
@@ -551,26 +579,81 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 			$term->add_data( array( 'status' => 400 ) );
 			return $term;
 		}
+		$term_id = (int) $term['term_id'];
 		if ( OPENBB_PRODUCT_TAXONOMY === $taxonomy && $request->has_param( 'order' ) ) {
-			$saved = $this->save_category_order( (int) $term['term_id'], (int) $request['order'] );
+			$saved = $this->save_category_order( $term_id, (int) $request['order'] );
 			if ( is_wp_error( $saved ) ) {
 				return $saved;
 			}
 		}
+		$this->save_term_translations( $term_id, $request );
 
-		$response = rest_ensure_response( $this->prepare_term( get_term( (int) $term['term_id'], $taxonomy ) ) );
+		$response = rest_ensure_response( $this->prepare_term( get_term( $term_id, $taxonomy ) ) );
 		$response->set_status( 201 );
 
 		return $response;
 	}
 
-	public function update_category( WP_REST_Request $request ) {
-		$term = get_term( (int) $request['id'], OPENBB_PRODUCT_TAXONOMY );
+	public function update_term( WP_REST_Request $request ) {
+		$taxonomy = self::TERM_TAXONOMIES[ $request['taxonomy'] ];
+		$term     = get_term( (int) $request['id'], $taxonomy );
 		if ( ! $term || is_wp_error( $term ) ) {
-			return self::not_found( __( 'Category not found.', 'open-bulk-buying' ) );
+			return self::not_found( __( 'Term not found.', 'open-bulk-buying' ) );
 		}
-		$result = $this->save_category_order( $term->term_id, (int) $request['order'] );
-		return is_wp_error( $result ) ? $result : rest_ensure_response( $this->prepare_term( $term ) );
+
+		$has_translation = false;
+		foreach ( self::translation_languages() as $language ) {
+			$has_translation = $has_translation || $request->has_param( 'name_' . $language );
+		}
+		$has_order = $request->has_param( 'order' );
+		if ( OPENBB_SUPPLIER_TAXONOMY === $taxonomy && $has_order ) {
+			return self::invalid( __( 'Only categories have a display order.', 'open-bulk-buying' ) );
+		}
+		if ( ! $has_order && ! $has_translation && ! $request->has_param( 'name' ) ) {
+			return self::invalid( __( 'Nothing to update.', 'open-bulk-buying' ) );
+		}
+
+		if ( $request->has_param( 'name' ) ) {
+			$name = trim( (string) $request['name'] );
+			if ( '' === $name ) {
+				return self::invalid( __( 'Enter a name.', 'open-bulk-buying' ) );
+			}
+			if ( $name !== $term->name ) {
+				$updated = wp_update_term( $term->term_id, $taxonomy, array( 'name' => wp_slash( $name ) ) );
+				if ( is_wp_error( $updated ) ) {
+					$updated->add_data( array( 'status' => 400 ) );
+					return $updated;
+				}
+			}
+		}
+		if ( $has_order ) {
+			$saved = $this->save_category_order( $term->term_id, (int) $request['order'] );
+			if ( is_wp_error( $saved ) ) {
+				return $saved;
+			}
+		}
+		$this->save_term_translations( $term->term_id, $request );
+
+		return rest_ensure_response( $this->prepare_term( get_term( $term->term_id, $taxonomy ) ) );
+	}
+
+	public function delete_term( WP_REST_Request $request ) {
+		$taxonomy = self::TERM_TAXONOMIES[ $request['taxonomy'] ];
+		$term     = get_term( (int) $request['id'], $taxonomy );
+		if ( ! $term || is_wp_error( $term ) ) {
+			return self::not_found( __( 'Term not found.', 'open-bulk-buying' ) );
+		}
+
+		// Products keep existing without the term; its sub-categories move up a level.
+		$deleted = wp_delete_term( $term->term_id, $taxonomy );
+		if ( is_wp_error( $deleted ) ) {
+			return self::with_status( $deleted, 500 );
+		}
+		if ( ! $deleted ) {
+			return new WP_Error( 'openbb_term_delete_failed', __( 'The term could not be deleted.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+		}
+
+		return rest_ensure_response( array( 'deleted' => true, 'id' => (int) $term->term_id ) );
 	}
 
 	private function save_category_order( int $term_id, int $order ) {
@@ -584,12 +667,32 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 		return true;
 	}
 
+	/**
+	 * Stores the "name_{language}" params. Only translations are stored; the term's own
+	 * name is the default text. Empty translations are dropped.
+	 */
+	private function save_term_translations( int $term_id, WP_REST_Request $request ): void {
+		$term = get_term( $term_id );
+		if ( ! $term instanceof WP_Term ) {
+			return;
+		}
+		$value = self::localized_in( $request, 'name', openbb_term_names( $term ) );
+		unset( $value['default'] );
+		if ( $value ) {
+			update_term_meta( $term_id, OPENBB_META_PREFIX . 'name', $value );
+		} else {
+			delete_term_meta( $term_id, OPENBB_META_PREFIX . 'name' );
+		}
+	}
+
 	private function prepare_term( WP_Term $term ): array {
-		$data = array(
-			'id'     => (int) $term->term_id,
-			'name'   => $term->name,
-			'count'  => (int) $term->count,
-			'parent' => (int) $term->parent,
+		$data = array_merge(
+			array(
+				'id'     => (int) $term->term_id,
+				'count'  => (int) $term->count,
+				'parent' => (int) $term->parent,
+			),
+			self::localized_out( 'name', openbb_term_names( $term ) )
 		);
 		if ( OPENBB_PRODUCT_TAXONOMY === $term->taxonomy ) {
 			$data['order'] = (int) get_term_meta( $term->term_id, OPENBB_META_PREFIX . 'order', true );

@@ -102,6 +102,44 @@ class Test_OPENBB_REST_Admin extends OPENBB_TestCase {
 		$this->assertSame( 403, $this->api( 'PUT', "/product-terms/categories/{$ids[0]}", array( 'order' => 1 ) )->get_status() );
 	}
 
+	public function test_terms_can_be_renamed_translated_and_deleted(): void {
+		add_filter(
+			'openbb_languages',
+			static function () {
+				return array( 'en', 'fr' );
+			}
+		);
+		add_filter(
+			'wpml_default_language',
+			static function () {
+				return 'en';
+			}
+		);
+
+		$category = $this->api( 'POST', '/product-terms/categories', array( 'name' => 'Beans', 'name_fr' => 'Haricots' ) )->get_data();
+		$this->assertSame( 'Haricots', $category['name_fr'] );
+
+		$updated = $this->api( 'PUT', "/product-terms/categories/{$category['id']}", array( 'name' => 'Legumes' ) )->get_data();
+		$this->assertSame( 'Legumes', $updated['name'] );
+		$this->assertSame( 'Haricots', $updated['name_fr'] );
+		$this->assertSame( 'Haricots', openbb_term_name( get_term( $category['id'] ), 'fr' ) );
+		$this->assertSame( 'Legumes', openbb_term_name( get_term( $category['id'] ), 'de' ) );
+
+		$updated = $this->api( 'PUT', "/product-terms/categories/{$category['id']}", array( 'name_fr' => '' ) )->get_data();
+		$this->assertSame( '', $updated['name_fr'] );
+		$this->assertSame( 400, $this->api( 'PUT', "/product-terms/categories/{$category['id']}", array( 'name' => ' ' ) )->get_status() );
+
+		$supplier = $this->api( 'POST', '/product-terms/suppliers', array( 'name' => 'Farm' ) )->get_data();
+		$this->assertSame( 400, $this->api( 'PUT', "/product-terms/suppliers/{$supplier['id']}", array( 'order' => 1 ) )->get_status() );
+		$this->assertSame( 'Farm Co', $this->api( 'PUT', "/product-terms/suppliers/{$supplier['id']}", array( 'name' => 'Farm Co' ) )->get_data()['name'] );
+
+		$this->assertSame( 200, $this->api( 'DELETE', "/product-terms/suppliers/{$supplier['id']}" )->get_status() );
+		$this->assertNull( get_term( $supplier['id'], OPENBB_SUPPLIER_TAXONOMY ) );
+		$this->assertSame( 404, $this->api( 'DELETE', "/product-terms/categories/{$supplier['id']}" )->get_status() );
+		wp_set_current_user( $this->make_user( 'member' ) );
+		$this->assertSame( 403, $this->api( 'DELETE', "/product-terms/categories/{$category['id']}" )->get_status() );
+	}
+
 	private function make_open_cycle(): int {
 		$cycle = new OPENBB_Cycle(
 			array(

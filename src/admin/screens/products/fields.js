@@ -147,11 +147,11 @@ const money = ( id, label ) => ( {
 export function buildProductFields( { categories, suppliers } ) {
 	const categoryElements = categories.map( ( term ) => ( {
 		value: term.id,
-		label: term.name,
+		label: localizedRecordField( term, 'name' ),
 	} ) );
 	const supplierElements = suppliers.map( ( term ) => ( {
 		value: term.id,
-		label: term.name,
+		label: localizedRecordField( term, 'name' ),
 	} ) );
 
 	const translations = config.translationLanguages.flatMap( ( lang ) => [

@@ -129,7 +129,7 @@ class OPENBB_Catalog {
 				array(
 					array(
 						'id'       => (int) $term->term_id,
-						'name'     => $term->name,
+						'name'     => openbb_term_name( $term ),
 						'depth'    => $depth,
 						'products' => $products,
 					),

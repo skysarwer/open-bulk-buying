@@ -87,6 +87,24 @@ function openbb_register_product_post_type(): void {
 		)
 	);
 
+	// Translations of the term name; the term's own name is the default text.
+	foreach ( array( OPENBB_PRODUCT_TAXONOMY, OPENBB_SUPPLIER_TAXONOMY ) as $taxonomy ) {
+		register_term_meta(
+			$taxonomy,
+			OPENBB_META_PREFIX . 'name',
+			array(
+				'type'              => 'array',
+				'single'            => true,
+				'default'           => array(),
+				'show_in_rest'      => false,
+				'sanitize_callback' => 'openbb_sanitize_localized_text',
+				'auth_callback'     => static function () {
+					return current_user_can( 'openbb_manage_products' );
+				},
+			)
+		);
+	}
+
 	foreach ( openbb_product_meta_fields() as $field => $args ) {
 		register_post_meta(
 			OPENBB_PRODUCT_POST_TYPE,
@@ -101,6 +119,22 @@ function openbb_register_product_post_type(): void {
 			)
 		);
 	}
+}
+
+/**
+ * A category or supplier name as a localized map: the term name is the default text.
+ */
+function openbb_term_names( WP_Term $term ): array {
+	$translations = get_term_meta( $term->term_id, OPENBB_META_PREFIX . 'name', true );
+
+	return array_merge( is_array( $translations ) ? $translations : array(), array( 'default' => $term->name ) );
+}
+
+/**
+ * A category or supplier name in $language (default: current language).
+ */
+function openbb_term_name( WP_Term $term, ?string $language = null ): string {
+	return openbb_localized( openbb_term_names( $term ), $language );
 }
 
 /**

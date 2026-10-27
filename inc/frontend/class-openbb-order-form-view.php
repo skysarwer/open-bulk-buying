@@ -430,7 +430,7 @@ final class OPENBB_Order_Form_View {
 		$meta     = array_filter(
 			array(
 				$product->brand,
-				$supplier instanceof WP_Term ? $supplier->name : '',
+				$supplier instanceof WP_Term ? openbb_term_name( $supplier ) : '',
 			),
 			'strlen'
 		);
