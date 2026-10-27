@@ -50,6 +50,28 @@ class Test_OPENBB_Membership_Fees extends OPENBB_TestCase {
 		$this->assertSame( 0, $this->order()->membership_fee() );
 	}
 
+	public function test_staff_can_empty_and_refill_a_draft_reusing_its_fee_line(): void {
+		$order = $this->order( 'draft' );
+		$fee = array_values( array_filter( $order->get_lines(), static function ( $line ) { return $line->is_membership_fee(); } ) )[0];
+		$empty = OPENBB_Order_Editor::apply( $order, array( 'lines' => array() ), $this->staff );
+		$this->assertInstanceOf( OPENBB_Order::class, $empty );
+		$this->assertSame( 0, $empty->total );
+
+		$refilled = OPENBB_Order_Editor::apply( $empty, array(
+			'lines' => array( array( 'product_id' => $this->product->id, 'qty' => 1 ) ),
+			'expected_revision' => $empty->revision,
+		), $this->staff );
+		$this->assertInstanceOf( OPENBB_Order::class, $refilled );
+		$this->assertSame( $order->id, $refilled->id );
+		$this->assertSame( 1250, $refilled->total );
+		$fees = array_values( array_filter( $refilled->get_lines(), static function ( $line ) { return $line->is_membership_fee(); } ) );
+		$this->assertCount( 1, $fees );
+		$this->assertSame( $fee->id, $fees[0]->id );
+		$this->assertSame( $order->id, $fees[0]->order_id );
+		$this->assertSame( 1.0, $fees[0]->qty_requested );
+		$this->assertSame( 0.0, OPENBB_Inventory::get_reserved( $this->product->id ) );
+	}
+
 	public function test_claim_is_submitted_not_paid_and_suppresses_duplicate_charge(): void {
 		$claim = OPENBB_Membership_Fees::claim( $this->member, 'Transfer ABC' );
 		$this->assertInstanceOf( OPENBB_Order::class, $claim );

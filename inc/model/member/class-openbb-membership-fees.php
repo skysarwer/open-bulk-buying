@@ -150,6 +150,7 @@ final class OPENBB_Membership_Fees {
 			$new = self::line( $amount );
 			if ( $fee ) {
 				$new->id = $fee->id;
+				$new->order_id = $fee->order_id;
 			}
 			$writes[] = $new;
 		}

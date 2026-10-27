@@ -122,6 +122,48 @@ class Test_OPENBB_Member_Order extends OPENBB_TestCase {
 		$this->assert_error( 'openbb_invalid_order', $this->save( array( 'lines' => array( $this->line( $this->oats, 1 ), $this->line( $this->oats, 2 ) ) ) ), 'lines' );
 	}
 
+	/** @dataProvider draft_membership_fees */
+	public function test_empty_draft_can_be_saved_and_refilled( int $fee ): void {
+		update_option( OPENBB_Settings::GENERAL_OPTION, array( 'membership_fee_amount' => $fee ) );
+		$order = $this->save( array( 'lines' => array( $this->line( $this->oats, 2 ) ) ) );
+		$this->assertInstanceOf( OPENBB_Order::class, $order );
+		$id = $order->id;
+
+		for ( $attempt = 0; $attempt < 2; ++$attempt ) {
+			$revision = $order->revision;
+			$order = $this->save( array( 'lines' => array(), 'expected_revision' => $revision ) );
+			$this->assertInstanceOf( OPENBB_Order::class, $order );
+			$this->assertSame( $id, $order->id );
+			$this->assertGreaterThan( $revision, $order->revision );
+			$this->assertSame( OPENBB_Order::STATUS_DRAFT, $order->status );
+			$this->assertSame( array(), OPENBB_Member_Orders::state( $order, $this->cycle )['lines'] );
+			$this->assertSame( 0, $order->total );
+			$this->assertSame( 0, $order->membership_fee() );
+
+			$order = $this->save( array( 'lines' => array(), 'expected_revision' => $order->revision ) );
+			$this->assertInstanceOf( OPENBB_Order::class, $order );
+
+			$order = $this->save(
+				array(
+					'lines'             => array( $this->line( $this->oats, 3 ) ),
+					'expected_revision' => $order->revision,
+				)
+			);
+			$this->assertInstanceOf( OPENBB_Order::class, $order );
+			$this->assertSame( $id, $order->id );
+			$this->assertSame( array( 3 ), wp_list_pluck( OPENBB_Member_Orders::state( $order, $this->cycle )['lines'], 'qty' ) );
+			$this->assertSame( $fee, $order->membership_fee() );
+			$this->assertSame( 750 + $fee, $order->total );
+		}
+	}
+
+	public static function draft_membership_fees(): array {
+		return array(
+			'without membership fee' => array( 0 ),
+			'with membership fee'    => array( 1000 ),
+		);
+	}
+
 	public function test_submitting_needs_items_and_the_commitment(): void {
 		$this->assert_error( 'openbb_invalid_order', $this->save( array( 'submit' => true, 'commit' => true ) ), 'lines' );
 		$this->assert_error(
@@ -313,6 +355,33 @@ class Test_OPENBB_Member_Order extends OPENBB_TestCase {
 		$request = new WP_REST_Request( 'GET', '/openbb/v1/order' );
 		$request->set_query_params( array( 'cycle_id' => $this->cycle->id ) );
 		$this->assertSame( 403, rest_do_request( $request )->get_status() );
+	}
+
+	public function test_rest_route_can_refill_an_empty_draft_with_a_membership_fee(): void {
+		update_option( OPENBB_Settings::GENERAL_OPTION, array( 'membership_fee_amount' => 1000 ) );
+		rest_get_server();
+		$revision = 0;
+		$order_id = null;
+		foreach ( array( 2, 0, 0, 3 ) as $qty ) {
+			$request = new WP_REST_Request( 'POST', '/openbb/v1/order' );
+			$request->set_body_params(
+				array(
+					'cycle_id'          => $this->cycle->id,
+					'lines'             => $qty ? array( $this->line( $this->oats, $qty ) ) : array(),
+					'expected_revision' => $revision,
+				)
+			);
+			$response = rest_do_request( $request );
+			$this->assertSame( 200, $response->get_status() );
+			$state = $response->get_data();
+			$order_id = $order_id ?? $state['id'];
+			$this->assertSame( $order_id, $state['id'] );
+			$this->assertGreaterThan( $revision, $state['revision'] );
+			$this->assertTrue( $state['editable'] );
+			$this->assertSame( $qty ? array( $qty ) : array(), wp_list_pluck( $state['lines'], 'qty' ) );
+			$this->assertSame( $qty ? $qty * 250 + 1000 : 0, $state['total'] );
+			$revision = $state['revision'];
+		}
 	}
 
 	public function test_staff_can_preview_and_place_orders_during_setup(): void {
