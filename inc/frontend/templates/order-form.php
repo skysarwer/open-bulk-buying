@@ -4,7 +4,8 @@
  * checkout bar on narrow screens. See OPENBB_Order_Form_View.
  *
  * @var array $view id, welcome, cycle_name, closes, cycles (links when several are open),
- *                  notice (type, text) or null, sections, basket (for order-basket).
+ *                  staff_notice, notice (type, text) or null, sections, basket
+ *                  (for order-basket).
  *
  * @package Open_Bulk_Buying
  */
@@ -51,6 +52,10 @@ $top_level = array_values(
 
 	<div class="openbb-order__layout">
 		<div class="openbb-order__main">
+			<?php if ( $view['staff_notice'] ) : ?>
+				<p class="openbb-notice openbb-notice--info"><?php echo esc_html( $view['staff_notice'] ); ?></p>
+			<?php endif; ?>
+
 			<?php if ( $view['notice'] ) : ?>
 				<p class="openbb-notice openbb-notice--<?php echo esc_attr( $view['notice']['type'] ); ?>"><?php echo esc_html( $view['notice']['text'] ); ?></p>
 			<?php endif; ?>

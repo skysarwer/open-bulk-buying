@@ -160,7 +160,10 @@ final class OPENBB_Order_Form_View {
 					/* translators: %s: date and time. */
 					'closes'      => sprintf( __( 'Orders close %s', 'open-bulk-buying' ), self::local_datetime( $cycle->closes_at ) ),
 					'cycles'      => count( $cycles ) > 1 ? self::cycle_links( $cycles, $cycle ) : array(),
-					'notice'      => self::status_notice( $order, $order_state, $cycle ),
+					'staff_notice' => OPENBB_Cycle::STATUS_SETUP === $cycle->status && current_user_can( 'openbb_edit_orders' )
+						? __( 'Staff preview: your role lets you place and edit orders during Setup, before ordering opens to members.', 'open-bulk-buying' )
+						: '',
+					'notice'       => self::status_notice( $order, $order_state, $cycle ),
 					'sections'    => self::sections( $sections ),
 					'basket'      => array(
 						'id'        => self::ID . '-basket',

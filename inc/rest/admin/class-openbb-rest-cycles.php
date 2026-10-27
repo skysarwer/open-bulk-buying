@@ -75,6 +75,25 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 				),
 			)
 		);
+
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/cycles/(?P<id>\d+)/preparation-cleanup',
+			array(
+				'args' => self::id_arg(),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_preparation_cleanup' ),
+					'permission_callback' => $can_manage,
+					'args'                => array(
+						'locked' => array(
+							'type'     => 'boolean',
+							'required' => true,
+						),
+					),
+				),
+			)
+		);
 	}
 
 	private function register_aid_routes(): void {
@@ -287,6 +306,15 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 		return $this->save( $request, $cycle );
 	}
 
+	public function update_preparation_cleanup( WP_REST_Request $request ) {
+		$cycle = OPENBB_Cycles::set_cleanup_lock( (int) $request['id'], (bool) $request['locked'] );
+		if ( is_wp_error( $cycle ) ) {
+			return $cycle;
+		}
+
+		return rest_ensure_response( $this->prepare_cycles( array( $cycle ) )[0] );
+	}
+
 	public function delete_item( WP_REST_Request $request ) {
 		$cycle = OPENBB_Cycles::get( (int) $request['id'] );
 		if ( ! $cycle ) {
@@ -405,6 +433,7 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 					'finalized_at'     => self::to_local_datetime( $cycle->finalized_at ),
 					'finalized_by'     => $cycle->finalized_by,
 					'cleanup_locked_at' => self::to_local_datetime( $cycle->cleanup_locked_at ),
+					'cleanup_locked' => null !== $cycle->cleanup_locked_at,
 					'preparation_cleanup' => $cycle->allows_preparation_cleanup(),
 					'unpaid_hold_until' => self::to_local_datetime( $cycle->unpaid_hold_until ),
 					'prepaid_hold_until' => self::to_local_datetime( $cycle->prepaid_hold_until ),

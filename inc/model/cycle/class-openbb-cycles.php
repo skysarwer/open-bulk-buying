@@ -83,6 +83,49 @@ class OPENBB_Cycles {
 		}
 	}
 
+	/**
+	 * Explicitly locks or unlocks preparation cleanup. Regular cycle saves cannot clear
+	 * this marker; this operation is reserved for users authorized to manage cycles.
+	 *
+	 * @return OPENBB_Cycle|WP_Error
+	 */
+	public static function set_cleanup_lock( int $cycle_id, bool $locked ) {
+		global $wpdb;
+
+		if ( ! OPENBB_Inventory::lock() ) {
+			return new WP_Error( 'openbb_busy', __( 'Stock is being updated. Please try again.', 'open-bulk-buying' ), array( 'status' => 503 ) );
+		}
+		try {
+			$cycle = self::get( $cycle_id );
+			if ( ! $cycle ) {
+				return new WP_Error( 'openbb_cycle_not_found', __( 'Cycle not found.', 'open-bulk-buying' ), array( 'status' => 404 ) );
+			}
+			if ( $locked === ( null !== $cycle->cleanup_locked_at ) ) {
+				return $cycle;
+			}
+
+			$updated = $wpdb->update(
+				$wpdb->openbb_cycles,
+				array( 'cleanup_locked_at' => $locked ? current_time( 'mysql', true ) : null ),
+				array( 'id' => $cycle_id ),
+				array( '%s' ),
+				array( '%d' )
+			);
+			if ( false === $updated ) {
+				return new WP_Error( 'openbb_cycle_save_failed', __( 'The preparation cleanup lock could not be saved.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+			}
+
+			$cycle = self::get( $cycle_id );
+			if ( ! $cycle || $locked !== ( null !== $cycle->cleanup_locked_at ) ) {
+				return new WP_Error( 'openbb_cycle_save_failed', __( 'The preparation cleanup lock could not be saved.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+			}
+
+			return $cycle;
+		} finally {
+			OPENBB_Inventory::unlock();
+		}
+	}
+
 	private static function store_locked( OPENBB_Cycle $cycle, string $old_status, int $actor_id ) {
 		$valid = $cycle->validate();
 		if ( is_wp_error( $valid ) ) {

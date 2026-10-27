@@ -172,6 +172,24 @@ class Test_OPENBB_REST_Admin extends OPENBB_TestCase {
 		$this->assertSame( '555-0100', openbb_get_member_field( $admin, 'phone' ) );
 	}
 
+	public function test_cycle_managers_can_toggle_the_preparation_cleanup_lock(): void {
+		$cycle = new OPENBB_Cycle( array( 'name' => 'Preparation lock cycle' ) );
+		$this->assertTrue( OPENBB_Cycles::store( $cycle, '', $this->coordinator ) );
+
+		$response = $this->api( 'PUT', "/cycles/{$cycle->id}/preparation-cleanup", array( 'locked' => true ) );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertTrue( $response->get_data()['cleanup_locked'] );
+		$this->assertFalse( $response->get_data()['preparation_cleanup'] );
+
+		$response = $this->api( 'PUT', "/cycles/{$cycle->id}/preparation-cleanup", array( 'locked' => false ) );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertFalse( $response->get_data()['cleanup_locked'] );
+		$this->assertTrue( $response->get_data()['preparation_cleanup'] );
+
+		wp_set_current_user( $this->make_user( 'member' ) );
+		$this->assertSame( 403, $this->api( 'PUT', "/cycles/{$cycle->id}/preparation-cleanup", array( 'locked' => true ) )->get_status() );
+	}
+
 	public function test_orders_are_limited_to_available_stock(): void {
 		$product_id = $this->make_stocked_product( 5 );
 		$cycle_id   = $this->make_open_cycle();

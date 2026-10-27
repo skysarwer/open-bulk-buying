@@ -1,7 +1,8 @@
 <?php
 /**
  * The member order form's route: read and save the logged-in member's own order
- * in a cycle that is taking orders. The form autosaves drafts through POST.
+ * in a cycle that is taking orders, or during Setup for staff who can edit orders.
+ * The form autosaves drafts through POST.
  *
  * @package Open_Bulk_Buying
  */
@@ -127,7 +128,8 @@ class OPENBB_REST_Order extends OPENBB_REST_Controller {
 		if ( ! $cycle ) {
 			return self::not_found( __( 'Cycle not found.', 'open-bulk-buying' ) );
 		}
-		if ( ! $cycle->accepts_orders() ) {
+		if ( ! $cycle->accepts_orders()
+			&& ! ( OPENBB_Cycle::STATUS_SETUP === $cycle->status && current_user_can( 'openbb_edit_orders' ) ) ) {
 			return new WP_Error( 'openbb_ordering_closed', __( 'Ordering is closed for this cycle.', 'open-bulk-buying' ), array( 'status' => 409 ) );
 		}
 

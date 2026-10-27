@@ -1,4 +1,4 @@
-import { Button } from '@wordpress/components';
+import { Button, ToggleControl } from '@wordpress/components';
 import { useCallback, useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { copy, pencil, plus, trash } from '@wordpress/icons';
@@ -279,48 +279,84 @@ function validateCycle( data ) {
 	return null;
 }
 
-export function CycleSummary( { cycle } ) {
+export function CycleSummary( {
+	cycle,
+	onCleanupLockChange,
+	cleanupLockBusy = false,
+} ) {
 	return (
-		<dl className="openbb-details">
-			<dt>{ __( 'Orders', 'open-bulk-buying' ) }</dt>
-			<dd>
-				{ can( 'openbb_view_orders' ) ? (
-					<Link
-						href={ `${ config.urls.orders }&cycle=${ cycle.id }` }
-					>
-						{ cycle.orders_count }
-					</Link>
-				) : (
-					cycle.orders_count
-				) }
-				{ cycle.submitted_count > 0 &&
-					` (${ sprintf(
-						/* translators: %d: number of committed, unfulfilled orders. */
-						__( '%d unfulfilled', 'open-bulk-buying' ),
-						cycle.submitted_count
-					) })` }
-			</dd>
-			<dt>{ __( 'Prepaid', 'open-bulk-buying' ) }</dt>
-			<dd>{ cycle.prepaid_count }</dd>
-			<dt>{ __( 'Fulfilled', 'open-bulk-buying' ) }</dt>
-			<dd>{ cycle.fulfilled_count }</dd>
-			<dt>{ __( 'Order total', 'open-bulk-buying' ) }</dt>
-			<dd>{ formatMoney( cycle.orders_total ) }</dd>
-			<dt>{ __( 'Preparation cleanup', 'open-bulk-buying' ) }</dt>
-			<dd>
-				{ cycle.cleanup_locked_at
-					? __( 'Permanently locked', 'open-bulk-buying' )
-					: cycle.status === 'complete'
-						? __( 'Unavailable in completed cycles', 'open-bulk-buying' )
-						: cycle.preparation_cleanup
-							? __( 'Available in Setup', 'open-bulk-buying' )
-							: __( 'Available only after returning to Setup', 'open-bulk-buying' ) }
-			</dd>
-		</dl>
+		<>
+			<dl className="openbb-details">
+				<dt>{ __( 'Orders', 'open-bulk-buying' ) }</dt>
+				<dd>
+					{ can( 'openbb_view_orders' ) ? (
+						<Link
+							href={ `${ config.urls.orders }&cycle=${ cycle.id }` }
+						>
+							{ cycle.orders_count }
+						</Link>
+					) : (
+						cycle.orders_count
+					) }
+					{ cycle.submitted_count > 0 &&
+						` (${ sprintf(
+							/* translators: %d: number of committed, unfulfilled orders. */
+							__( '%d unfulfilled', 'open-bulk-buying' ),
+							cycle.submitted_count
+						) })` }
+				</dd>
+				<dt>{ __( 'Prepaid', 'open-bulk-buying' ) }</dt>
+				<dd>{ cycle.prepaid_count }</dd>
+				<dt>{ __( 'Fulfilled', 'open-bulk-buying' ) }</dt>
+				<dd>{ cycle.fulfilled_count }</dd>
+				<dt>{ __( 'Order total', 'open-bulk-buying' ) }</dt>
+				<dd>{ formatMoney( cycle.orders_total ) }</dd>
+				<dt>{ __( 'Preparation cleanup', 'open-bulk-buying' ) }</dt>
+				<dd>
+					{ cycle.cleanup_locked
+						? __( 'Permanently locked', 'open-bulk-buying' )
+						: cycle.status === 'complete'
+							? __( 'Unavailable in completed cycles', 'open-bulk-buying' )
+							: cycle.preparation_cleanup
+								? __( 'Available in Setup', 'open-bulk-buying' )
+								: __( 'Available only after returning to Setup', 'open-bulk-buying' ) }
+				</dd>
+			</dl>
+			{ onCleanupLockChange && (
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={ __( 'Permanently lock preparation cleanup', 'open-bulk-buying' ) }
+					help={ __( 'When locked, cycle orders with submission or cancellation history cannot be permanently deleted during Setup. Cycle managers can unlock this again.', 'open-bulk-buying' ) }
+					checked={ !! cycle.cleanup_locked }
+					disabled={ cleanupLockBusy }
+					onChange={ onCleanupLockChange }
+				/>
+			) }
+		</>
 	);
 }
 
 export function CycleDetails( { cycle, onCancel, onSaved } ) {
+	const [ cleanupLockBusy, setCleanupLockBusy ] = useState( false );
+	const [ cleanupLockError, setCleanupLockError ] = useState( null );
+	const updateCleanupLock = async ( locked ) => {
+		setCleanupLockBusy( true );
+		setCleanupLockError( null );
+		try {
+			const saved = await request(
+				`/cycles/${ cycle.id }/preparation-cleanup`,
+				{
+					method: 'PUT',
+					data: { locked },
+				}
+			);
+			onSaved( saved, false );
+		} catch ( error ) {
+			setCleanupLockError( error );
+		} finally {
+			setCleanupLockBusy( false );
+		}
+	};
 	const submit = async ( data ) => {
 		const payload = Object.fromEntries(
 			WRITABLE.map( ( key ) => [
@@ -355,7 +391,14 @@ export function CycleDetails( { cycle, onCancel, onSaved } ) {
 					: __( 'Create cycle', 'open-bulk-buying' )
 			}
 		>
-			{ !! cycle.id && <CycleSummary cycle={ cycle } /> }
+			{ !! cycle.id && (
+				<CycleSummary
+					cycle={ cycle }
+					onCleanupLockChange={ updateCleanupLock }
+					cleanupLockBusy={ cleanupLockBusy }
+				/>
+			) }
+			<ErrorNotice error={ cleanupLockError } />
 		</EditForm>
 	);
 }

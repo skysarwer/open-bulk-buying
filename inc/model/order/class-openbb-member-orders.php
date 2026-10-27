@@ -35,13 +35,20 @@ class OPENBB_Member_Orders {
 			array_filter(
 				OPENBB_Cycles::get_active(),
 				static function ( OPENBB_Cycle $cycle ) use ( $timestamp ): bool {
-					return $cycle->accepts_orders( $timestamp );
+					return $cycle->accepts_orders( $timestamp )
+						|| ( OPENBB_Cycle::STATUS_SETUP === $cycle->status && current_user_can( 'openbb_edit_orders' ) );
 				}
 			)
 		);
 		usort(
 			$cycles,
-			static function ( OPENBB_Cycle $a, OPENBB_Cycle $b ): int {
+			static function ( OPENBB_Cycle $a, OPENBB_Cycle $b ) use ( $timestamp ): int {
+				$a_is_open = $a->accepts_orders( $timestamp );
+				$b_is_open = $b->accepts_orders( $timestamp );
+				if ( $a_is_open !== $b_is_open ) {
+					return $a_is_open ? -1 : 1;
+				}
+
 				return strcmp( (string) $a->closes_at, (string) $b->closes_at ) ?: $a->id <=> $b->id;
 			}
 		);
@@ -72,7 +79,7 @@ class OPENBB_Member_Orders {
 	 * Whether the member can change $order (null: start one) in $cycle now.
 	 */
 	public static function can_edit( ?OPENBB_Order $order, OPENBB_Cycle $cycle ): bool {
-		if ( ! $cycle->accepts_orders() ) {
+		if ( ! $cycle->accepts_orders() && ! ( OPENBB_Cycle::STATUS_SETUP === $cycle->status && current_user_can( 'openbb_edit_orders' ) ) ) {
 			return false;
 		}
 
@@ -103,7 +110,7 @@ class OPENBB_Member_Orders {
 		if ( ! $member || ! $member->is_active() || ! user_can( $user_id, 'openbb_place_orders' ) ) {
 			return new WP_Error( 'openbb_not_member', __( 'Only active co-op members can place orders.', 'open-bulk-buying' ), array( 'status' => 403 ) );
 		}
-		if ( ! $cycle->accepts_orders() ) {
+		if ( ! $cycle->accepts_orders() && ! ( OPENBB_Cycle::STATUS_SETUP === $cycle->status && current_user_can( 'openbb_edit_orders' ) ) ) {
 			return new WP_Error( 'openbb_ordering_closed', __( 'Ordering is closed for this cycle.', 'open-bulk-buying' ), array( 'status' => 409 ) );
 		}
 

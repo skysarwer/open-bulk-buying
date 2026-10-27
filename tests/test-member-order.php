@@ -314,4 +314,32 @@ class Test_OPENBB_Member_Order extends OPENBB_TestCase {
 		$request->set_query_params( array( 'cycle_id' => $this->cycle->id ) );
 		$this->assertSame( 403, rest_do_request( $request )->get_status() );
 	}
+
+	public function test_staff_can_preview_and_place_orders_during_setup(): void {
+		$this->cycle->status = OPENBB_Cycle::STATUS_SETUP;
+		$this->assertTrue( OPENBB_Cycles::store( $this->cycle, OPENBB_Cycle::STATUS_ORDERING, $this->coordinator ) );
+		$this->cycle = OPENBB_Cycles::get( $this->cycle->id );
+
+		wp_set_current_user( $this->coordinator );
+		$html = OPENBB_Order_Form_View::render();
+		$this->assertStringContainsString( 'openbb-order__topbar', $html );
+		$this->assertStringContainsString( 'Staff preview: your role lets you place and edit orders during Setup', $html );
+
+		$request = new WP_REST_Request( 'POST', '/openbb/v1/order' );
+		$request->set_body_params(
+			array(
+				'cycle_id' => $this->cycle->id,
+				'lines'    => array( $this->line( $this->oats, 2 ) ),
+			)
+		);
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( OPENBB_Order::STATUS_DRAFT, $response->get_data()['status'] );
+
+		wp_set_current_user( $this->member );
+		$this->assertSame( array(), OPENBB_Member_Orders::open_cycles() );
+		$member_form = OPENBB_Order_Form_View::render();
+		$this->assertStringContainsString( 'There is no ordering period open right now.', $member_form );
+		$this->assertStringNotContainsString( 'openbb-order__topbar', $member_form );
+	}
 }
