@@ -60,6 +60,17 @@ class Test_OPENBB_Roles extends OPENBB_TestCase {
 			wp_list_pluck( $described['roles'], 'key' )
 		);
 		$this->assertSame( 'Coordinator', $this->role( 'coordinator' )['label'] );
+		$this->assertNotContains( 'openbb_delete_cycles_orders', $this->role( 'coordinator' )['caps'] );
+		$this->assertContains( 'openbb_delete_cycles_orders', $this->role( 'manager' )['caps'] );
+	}
+
+	public function test_managers_have_cycle_and_order_delete_permission(): void {
+		$manager = $this->make_user( 'manager' );
+		$this->assertTrue( user_can( $manager, 'openbb_delete_cycles_orders' ) );
+
+		$coordinator = $this->make_user( 'coordinator' );
+		$this->assertFalse( user_can( $coordinator, 'openbb_delete_cycles_orders' ) );
+		$this->assertTrue( user_can( $this->admin, 'openbb_delete_cycles_orders' ), 'Administrators always have the delete capability.' );
 	}
 
 	public function test_only_differences_are_stored_and_returning_to_defaults_deletes_them(): void {

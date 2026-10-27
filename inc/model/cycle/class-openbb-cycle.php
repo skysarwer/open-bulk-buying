@@ -84,24 +84,81 @@ class OPENBB_Cycle extends OPENBB_Entity {
 	}
 
 	/**
-	 * Cycles with orders are retained as history and cannot be hard-deleted.
+	 * Cycles with orders are retained as history unless the caller is explicitly
+	 * authorized to force-delete them and their dependent order records.
 	 *
+	 * @param bool $force Delete associated orders and preserve detached stock history.
 	 * @return true|WP_Error
 	 */
-	public function delete() {
+	public function delete( bool $force = false ) {
 		global $wpdb;
 
 		if ( ! $this->id || ! OPENBB_Cycles::get( (int) $this->id ) ) {
 			return new WP_Error( 'openbb_cycle_not_found', __( 'This cycle no longer exists.', 'open-bulk-buying' ) );
 		}
-		if ( (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->openbb_orders} WHERE cycle_id = %d", $this->id ) ) > 0 ) {
+		$order_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->openbb_orders} WHERE cycle_id = %d", $this->id ) );
+		if ( $wpdb->last_error ) {
+			return new WP_Error( 'openbb_cycle_delete_failed', __( 'The cycle could not be deleted.', 'open-bulk-buying' ) );
+		}
+		if ( $order_count > 0 && ! $force ) {
 			return new WP_Error( 'openbb_cycle_has_orders', __( 'A cycle with orders cannot be deleted.', 'open-bulk-buying' ) );
+		}
+		if ( $force ) {
+			return $this->delete_with_orders();
 		}
 		if ( ! $this->delete_row( $wpdb->openbb_cycles ) ) {
 			return new WP_Error( 'openbb_cycle_delete_failed', __( 'The cycle could not be deleted.', 'open-bulk-buying' ) );
 		}
 
 		return true;
+	}
+
+	/**
+	 * Deletes a cycle and its orders atomically while preserving inventory history.
+	 *
+	 * @return true|WP_Error
+	 */
+	private function delete_with_orders() {
+		global $wpdb;
+
+		if ( ! OPENBB_Inventory::lock() ) {
+			return new WP_Error( 'openbb_busy', __( 'Stock is being updated. Please try again.', 'open-bulk-buying' ), array( 'status' => 503 ) );
+		}
+		try {
+			if ( false === $wpdb->query( 'START TRANSACTION' ) ) {
+				return new WP_Error( 'openbb_cycle_delete_failed', __( 'The cycle could not be deleted.', 'open-bulk-buying' ) );
+			}
+
+			$orders = $wpdb->prepare( "SELECT id FROM {$wpdb->openbb_orders} WHERE cycle_id = %d", $this->id );
+			$moves_detached = false !== $wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$wpdb->openbb_stock_moves} SET order_id = NULL, cycle_id = NULL
+					WHERE cycle_id = %d OR order_id IN ({$orders})",
+					$this->id
+				)
+			);
+			$events_deleted = $moves_detached && false !== $wpdb->query(
+				"DELETE FROM {$wpdb->openbb_order_events} WHERE order_id IN ({$orders})"
+			);
+			$lines_deleted = $events_deleted && false !== $wpdb->query(
+				"DELETE FROM {$wpdb->openbb_order_lines} WHERE order_id IN ({$orders})"
+			);
+			$orders_deleted = $lines_deleted && false !== $wpdb->delete( $wpdb->openbb_orders, array( 'cycle_id' => $this->id ), array( '%d' ) );
+			$cycle_deleted = $orders_deleted && 1 === $wpdb->delete( $wpdb->openbb_cycles, array( 'id' => $this->id ), array( '%d' ) );
+			if ( ! $cycle_deleted ) {
+				$wpdb->query( 'ROLLBACK' );
+				return new WP_Error( 'openbb_cycle_delete_failed', __( 'The cycle could not be deleted.', 'open-bulk-buying' ) );
+			}
+
+			if ( false === $wpdb->query( 'COMMIT' ) ) {
+				$wpdb->query( 'ROLLBACK' );
+				return new WP_Error( 'openbb_cycle_delete_failed', __( 'The cycle could not be deleted.', 'open-bulk-buying' ) );
+			}
+
+			return true;
+		} finally {
+			OPENBB_Inventory::unlock();
+		}
 	}
 
 	/**

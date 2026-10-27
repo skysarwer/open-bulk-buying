@@ -19,6 +19,9 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 		$can_manage = static function () {
 			return self::authorize( 'openbb_manage_cycles' );
 		};
+		$can_delete = static function () {
+			return self::authorize( 'openbb_delete_cycles_orders' );
+		};
 
 		register_rest_route(
 			self::API_NAMESPACE,
@@ -71,7 +74,7 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 				array(
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'delete_item' ),
-					'permission_callback' => $can_manage,
+					'permission_callback' => $can_delete,
 				),
 			)
 		);
@@ -321,9 +324,11 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 			return self::not_found( __( 'Cycle not found.', 'open-bulk-buying' ) );
 		}
 
-		$deleted = $cycle->delete();
+		$deleted = $cycle->delete( true );
 		if ( is_wp_error( $deleted ) ) {
-			$deleted->add_data( array( 'status' => 'openbb_cycle_has_orders' === $deleted->get_error_code() ? 409 : 500 ) );
+			if ( ! $deleted->get_error_data() ) {
+				$deleted->add_data( array( 'status' => 'openbb_cycle_has_orders' === $deleted->get_error_code() ? 409 : 500 ) );
+			}
 			return $deleted;
 		}
 

@@ -284,4 +284,33 @@ class Test_OPENBB_Signup_Membership_Fee_Claim extends OPENBB_TestCase {
 		$this->assertStringNotContainsString( 'name="membership_fee_claim"', $html );
 		$this->assertStringNotContainsString( 'name="membership_fee_reference"', $html );
 	}
+
+	public function test_fee_notice_precedes_optional_claim_and_reference_starts_hidden(): void {
+		$html = OPENBB_Signup_View::render();
+		$this->assertStringContainsString( 'charged on your first order.', $html );
+		$this->assertLessThan( strpos( $html, 'name="membership_fee_claim"' ), strpos( $html, 'openbb-signup__fee"' ) );
+		$this->assertStringContainsString( 'I already paid the membership fee (optional).', $html );
+		$document = new DOMDocument();
+		@$document->loadHTML( $html );
+		$xpath = new DOMXPath( $document );
+		$this->assertSame( 0, $xpath->query( '//input[@name="membership_fee_claim"][@required or @checked]' )->length );
+		$this->assertSame( 1, $xpath->query( '//input[@name="membership_fee_reference"]/ancestor::div[@data-wp-bind--hidden="openbb/forms::!context.values.membership_fee_claim"][@hidden]' )->length );
+	}
+
+	public function test_saved_claim_reveals_reference_when_returning_to_the_form(): void {
+		$this->start();
+		$html = OPENBB_Signup_View::render();
+		$document = new DOMDocument();
+		@$document->loadHTML( $html );
+		$xpath = new DOMXPath( $document );
+		$this->assertSame( 1, $xpath->query( '//input[@name="membership_fee_claim"][@checked]' )->length );
+		$this->assertSame( 1, $xpath->query( '//input[@name="membership_fee_reference"][@value="Transfer ABC-123"]/ancestor::div[@data-wp-bind--hidden="openbb/forms::!context.values.membership_fee_claim"][not(@hidden)]' )->length );
+	}
+
+	public function test_recurring_fee_notice_explains_first_order_and_interval(): void {
+		$this->settings( array( 'membership_fee_type' => 'recurring', 'membership_fee_order_interval' => 1 ) );
+		$this->assertStringContainsString( 'charged on your first order and each order after that.', OPENBB_Signup_View::render() );
+		$this->settings( array( 'membership_fee_order_interval' => 3 ) );
+		$this->assertStringContainsString( 'charged on your first order and every 3 orders after that.', OPENBB_Signup_View::render() );
+	}
 }

@@ -49,6 +49,7 @@ class OPENBB_Roles {
 			),
 			'openbb_manage_inventory'      => array( 'group' => 'catalog' ),
 			'openbb_manage_cycles'         => array( 'group' => 'catalog' ),
+			'openbb_delete_cycles_orders'  => array( 'group' => 'orders' ),
 			'openbb_view_orders'           => array( 'group' => 'orders' ),
 			'openbb_edit_orders'           => array(
 				'group'    => 'orders',
@@ -122,6 +123,7 @@ class OPENBB_Roles {
 			'openbb_manage_products'       => array( __( 'Manage products', 'open-bulk-buying' ), __( 'Create and edit products, categories and suppliers, and upload images.', 'open-bulk-buying' ) ),
 			'openbb_manage_inventory'      => array( __( 'Manage inventory', 'open-bulk-buying' ), __( 'Record stock received, counted and adjusted.', 'open-bulk-buying' ) ),
 			'openbb_manage_cycles'         => array( __( 'Manage cycles', 'open-bulk-buying' ), __( 'Create cycles and move them through their stages.', 'open-bulk-buying' ) ),
+			'openbb_delete_cycles_orders'  => array( __( 'Delete cycles and orders', 'open-bulk-buying' ), __( 'Permanently delete cycles and orders, including their order items and event history, even when they have operational history. Stock ledger entries are retained.', 'open-bulk-buying' ) ),
 			'openbb_view_orders'           => array( __( 'View all orders', 'open-bulk-buying' ), __( 'See every member\'s orders.', 'open-bulk-buying' ) ),
 			'openbb_edit_orders'           => array( __( 'Edit orders', 'open-bulk-buying' ), __( 'Change, cancel or create orders for members.', 'open-bulk-buying' ) ),
 			'openbb_process_orders'        => array( __( 'Process orders', 'open-bulk-buying' ), __( 'Record prepared quantities and shortages for the cycle being processed.', 'open-bulk-buying' ) ),
@@ -192,6 +194,7 @@ class OPENBB_Roles {
 					array(
 						'openbb_view_aid',
 						'openbb_decide_aid',
+						'openbb_delete_cycles_orders',
 						'openbb_manage_rules',
 						'openbb_manage_settings',
 						'openbb_manage_access',

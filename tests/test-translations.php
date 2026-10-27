@@ -25,7 +25,7 @@ class Test_OPENBB_Translations extends WP_UnitTestCase {
 		$french   = $this->catalog( 'open-bulk-buying-fr_CA.po' );
 
 		$this->assertNotEmpty( $template->entries );
-		$this->assertSame( array_keys( $template->entries ), array_keys( $french->entries ) );
+		$this->assertEqualsCanonicalizing( array_keys( $template->entries ), array_keys( $french->entries ) );
 		$this->assertSame( 'fr_CA', $french->headers['Language'] );
 		$this->assertSame( 'nplurals=2; plural=(n > 1);', $french->headers['Plural-Forms'] );
 
@@ -108,6 +108,8 @@ class Test_OPENBB_Translations extends WP_UnitTestCase {
 		try {
 			$this->assertTrue( $switcher->switch_to_locale( 'fr_CA' ) );
 			$this->assertSame( 'Produits', __( 'Products', 'open-bulk-buying' ) );
+			$this->assertSame( 'Votre commande a été annulée', __( 'Your order was cancelled', 'open-bulk-buying' ) );
+			$this->assertSame( 'Paiement des frais d’adhésion confirmé', __( 'Membership payment confirmed', 'open-bulk-buying' ) );
 			$this->assertSame( '%d article', _n( '%d item', '%d items', 0, 'open-bulk-buying' ) );
 			$this->assertSame( '%d article', _n( '%d item', '%d items', 1, 'open-bulk-buying' ) );
 			$this->assertSame( '%d articles', _n( '%d item', '%d items', 2, 'open-bulk-buying' ) );
@@ -130,6 +132,9 @@ class Test_OPENBB_Translations extends WP_UnitTestCase {
 			$this->assertNotFalse( $loaded );
 			$json = json_decode( $loaded, true, 512, JSON_THROW_ON_ERROR );
 			$this->assertSame( array( 'Produits' ), $json['locale_data']['messages']['Products'] );
+			$this->assertSame( array( 'Rouvrir comme brouillon' ), $json['locale_data']['messages']['Reopen as draft'] );
+			$this->assertSame( array( 'Nettoyage de préparation' ), $json['locale_data']['messages']['Preparation cleanup'] );
+			$this->assertSame( array( 'Confirmer le paiement déclaré des frais d’adhésion' ), $json['locale_data']['messages']['Confirm claimed membership payment'] );
 		} finally {
 			wp_deregister_script( 'openbb-translation-test' );
 			$switcher->restore_previous_locale();

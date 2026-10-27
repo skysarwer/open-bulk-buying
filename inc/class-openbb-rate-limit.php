@@ -1,6 +1,6 @@
 <?php
 /**
- * Fixed-window rate limits for routes open to visitors (signup now, login codes later),
+ * Fixed-window rate limits for routes open to visitors,
  * keyed by a hash of the client IP so no addresses are stored.
  *
  * REMOTE_ADDR is used by default because forwarded headers can be spoofed. Sites behind a

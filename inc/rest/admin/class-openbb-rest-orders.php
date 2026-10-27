@@ -92,7 +92,9 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				array(
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'delete_item' ),
-					'permission_callback' => $can_edit,
+					'permission_callback' => static function () {
+						return self::authorize( 'openbb_delete_cycles_orders' );
+					},
 				),
 			)
 		);
@@ -338,12 +340,12 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 		if ( ! $order ) {
 			return self::not_found( __( 'Order not found.', 'open-bulk-buying' ) );
 		}
-		$allowed = self::authorize( 'openbb_edit_order', $order->id );
+		$allowed = self::authorize( 'openbb_delete_cycles_orders' );
 		if ( true !== $allowed ) {
 			return $allowed;
 		}
 
-		$deleted = $order->delete();
+		$deleted = $order->delete( true );
 		if ( is_wp_error( $deleted ) ) {
 			if ( ! $deleted->get_error_data() ) {
 				$deleted->add_data( array( 'status' => 'openbb_order_delete_failed' === $deleted->get_error_code() ? 500 : 409 ) );
@@ -509,7 +511,7 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				'can_edit_lines'   => $can_edit_contents && $can_edit,
 				'can_edit_amounts' => $can_edit_contents && $can_edit,
 				'can_cancel'       => OPENBB_Order_Policy::can_cancel( $order, $cycle ) && $can_edit,
-				'can_delete'       => $can_edit && OPENBB_Order_Policy::can_delete( $order, $cycle ),
+				'can_delete'       => current_user_can( 'openbb_delete_cycles_orders' ),
 				'can_reopen'       => $can_edit && OPENBB_Order_Policy::can_reopen( $order, $cycle ),
 				'preparation_cleanup' => $cycle && $cycle->allows_preparation_cleanup(),
 				'is_abandoned'     => $order->is_abandoned( $cycle ),

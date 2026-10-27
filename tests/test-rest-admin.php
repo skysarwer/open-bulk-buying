@@ -190,6 +190,53 @@ class Test_OPENBB_REST_Admin extends OPENBB_TestCase {
 		$this->assertSame( 403, $this->api( 'PUT', "/cycles/{$cycle->id}/preparation-cleanup", array( 'locked' => true ) )->get_status() );
 	}
 
+	public function test_order_delete_permission_bypasses_history_and_preserves_stock_ledger(): void {
+		global $wpdb;
+
+		$product_id = $this->make_stocked_product( 5 );
+		$cycle_id   = $this->make_open_cycle();
+		$order_id   = $this->new_order( $cycle_id );
+		$this->assertSame( 200, $this->submit( $order_id, $product_id, 2 )->get_status() );
+
+		$move = new OPENBB_Stock_Move(
+			array(
+				'product_id' => $product_id,
+				'quantity'   => -1,
+				'reason'     => OPENBB_Stock_Move::REASON_DISTRIBUTION,
+				'cycle_id'   => $cycle_id,
+				'order_id'   => $order_id,
+				'user_id'    => $this->coordinator,
+			)
+		);
+		$this->assertTrue( $move->save() );
+
+		$this->assertSame( 403, $this->api( 'DELETE', "/orders/{$order_id}" )->get_status() );
+		wp_set_current_user( $this->make_user( 'manager' ) );
+		$this->assertSame( 200, $this->api( 'DELETE', "/orders/{$order_id}" )->get_status() );
+		$this->assertNull( OPENBB_Orders::get( $order_id ) );
+		$this->assertSame( array(), OPENBB_Orders::get_lines( $order_id ) );
+		$this->assertSame( '0', $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->openbb_order_events} WHERE order_id = %d", $order_id ) ) );
+		$this->assertSame( 1, (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->openbb_stock_moves} WHERE id = %d AND order_id IS NULL AND cycle_id = %d", $move->id, $cycle_id ) ) );
+	}
+
+	public function test_administrators_can_delete_cycles_with_orders_and_their_history(): void {
+		global $wpdb;
+
+		$product_id = $this->make_stocked_product( 5 );
+		$cycle_id   = $this->make_open_cycle();
+		$order_id   = $this->new_order( $cycle_id );
+		$this->assertSame( 200, $this->submit( $order_id, $product_id, 2 )->get_status() );
+		$order = OPENBB_Orders::get( $order_id );
+		$this->assertNotEmpty( $order->get_lines() );
+
+		wp_set_current_user( $this->make_user( '', 'administrator' ) );
+		$this->assertSame( 200, $this->api( 'DELETE', "/cycles/{$cycle_id}" )->get_status() );
+		$this->assertNull( OPENBB_Cycles::get( $cycle_id ) );
+		$this->assertNull( OPENBB_Orders::get( $order_id ) );
+		$this->assertSame( array(), OPENBB_Orders::get_lines( $order_id ) );
+		$this->assertSame( '0', $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->openbb_order_events} WHERE order_id = %d", $order_id ) ) );
+	}
+
 	public function test_orders_are_limited_to_available_stock(): void {
 		$product_id = $this->make_stocked_product( 5 );
 		$cycle_id   = $this->make_open_cycle();

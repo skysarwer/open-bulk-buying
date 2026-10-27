@@ -76,10 +76,7 @@ npm run i18n:update
 
 Open `languages/open-bulk-buying-fr_CA.po` in Poedit (or another gettext editor),
 translate new messages, and review fuzzy entries. Keep placeholders such as
-`%s` and `%1$d`, HTML tags, and both plural forms intact. Use Canadian French
-terminology consistently: *courriel*, *téléverser*, *panier*, *ramassage*,
-*cycle de commande*, and *aide financière*. The `fr_CA` plural rule uses the
-singular form for 0 and 1, and the plural form for larger counts.
+`%s` and `%1$d`, HTML tags, and both plural forms intact.
 
 After saving the PO catalog:
 
@@ -93,6 +90,18 @@ does not update JavaScript translations. Commit the POT, PO, MO and JSON files,
 and include `languages/` in releases. Check the member forms, dashboard, emails,
 plurals, and English fallback before shipping. Poedit is optional; WP-CLI handles
 extraction and compilation.
+
+With the disposable WordPress test database configured (see Development below), run:
+
+```sh
+php vendor/phpunit/phpunit/phpunit --filter Test_OPENBB_Translations
+```
+
+These tests verify complete POT-to-PO coverage with no empty or fuzzy
+translations, placeholders, HTML tags, plural forms, MO/JSON parity, and
+WordPress locale switching for PHP, forms, emails and dashboard scripts.
+Catalog entry order does not affect coverage; WP-CLI may append new messages
+when updating the PO.
 
 ## First-time setup
 
@@ -186,16 +195,17 @@ Staff with order-edit permission can use **Reopen as draft** on cancelled orders
 in active cycles, with confirmation and a required reason. This preserves the
 order's items, price snapshots, submission timestamp and audit history. Drafts
 reserve no stock; resubmission checks availability again. Paid, collected,
-stock-history-bearing, and aid-allocated orders cannot be reopened or deleted.
+stock-history-bearing, and aid-allocated orders cannot be reopened.
 System-managed membership fee lines are retained when reopening, are not treated
 as stock products, and are synchronized again during normal editing/submission.
 Members cannot cancel or reopen orders themselves; they must contact the co-op.
 
-**Setup preparation cleanup:** never-submitted drafts remain deletable. Submitted
-and cancelled orders may also be permanently deleted while their cycle is in
-Setup, provided preparation cleanup has not been permanently locked and the order
-has no operational history. Deletion removes the order, lines and events together,
-releasing any reservation without changing on-hand inventory.
+**Deleting cycles and orders:** Managers and team roles with **Delete cycles and
+orders** can permanently delete any cycle or order, including its order items and
+event history. Deleting a cycle also deletes all of its orders. Stock-ledger
+entries are retained for inventory accuracy, with references to deleted orders
+and cycles removed. Administrators always have this permission. This action
+cannot be undone.
 
 Members can order only during **Ordering** and within its ordering dates. Staff
 can create and submit orders during Setup, Ordering, Processing and Distribution.
@@ -272,8 +282,10 @@ order containing a membership-fee line. Confirmed membership-only orders are
 stored as **Fulfilled** and displayed as **Paid**, without a physical collection
 or inventory movement. The member screen includes the fee status and history.
 
-When a fee is configured, signup offers **I already paid** and an optional
-reference. This is a claim, never proof of payment: after successful signup it
+When a fee is configured, signup first explains that it will be charged on the
+first order (and the interval for recurring fees). An optional **I already paid**
+checkbox reveals an optional payment reference only when selected.
+This is a claim, never proof of payment: after successful signup it
 creates a **Submitted** membership-only order awaiting staff verification.
 Verification is required whether membership approval is enabled or not.
 

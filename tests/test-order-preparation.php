@@ -76,6 +76,7 @@ class Test_OPENBB_Order_Preparation extends OPENBB_TestCase {
 		$order = $this->order();
 		$this->assertNull( OPENBB_Cycles::get( $this->cycle->id )->cleanup_locked_at );
 		$this->assertEquals( 2, OPENBB_Inventory::get_reserved( $this->product->id ) );
+		wp_set_current_user( $this->make_user( 'manager' ) );
 		$item = $this->api( 'GET', "/orders/{$order->id}" )->get_data();
 		$this->assertTrue( $item['can_delete'] );
 		$this->assertTrue( $item['preparation_cleanup'] );
@@ -270,7 +271,8 @@ class Test_OPENBB_Order_Preparation extends OPENBB_TestCase {
 		$item = $this->api( 'GET', "/orders/{$order->id}" )->get_data();
 		$this->assertFalse( $item['can_delete'] );
 		$this->assertFalse( $item['can_reopen'] );
-		$this->assertSame( 409, $this->api( 'DELETE', "/orders/{$order->id}" )->get_status() );
+		$this->assertWPError( $order->delete() );
+		$this->assertSame( 403, $this->api( 'DELETE', "/orders/{$order->id}" )->get_status() );
 		$this->assertSame( 409, $this->reopen( $order )->get_status() );
 	}
 

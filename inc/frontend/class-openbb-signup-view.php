@@ -121,7 +121,7 @@ final class OPENBB_Signup_View {
 				array(
 					'name'      => 'membership_fee_claim',
 					'kind'      => 'checkbox',
-					'label'     => __( 'I already paid the membership fee.', 'open-bulk-buying' ),
+					'label'     => __( 'I already paid the membership fee (optional).', 'open-bulk-buying' ),
 					'help'      => __( 'Staff always review this payment claim separately from membership approval. It does not mark your fee as paid or approve your membership.', 'open-bulk-buying' ),
 					'value'     => (bool) ( $saved['membership_fee_claim'] ?? false ),
 					'id_prefix' => self::ID,
@@ -347,16 +347,16 @@ final class OPENBB_Signup_View {
 		$money = openbb_format_money( $amount );
 		if ( 'recurring' !== $settings['membership_fee_type'] ) {
 			/* translators: %s: amount, e.g. $25.00. */
-			return sprintf( __( 'Membership has a one-time fee of %s.', 'open-bulk-buying' ), $money );
+			return sprintf( __( 'Membership has a one-time fee of %s, charged on your first order.', 'open-bulk-buying' ), $money );
 		}
 
 		$interval = max( 1, (int) $settings['membership_fee_order_interval'] );
 
 		return 1 === $interval
 			/* translators: %s: amount, e.g. $25.00. */
-			? sprintf( __( 'Membership has a fee of %s, charged with each order.', 'open-bulk-buying' ), $money )
+			? sprintf( __( 'Membership has a fee of %s, charged on your first order and each order after that.', 'open-bulk-buying' ), $money )
 			/* translators: 1: amount, e.g. $25.00; 2: number of orders. */
-			: sprintf( _n( 'Membership has a fee of %1$s, charged every %2$d order.', 'Membership has a fee of %1$s, charged every %2$d orders.', $interval, 'open-bulk-buying' ), $money, $interval );
+			: sprintf( _n( 'Membership has a fee of %1$s, charged on your first order and every %2$d order after that.', 'Membership has a fee of %1$s, charged on your first order and every %2$d orders after that.', $interval, 'open-bulk-buying' ), $money, $interval );
 	}
 
 	private static function status_message( string $status ): string {

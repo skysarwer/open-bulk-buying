@@ -445,6 +445,7 @@ export default function CyclesList() {
 	const list = useList( '/cycles', view, LIST_MAPPING );
 	const notify = useNotify();
 	const canManage = can( 'openbb_manage_cycles' );
+	const canDelete = can( 'openbb_delete_cycles_orders' );
 	const [ guard, discardDialog ] = useDiscardGuard();
 	const panelKey = panel?.key;
 
@@ -509,12 +510,15 @@ export default function CyclesList() {
 								);
 							},
 						},
+				  ]
+				: [] ),
+			...( canDelete
+				? [
 						{
 							id: 'delete',
 							label: __( 'Delete', 'open-bulk-buying' ),
 							icon: trash,
 							isDestructive: true,
-							isEligible: ( item ) => ! item.orders_count,
 							modalHeader: __(
 								'Delete cycle',
 								'open-bulk-buying'
@@ -527,7 +531,7 @@ export default function CyclesList() {
 									message={ sprintf(
 										/* translators: %s: cycle name. */
 										__(
-											'Delete "%s"? This cannot be undone.',
+											'Delete "%s" and all its orders? This cannot be undone. Stock history will be retained.',
 											'open-bulk-buying'
 										),
 										item.name
@@ -561,7 +565,7 @@ export default function CyclesList() {
 				  ]
 				: [] ),
 		],
-		[ canManage, list, notify, openCycle ]
+		[ canDelete, canManage, list, notify, openCycle ]
 	);
 
 	return (

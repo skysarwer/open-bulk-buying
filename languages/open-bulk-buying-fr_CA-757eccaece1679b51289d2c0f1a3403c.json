@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-10-25 16:10-0400",
+    "translation-revision-date": "2026-10-27 04:15-0400",
     "generator": "WP-CLI\/2.12.0",
     "source": "build\/admin\/index.js",
     "domain": "messages",
@@ -316,9 +316,6 @@
             "Delete cycle": [
                 "Supprimer le cycle"
             ],
-            "Delete \"%s\"? This cannot be undone.": [
-                "Supprimer \u00ab %s \u00bb? Cette action est irr\u00e9versible."
-            ],
             "Cycle deleted.": [
                 "Cycle supprim\u00e9."
             ],
@@ -564,9 +561,6 @@
             ],
             "Delete order": [
                 "Supprimer la commande"
-            ],
-            "Delete order #%1$d for %2$s? Consider cancelling it instead to keep its history.": [
-                "Supprimer la commande no %1$d de %2$s? Envisagez plut\u00f4t de l\u2019annuler pour conserver son historique."
             ],
             "Order deleted.": [
                 "Commande supprim\u00e9e."
@@ -1396,6 +1390,126 @@
             ],
             "Something went wrong. Please try again.": [
                 "Un probl\u00e8me est survenu. Veuillez r\u00e9essayer."
+            ],
+            "Membership fee": [
+                "Frais d\u2019adh\u00e9sion"
+            ],
+            "Paid": [
+                "Pay\u00e9"
+            ],
+            "Preparation cleanup": [
+                "Nettoyage de pr\u00e9paration"
+            ],
+            "Permanently locked": [
+                "Verrouill\u00e9 d\u00e9finitivement"
+            ],
+            "Unavailable in completed cycles": [
+                "Non disponible dans les cycles termin\u00e9s"
+            ],
+            "Available in Setup": [
+                "Disponible en configuration"
+            ],
+            "Available only after returning to Setup": [
+                "Disponible uniquement apr\u00e8s le retour en configuration"
+            ],
+            "Permanently lock preparation cleanup": [
+                "Verrouiller d\u00e9finitivement le nettoyage de pr\u00e9paration"
+            ],
+            "When locked, cycle orders with submission or cancellation history cannot be permanently deleted during Setup. Cycle managers can unlock this again.": [
+                "Lorsque le nettoyage est verrouill\u00e9, les commandes du cycle ayant un historique de soumission ou d\u2019annulation ne peuvent pas \u00eatre supprim\u00e9es d\u00e9finitivement pendant la configuration. Les gestionnaires du cycle peuvent le d\u00e9verrouiller."
+            ],
+            "Delete \"%s\" and all its orders? This cannot be undone. Stock history will be retained.": [
+                "Supprimer \u00ab %s \u00bb et toutes ses commandes? Cette action est irr\u00e9versible. L\u2019historique des stocks sera conserv\u00e9."
+            ],
+            "No fee applies": [
+                "Aucuns frais ne s\u2019appliquent"
+            ],
+            "Due": [
+                "\u00c0 payer"
+            ],
+            "Payment claimed, waiting for verification": [
+                "Paiement d\u00e9clar\u00e9, en attente de v\u00e9rification"
+            ],
+            "Amount": [
+                "Montant"
+            ],
+            "Reference": [
+                "R\u00e9f\u00e9rence"
+            ],
+            "Membership approved and payment confirmed.": [
+                "Adh\u00e9sion approuv\u00e9e et paiement confirm\u00e9."
+            ],
+            "Membership approved. The claimed payment is still waiting for verification.": [
+                "Adh\u00e9sion approuv\u00e9e. Le paiement d\u00e9clar\u00e9 est toujours en attente de v\u00e9rification."
+            ],
+            "This person says they have paid (order #%d). Check that the payment arrived before confirming it.": [
+                "Cette personne d\u00e9clare avoir pay\u00e9 (commande no %d). V\u00e9rifiez que le paiement a \u00e9t\u00e9 re\u00e7u avant de le confirmer."
+            ],
+            "Confirm claimed membership payment": [
+                "Confirmer le paiement d\u00e9clar\u00e9 des frais d\u2019adh\u00e9sion"
+            ],
+            "Approves the membership and marks the fee paid in one step. Leave unchecked to approve the membership only; the claim then stays waiting for verification.": [
+                "Approuve l\u2019adh\u00e9sion et marque les frais comme pay\u00e9s en une seule \u00e9tape. Laissez cette case d\u00e9coch\u00e9e pour approuver uniquement l\u2019adh\u00e9sion; la d\u00e9claration demeure alors en attente de v\u00e9rification."
+            ],
+            "Approve membership and confirm payment": [
+                "Approuver l\u2019adh\u00e9sion et confirmer le paiement"
+            ],
+            "Approve membership": [
+                "Approuver l\u2019adh\u00e9sion"
+            ],
+            "Membership payment confirmed.": [
+                "Paiement des frais d\u2019adh\u00e9sion confirm\u00e9."
+            ],
+            "Confirm payment": [
+                "Confirmer le paiement"
+            ],
+            "Reject claimed payment": [
+                "Rejeter le paiement d\u00e9clar\u00e9"
+            ],
+            "Payment reference (optional)": [
+                "R\u00e9f\u00e9rence du paiement (facultatif)"
+            ],
+            "For example a receipt, cheque or e-transfer number.": [
+                "Par exemple, un num\u00e9ro de re\u00e7u, de ch\u00e8que ou de virement \u00e9lectronique."
+            ],
+            "Membership payment recorded.": [
+                "Paiement des frais d\u2019adh\u00e9sion enregistr\u00e9."
+            ],
+            "Record %s payment": [
+                "Enregistrer un paiement de %s"
+            ],
+            "Record payment": [
+                "Enregistrer un paiement"
+            ],
+            "Claimed membership payment rejected.": [
+                "Paiement d\u00e9clar\u00e9 des frais d\u2019adh\u00e9sion rejet\u00e9."
+            ],
+            "Reject payment": [
+                "Rejeter le paiement"
+            ],
+            "Reject this claimed payment? Its order is cancelled and the fee stays due.": [
+                "Rejeter ce paiement d\u00e9clar\u00e9? La commande correspondante sera annul\u00e9e et les frais resteront \u00e0 payer."
+            ],
+            "This order is cancelled. Reopen it as a draft before changing its contents. Staff can still update its note.": [
+                "Cette commande est annul\u00e9e. Rouvrez-la comme brouillon avant d\u2019en modifier le contenu. Le personnel peut toujours modifier sa note."
+            ],
+            "Preparation cleanup is available while this cycle is in Setup and no committed order activity has occurred outside Setup. Eligible orders can be permanently deleted from the orders list.": [
+                "Le nettoyage de pr\u00e9paration est disponible lorsque ce cycle est en configuration et qu\u2019aucune activit\u00e9 de commande n\u2019a \u00e9t\u00e9 enregistr\u00e9e en dehors de la configuration. Les commandes admissibles peuvent \u00eatre supprim\u00e9es d\u00e9finitivement \u00e0 partir de la liste des commandes."
+            ],
+            "Reopen as draft": [
+                "Rouvrir comme brouillon"
+            ],
+            "Reopen this cancelled order as a draft? Its items and history will be retained, but no stock is reserved until it is submitted again. Availability will be checked on submission.": [
+                "Rouvrir cette commande annul\u00e9e comme brouillon? Ses articles et son historique seront conserv\u00e9s, mais aucun stock ne sera r\u00e9serv\u00e9 avant qu\u2019elle soit soumise de nouveau. La disponibilit\u00e9 sera v\u00e9rifi\u00e9e lors de la soumission."
+            ],
+            "Reason for reopening (required)": [
+                "Motif de la r\u00e9ouverture (obligatoire)"
+            ],
+            "Confirm reopening": [
+                "Confirmer la r\u00e9ouverture"
+            ],
+            "Permanently delete order #%1$d for %2$s, including its items and event history? Any stock reservation will be released; stock-ledger entries are retained without their order reference. This cannot be undone.": [
+                "Supprimer d\u00e9finitivement la commande no %1$d de %2$s, y compris ses articles et son historique des \u00e9v\u00e9nements? Toute r\u00e9servation de stock sera lib\u00e9r\u00e9e; les \u00e9critures du registre des stocks seront conserv\u00e9es sans leur r\u00e9f\u00e9rence \u00e0 la commande. Cette action est irr\u00e9versible."
             ]
         }
     }

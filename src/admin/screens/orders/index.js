@@ -339,7 +339,7 @@ export default function OrdersScreen() {
 					<ConfirmBody
 						message={ sprintf(
 							/* translators: 1: order number, 2: member name. */
-							__( 'Permanently delete order #%1$d for %2$s, including its items and history? Any stock reservation will be released. This cannot be undone. Cancel it instead if you need to keep its history.', 'open-bulk-buying' ),
+							__( 'Permanently delete order #%1$d for %2$s, including its items and event history? Any stock reservation will be released; stock-ledger entries are retained without their order reference. This cannot be undone.', 'open-bulk-buying' ),
 							item.id,
 							item.member.name
 						) }

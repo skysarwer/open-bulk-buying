@@ -242,23 +242,24 @@ class OPENBB_Order extends OPENBB_Entity {
 	}
 
 	/**
-	 * Removes eligible drafts or Setup preparation orders and their dependent rows.
-	 * Operational history always prevents deletion.
+	 * Removes an eligible order and its dependent rows. Forced deletion preserves
+	 * stock-ledger entries but detaches their order reference.
 	 *
+	 * @param bool $force Skip deletion eligibility checks for an explicitly authorized caller.
 	 * @return true|WP_Error
 	 */
-	public function delete() {
+	public function delete( bool $force = false ) {
 		if ( ! OPENBB_Inventory::lock() ) {
 			return new WP_Error( 'openbb_busy', __( 'Stock is being updated. Please try again.', 'open-bulk-buying' ), array( 'status' => 503 ) );
 		}
 		try {
-			return $this->delete_locked();
+			return $this->delete_locked( $force );
 		} finally {
 			OPENBB_Inventory::unlock();
 		}
 	}
 
-	private function delete_locked() {
+	private function delete_locked( bool $force ) {
 		global $wpdb;
 
 		if ( ! $this->id ) {
@@ -269,16 +270,19 @@ class OPENBB_Order extends OPENBB_Entity {
 		if ( ! $order ) {
 			return new WP_Error( 'openbb_order_not_found', __( 'This order no longer exists.', 'open-bulk-buying' ) );
 		}
-		$valid = OPENBB_Order_Policy::validate_delete( $order );
-		if ( is_wp_error( $valid ) ) {
-			return $valid;
+		if ( ! $force ) {
+			$valid = OPENBB_Order_Policy::validate_delete( $order );
+			if ( is_wp_error( $valid ) ) {
+				return $valid;
+			}
 		}
 
 		if ( false === $wpdb->query( 'START TRANSACTION' ) ) {
 			return new WP_Error( 'openbb_order_delete_failed', __( 'The order could not be deleted.', 'open-bulk-buying' ) );
 		}
 
-		$events_deleted = false !== $wpdb->delete( $wpdb->openbb_order_events, array( 'order_id' => $order->id ), array( '%d' ) );
+		$moves_detached = false !== $wpdb->update( $wpdb->openbb_stock_moves, array( 'order_id' => null ), array( 'order_id' => $order->id ), array( '%d' ), array( '%d' ) );
+		$events_deleted = $moves_detached && false !== $wpdb->delete( $wpdb->openbb_order_events, array( 'order_id' => $order->id ), array( '%d' ) );
 		$lines_deleted = $events_deleted && false !== $wpdb->delete( $wpdb->openbb_order_lines, array( 'order_id' => $order->id ), array( '%d' ) );
 		$order_deleted = $lines_deleted && 1 === $wpdb->delete( $wpdb->openbb_orders, array( 'id' => $order->id ), array( '%d' ) );
 		if ( ! $order_deleted ) {
