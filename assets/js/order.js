@@ -113,13 +113,19 @@ function totals() {
 	let count = 0;
 	let subtotal = 0;
 	let credit = 0;
+	let savings = 0;
+	let units = 0;
 	for ( const item of state.items ) {
 		const product = productOf( item.id );
 		count += item.qty;
 		subtotal += item.qty * ( product.price + product.charge );
 		credit += item.own ? item.qty * product.charge : 0;
+		if ( product.charge > 0 && ! item.own ) {
+			savings += item.qty * product.charge;
+			units += item.qty;
+		}
 	}
-	return { count, subtotal, credit, goods: subtotal - credit };
+	return { count, subtotal, credit, savings, units, goods: subtotal - credit };
 }
 
 function announce( text ) {
@@ -433,19 +439,6 @@ const { state } = store( 'openbb/order', {
 				productOf( rowId() ).name
 			);
 		},
-		get hasCharge() {
-			return productOf( rowId() ).charge > 0;
-		},
-		get own() {
-			return !! findItem( rowId() )?.own;
-		},
-		get ownLabel() {
-			return sprintf(
-				state.messages.ownLabel,
-				money( productOf( rowId() ).charge )
-			);
-		},
-
 		// Totals.
 		get count() {
 			return totals().count;
@@ -467,6 +460,13 @@ const { state } = store( 'openbb/order', {
 		},
 		get subtotalText() {
 			return money( totals().subtotal );
+		},
+		get hasContainerTip() {
+			return totals().savings > 0;
+		},
+		get containerTip() {
+			const { savings, units } = totals();
+			return sprintf( state.messages.containerTip, money( savings ), units );
 		},
 		get hasCredit() {
 			return totals().credit > 0;
@@ -614,13 +614,6 @@ const { state } = store( 'openbb/order', {
 		selectQty( event ) {
 			if ( ! state.locked ) {
 				event.target.select();
-			}
-		},
-		toggleOwn( event ) {
-			const item = findItem( rowId() );
-			if ( item ) {
-				item.own = event.target.checked;
-				schedule();
 			}
 		},
 		remove() {

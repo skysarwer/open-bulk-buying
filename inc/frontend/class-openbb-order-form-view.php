@@ -206,6 +206,8 @@ final class OPENBB_Order_Form_View {
 			'count'    => 0,
 			'subtotal' => 0,
 			'credit'   => 0,
+			'savings'  => 0,
+			'units'    => 0,
 		);
 		foreach ( $items as $item ) {
 			$price               = $products[ $item['id'] ] ?? array(
@@ -215,6 +217,10 @@ final class OPENBB_Order_Form_View {
 			$totals['count']    += $item['qty'];
 			$totals['subtotal'] += $item['qty'] * ( $price['price'] + $price['charge'] );
 			$totals['credit']   += $item['own'] ? $item['qty'] * $price['charge'] : 0;
+			if ( $price['charge'] > 0 && ! $item['own'] ) {
+				$totals['savings'] += $item['qty'] * $price['charge'];
+				$totals['units']   += $item['qty'];
+			}
 		}
 		$goods = max( 0, $totals['subtotal'] - $totals['credit'] - $order_state['aid_approved'] );
 		$count = sprintf( _n( '%d item', '%d items', $totals['count'], 'open-bulk-buying' ), $totals['count'] );
@@ -299,15 +305,6 @@ final class OPENBB_Order_Form_View {
 				'removeLabel'    => static function () use ( $product, $messages ): string {
 					return sprintf( $messages['removeLabel'], $product()['name'] );
 				},
-				'hasCharge'      => static function () use ( $product ): bool {
-					return $product()['charge'] > 0;
-				},
-				'own'            => static function () use ( $row, $basket ): bool {
-					return ! empty( $basket[ $row() ]['own'] );
-				},
-				'ownLabel'       => static function () use ( $product, $money, $messages ): string {
-					return sprintf( $messages['ownLabel'], $money( (int) $product()['charge'] ) );
-				},
 
 				// Totals and panel.
 				'count'          => $totals['count'],
@@ -315,6 +312,8 @@ final class OPENBB_Order_Form_View {
 				'hasItems'       => $totals['count'] > 0,
 				'isEmpty'        => 0 === $totals['count'],
 				'subtotalText'   => $money( $totals['subtotal'] ),
+				'hasContainerTip' => $totals['savings'] > 0,
+				'containerTip'   => sprintf( $messages['containerTip'], $money( $totals['savings'] ), $totals['units'] ),
 				'hasCredit'      => $totals['credit'] > 0,
 				'creditText'     => $money( -$totals['credit'] ),
 				'hasAidApproved' => $order_state['aid_approved'] > 0,
@@ -363,8 +362,8 @@ final class OPENBB_Order_Form_View {
 			'lowStock'      => __( 'Only %d available', 'open-bulk-buying' ),
 			/* translators: 1: price, 2: selling unit, e.g. "500 g". */
 			'priceLabel'    => __( '%1$s / %2$s', 'open-bulk-buying' ),
-			/* translators: %s: amount saved per unit. */
-			'ownLabel'      => __( 'I\'ll bring my own container (saves %s each)', 'open-bulk-buying' ),
+			/* translators: 1: total amount saved, 2: recommended number of containers. */
+			'containerTip'  => __( 'Save up to %1$s by bringing your own containers. We recommend bringing about %2$d.', 'open-bulk-buying' ),
 			/* translators: %d: number of units available. */
 			'maxReached'    => __( 'Only %d available.', 'open-bulk-buying' ),
 			'saving'        => __( 'Saving…', 'open-bulk-buying' ),

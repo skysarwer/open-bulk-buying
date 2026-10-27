@@ -58,10 +58,6 @@ $form_context = array(
 						</div>
 						<?php echo OPENBB_Frontend::template( 'order-stepper', array() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Template. ?>
 						<p class="openbb-line__total" data-wp-text="state.lineTotal"></p>
-						<label class="openbb-check openbb-line__own" data-wp-bind--hidden="!state.hasCharge">
-							<input type="checkbox" class="openbb-check__input" data-wp-bind--checked="state.own" data-wp-bind--disabled="state.locked" data-wp-on--change="actions.toggleOwn">
-							<span class="openbb-check__label" data-wp-text="state.ownLabel"></span>
-						</label>
 						<button type="button" class="openbb-button openbb-button--link openbb-line__remove" data-wp-bind--aria-label="state.removeLabel" data-wp-bind--hidden="state.locked" data-wp-on--click="actions.remove">
 							<?php esc_html_e( 'Remove', 'open-bulk-buying' ); ?>
 						</button>
@@ -117,6 +113,8 @@ $form_context = array(
 			<section class="openbb-finalize__section">
 				<?php echo openbb_render_field( $fields['member_note'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by openbb_render_field(). ?>
 			</section>
+
+			<p class="openbb-notice openbb-finalize__containers" data-wp-bind--hidden="!state.hasContainerTip" data-wp-text="state.containerTip" hidden></p>
 
 			<?php echo OPENBB_Frontend::template( 'order-totals', array() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Template. ?>
 
