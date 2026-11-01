@@ -358,7 +358,7 @@
             "Site default": [
                 "Langue par d\u00e9faut du site"
             ],
-            "Team roles": [
+            "Staff roles": [
                 "R\u00f4les de l\u2019\u00e9quipe"
             ],
             "Last order": [
@@ -1235,7 +1235,7 @@
             "Role reset.": [
                 "R\u00f4le r\u00e9initialis\u00e9."
             ],
-            "Restore the original team roles? Custom roles will be deleted.": [
+            "Restore the original staff roles? Custom roles will be deleted.": [
                 "Restaurer les r\u00f4les d\u2019origine de l\u2019\u00e9quipe? Les r\u00f4les personnalis\u00e9s seront supprim\u00e9s."
             ],
             "Roles reset.": [
@@ -1262,7 +1262,7 @@
             "Restore original roles\u2026": [
                 "Restaurer les r\u00f4les d\u2019origine\u2026"
             ],
-            "New team role": [
+            "New staff role": [
                 "Nouveau r\u00f4le de l\u2019\u00e9quipe"
             ],
             "You can\u2019t edit this role.": [

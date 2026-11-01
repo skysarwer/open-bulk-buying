@@ -16,7 +16,7 @@ export const config = {
 	currentLanguage: ( boot.locale || '' ).split( /[-_]/ )[ 0 ].toLowerCase(),
 	translationLanguages: boot.translationLanguages || [],
 	memberStatuses: boot.memberStatuses || {},
-	// Team role key => label, in display order.
+	// Staff role key => label, in display order.
 	coopRoles: boot.coopRoles || {},
 	cycleStatuses: boot.cycleStatuses || {},
 	orderStatuses: boot.orderStatuses || {},

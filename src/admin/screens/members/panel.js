@@ -117,7 +117,7 @@ function MemberFacts( { member, showStatus = true, showRoles = true } ) {
 			) }
 			{ showRoles && (
 				<>
-					<dt>{ __( 'Team roles', 'open-bulk-buying' ) }</dt>
+					<dt>{ __( 'Staff roles', 'open-bulk-buying' ) }</dt>
 					<dd>{ member.role_labels.join( ', ' ) || '—' }</dd>
 				</>
 			) }

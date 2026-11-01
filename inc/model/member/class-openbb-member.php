@@ -21,7 +21,7 @@ class OPENBB_Member extends OPENBB_Entity {
 	public $phone             = '';
 	public $language          = '';
 	public $status            = '';
-	/** @var string[] Team roles held. */
+	/** @var string[] Staff roles held. */
 	public $roles             = array();
 	public $joined_at         = null;
 	public $rules_version     = 0;

@@ -44,7 +44,7 @@ abstract class OPENBB_TestCase extends WP_UnitTestCase {
 	/**
 	 * Creates a user with a WordPress role and, written directly as the signup flow would,
 	 * a co-op membership. $membership is a status (applicant, active, inactive, declined), or
-	 * 'member' for an active member with no team roles, or a role name (coordinator,
+	 * 'member' for an active member with no staff roles, or a role name (coordinator,
 	 * manager, ...) meaning an active member holding that role; $roles are further roles held.
 	 */
 	protected function make_user( string $membership = '', string $wp_role = 'subscriber', array $roles = array() ): int {

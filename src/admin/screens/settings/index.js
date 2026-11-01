@@ -30,7 +30,7 @@ const tabs = [
 	},
 	{
 		name: 'roles',
-		title: __( 'Team roles', 'open-bulk-buying' ),
+		title: __( 'Staff roles', 'open-bulk-buying' ),
 		cap: 'openbb_manage_access',
 		Component: RolesTab,
 	},

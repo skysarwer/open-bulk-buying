@@ -283,11 +283,11 @@ msgid "Add and change the questions members answer about themselves."
 msgstr ""
 
 #: inc/access/class-openbb-roles.php:141
-msgid "Manage team roles"
+msgid "Manage staff roles"
 msgstr ""
 
 #: inc/access/class-openbb-roles.php:141
-msgid "Edit team roles and give them to members."
+msgid "Edit staff roles and give them to members."
 msgstr ""
 
 #: inc/access/class-openbb-roles.php:160
@@ -376,7 +376,7 @@ msgid "You are not allowed to change roles."
 msgstr ""
 
 #: inc/access/class-openbb-roles.php:659
-msgid "Someone else changed the team roles. Reload to see the latest version."
+msgid "Someone else changed the staff roles. Reload to see the latest version."
 msgstr ""
 
 #. translators: 1: role name, 2: reason.
@@ -3117,7 +3117,7 @@ msgstr ""
 #: src/admin/screens/members/panel.js:120
 #: src/admin/screens/settings/index.js:33
 #: src/admin/screens/settings/roles/index.js:230
-msgid "Team roles"
+msgid "Staff roles"
 msgstr ""
 
 #: src/admin/screens/members/fields.js:145
@@ -4523,7 +4523,7 @@ msgid "Role reset."
 msgstr ""
 
 #: src/admin/screens/settings/roles/index.js:210
-msgid "Restore the original team roles? Custom roles will be deleted."
+msgid "Restore the original staff roles? Custom roles will be deleted."
 msgstr ""
 
 #: src/admin/screens/settings/roles/index.js:219
@@ -4561,7 +4561,7 @@ msgid "Restore original roles…"
 msgstr ""
 
 #: src/admin/screens/settings/roles/role-panel.js:102
-msgid "New team role"
+msgid "New staff role"
 msgstr ""
 
 #: src/admin/screens/settings/roles/role-panel.js:133

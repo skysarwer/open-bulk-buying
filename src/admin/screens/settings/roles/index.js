@@ -53,7 +53,7 @@ const memberCount = ( role ) =>
 	);
 
 /**
- * Settings tab for team roles and their permissions. Until something is changed this
+ * Settings tab for staff roles and their permissions. Until something is changed this
  * shows the built-in roles, and nothing is stored.
  *
  * @param {Object}  props
@@ -208,7 +208,7 @@ export default function RolesTab( { nav } ) {
 		} ),
 		resetAll: () => ( {
 			text: __(
-				'Restore the original team roles? Custom roles will be deleted.',
+				'Restore the original staff roles? Custom roles will be deleted.',
 				'open-bulk-buying'
 			),
 			button: __( 'Restore', 'open-bulk-buying' ),
@@ -227,7 +227,7 @@ export default function RolesTab( { nav } ) {
 		<SettingsPage nav={ nav } sidebar={ panel } sidebarSize="wide">
 			<VStack spacing={ 6 } className="openbb-settings">
 				<Section
-					title={ __( 'Team roles', 'open-bulk-buying' ) }
+					title={ __( 'Staff roles', 'open-bulk-buying' ) }
 					actions={
 						<Button
 							__next40pxDefaultSize

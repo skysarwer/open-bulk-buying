@@ -16,12 +16,12 @@ From the **Co-op** menu in the WordPress dashboard, staff can:
 - Configure co-op settings and member profile fields.
 
 Each member has a membership status: Applicant, Active, Inactive or Declined.
-Active members can order. Team roles give members access to the co-op's admin
+Active members can order. Staff roles give members access to the co-op's admin
 screens: Coordinator, Manager, Aid reviewer, Distribution helper, Rules editor,
-or roles you create. Team roles are not WordPress roles, so giving someone a
-team role does not change their WordPress role.
+or roles you create. Staff roles are not WordPress roles, so giving someone a
+staff role does not change their WordPress role.
 
-Manage team roles and their permissions in **Co-op > Settings > Team roles**.
+Manage staff roles and their permissions in **Co-op > Settings > Staff roles**.
 
 ## Requirements
 
@@ -115,7 +115,7 @@ when updating the PO.
 3. **Set up an order cycle.** Open **Co-op > Cycles** and enter the cycle's
    ordering dates and other details.
 4. **Add members.** Open **Co-op > Members** to connect an existing WordPress
-   user or create a new member account. Review the member's status, team roles
+   user or create a new member account. Review the member's status, staff roles
    and profile information.
 5. **Manage orders.** Use **Co-op > Orders** to review, create or edit orders.
    When changing a submitted order or cancelling it, staff are asked to provide
@@ -229,7 +229,7 @@ System-managed membership fee lines are retained when reopening, are not treated
 as stock products, and are synchronized again during normal editing/submission.
 Members cannot cancel or reopen orders themselves; they must contact the co-op.
 
-**Deleting cycles and orders:** Managers and team roles with **Delete cycles and
+**Deleting cycles and orders:** Managers and staff roles with **Delete cycles and
 orders** can permanently delete any cycle or order, including its order items and
 event history. Deleting a cycle also deletes all of its orders. Stock-ledger
 entries are retained for inventory accuracy, with references to deleted orders

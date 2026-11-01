@@ -9,7 +9,7 @@
  * role can never remove their co-op access, and deactivating the plugin removes every
  * co-op capability at once.
  *
- * Active members can order, plus whatever their team roles allow. Team roles only count
+ * Active members can order, plus whatever their staff roles allow. Staff roles only count
  * while the person is active.
  *
  * Code checks capabilities (current_user_can( 'openbb_...' )), never statuses or roles.
@@ -66,7 +66,7 @@ class OPENBB_Access {
 	}
 
 	/**
-	 * Team roles the user holds, in display order. Roles that no longer exist are ignored.
+	 * Staff roles the user holds, in display order. Roles that no longer exist are ignored.
 	 */
 	public static function get_roles( int $user_id ): array {
 		$held = (array) get_user_meta( $user_id, openbb_member_meta_key( 'roles' ), false );
@@ -220,7 +220,7 @@ class OPENBB_Access {
 	}
 
 	/**
-	 * Replaces the team roles a member holds on behalf of the current user.
+	 * Replaces the staff roles a member holds on behalf of the current user.
 	 * Fires 'openbb_member_roles_changed'.
 	 *
 	 * @param string[] $roles

@@ -7,7 +7,7 @@ import { config, languageLabel, toElements } from '../../utils/config';
 export const formatDate = ( value ) =>
 	value ? dateI18n( getSettings().formats.date, value ) : '—';
 
-// A function, as the Team roles settings tab can change the roles without a page load.
+// A function, as the Staff roles settings tab can change the roles without a page load.
 export const roleElements = () => toElements( config.coopRoles );
 
 /**
@@ -123,7 +123,7 @@ export const memberFields = [
 	},
 	{
 		id: 'roles',
-		label: __( 'Team roles', 'open-bulk-buying' ),
+		label: __( 'Staff roles', 'open-bulk-buying' ),
 		type: 'array',
 		get elements() {
 			return roleElements();

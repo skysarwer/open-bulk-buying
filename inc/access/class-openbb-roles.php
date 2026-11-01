@@ -1,7 +1,7 @@
 <?php
 /**
- * Team roles: the capability registry, the roles shipped in code, and each site's
- * changes to them. Every active member can order; team roles only add admin permissions.
+ * Staff roles: the capability registry, the roles shipped in code, and each site's
+ * changes to them. Every active member can order; staff roles only add admin permissions.
  *
  * The option stores only what differs from the code defaults, so a co-op that never
  * changed its roles stores nothing and picks up new defaults when the plugin updates.
@@ -138,7 +138,7 @@ class OPENBB_Roles {
 			'openbb_manage_rules'          => array( __( 'Manage rules', 'open-bulk-buying' ), __( 'Edit the co-op rules members agree to.', 'open-bulk-buying' ) ),
 			'openbb_manage_settings'       => array( __( 'Manage settings', 'open-bulk-buying' ), __( 'Change the co-op\'s general settings.', 'open-bulk-buying' ) ),
 			'openbb_manage_profile_fields' => array( __( 'Manage profile fields', 'open-bulk-buying' ), __( 'Add and change the questions members answer about themselves.', 'open-bulk-buying' ) ),
-			'openbb_manage_access'         => array( __( 'Manage team roles', 'open-bulk-buying' ), __( 'Edit team roles and give them to members.', 'open-bulk-buying' ) ),
+			'openbb_manage_access'         => array( __( 'Manage staff roles', 'open-bulk-buying' ), __( 'Edit staff roles and give them to members.', 'open-bulk-buying' ) ),
 		);
 
 		$all = array();
@@ -656,7 +656,7 @@ class OPENBB_Roles {
 		if ( self::revision() !== $base_revision ) {
 			return new WP_Error(
 				'openbb_roles_stale',
-				__( 'Someone else changed the team roles. Reload to see the latest version.', 'open-bulk-buying' ),
+				__( 'Someone else changed the staff roles. Reload to see the latest version.', 'open-bulk-buying' ),
 				array( 'status' => 409 )
 			);
 		}

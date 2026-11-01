@@ -99,7 +99,7 @@ export default function RolePanel( { role, roles, onSave, onReload, onClose } ) 
 	};
 
 	const title = isNew
-		? __( 'New team role', 'open-bulk-buying' )
+		? __( 'New staff role', 'open-bulk-buying' )
 		: draft.label || role.label;
 
 	return (

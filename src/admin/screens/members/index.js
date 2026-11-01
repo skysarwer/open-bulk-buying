@@ -90,7 +90,7 @@ const accountForm = {
 
 // RolesEdit outside a DataForm.
 const rolesField = {
-	label: __( 'Team roles', 'open-bulk-buying' ),
+	label: __( 'Staff roles', 'open-bulk-buying' ),
 	getValue: ( { item } ) => item.roles,
 	setValue: ( { value } ) => ( { roles: value } ),
 };

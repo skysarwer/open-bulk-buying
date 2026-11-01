@@ -275,11 +275,11 @@ msgid "Add and change the questions members answer about themselves."
 msgstr "Ajouter et modifier les questions auxquelles les membres répondent à leur sujet."
 
 #: inc/access/class-openbb-roles.php:141
-msgid "Manage team roles"
+msgid "Manage staff roles"
 msgstr "Gérer les rôles de l’équipe"
 
 #: inc/access/class-openbb-roles.php:141
-msgid "Edit team roles and give them to members."
+msgid "Edit staff roles and give them to members."
 msgstr "Modifier les rôles de l’équipe et les attribuer aux membres."
 
 #: inc/access/class-openbb-roles.php:160
@@ -368,7 +368,7 @@ msgid "You are not allowed to change roles."
 msgstr "Vous n’avez pas l’autorisation de modifier les rôles."
 
 #: inc/access/class-openbb-roles.php:659
-msgid "Someone else changed the team roles. Reload to see the latest version."
+msgid "Someone else changed the staff roles. Reload to see the latest version."
 msgstr "Une autre personne a modifié les rôles de l’équipe. Rechargez pour voir la dernière version."
 
 #. translators: 1: role name, 2: reason.
@@ -2897,7 +2897,7 @@ msgstr "Langue par défaut du site"
 #: src/admin/screens/members/panel.js:120
 #: src/admin/screens/settings/index.js:33
 #: src/admin/screens/settings/roles/index.js:230
-msgid "Team roles"
+msgid "Staff roles"
 msgstr "Rôles de l’équipe"
 
 #: src/admin/screens/members/fields.js:145
@@ -4182,7 +4182,7 @@ msgid "Role reset."
 msgstr "Rôle réinitialisé."
 
 #: src/admin/screens/settings/roles/index.js:210
-msgid "Restore the original team roles? Custom roles will be deleted."
+msgid "Restore the original staff roles? Custom roles will be deleted."
 msgstr "Restaurer les rôles d’origine de l’équipe? Les rôles personnalisés seront supprimés."
 
 #: src/admin/screens/settings/roles/index.js:219
@@ -4220,7 +4220,7 @@ msgid "Restore original roles…"
 msgstr "Restaurer les rôles d’origine…"
 
 #: src/admin/screens/settings/roles/role-panel.js:102
-msgid "New team role"
+msgid "New staff role"
 msgstr "Nouveau rôle de l’équipe"
 
 #: src/admin/screens/settings/roles/role-panel.js:133
