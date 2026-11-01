@@ -34,6 +34,11 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 						array( 'id', 'submitted_at', 'total', 'member' ),
 						'desc',
 						array(
+							'type'     => array(
+								'type'    => 'string',
+								'enum'    => array( 'all', 'cycle', 'membership' ),
+								'default' => 'all',
+							),
 							'cycle_id' => array(
 								'type'    => 'integer',
 								'default' => 0,
@@ -253,6 +258,11 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 
 		$where  = array( '1=1' );
 		$params = array();
+		if ( 'cycle' === $request['type'] ) {
+			$where[] = 'o.cycle_id IS NOT NULL';
+		} elseif ( 'membership' === $request['type'] ) {
+			$where[] = 'o.cycle_id IS NULL';
+		}
 		if ( (int) $request['cycle_id'] ) {
 			$where[]  = 'o.cycle_id = %d';
 			$params[] = (int) $request['cycle_id'];
@@ -517,6 +527,7 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				'is_abandoned'     => $order->is_abandoned( $cycle ),
 				'hold_until'       => $cycle ? self::to_local_datetime( $cycle->hold_until( $order->status ) ) : null,
 				'paid_at'          => self::to_local_datetime( $order->paid_at ),
+				'payment_reference' => $order->cycle_id ? '' : $order->member_note,
 				'paid_by'          => $order->paid_by,
 				'paid_amount'      => $order->paid_amount,
 				'paid_currency'    => $order->paid_currency,

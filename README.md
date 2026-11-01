@@ -275,6 +275,14 @@ interval. A standalone payment covers the next interval of cycle orders.
 
 ### Recording and reviewing membership payments
 
+**Co-op > Orders** has **All**, **Cycle Orders**, and **Membership Payments**
+tabs. All includes both kinds of records; Cycle Orders includes orders tied to
+a cycle, including any membership fee charged with groceries. Membership
+Payments lists cycle-free payments and claims, with amount, submitted date,
+payment date, and reference columns instead of cycle, products, and aid.
+Pending claims remain Submitted; confirmed payments are displayed as Paid.
+Record a new separate membership payment from the member's details.
+
 In **Co-op > Members**, open a member's details to record a membership payment
 collected separately, with an optional reference. Staff need both permission to
 record payments and permission to edit that member. This creates a cycle-free

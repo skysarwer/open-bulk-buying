@@ -10,7 +10,14 @@ import { __, sprintf } from '@wordpress/i18n';
 import { pencil, plus, seen, trash } from '@wordpress/icons';
 import { DataViews } from '@wordpress/dataviews/wp';
 
-import { ConfirmBody, ErrorNotice, Loading, Page, SidePanel, usePanelStack } from '../../components';
+import {
+	ConfirmBody,
+	ErrorNotice,
+	Loading,
+	Page,
+	SidePanel,
+	usePanelStack,
+} from '../../components';
 import {
 	discardUnsavedChanges,
 	useDebouncedValue,
@@ -20,10 +27,12 @@ import {
 	useUnsavedChanges,
 } from '../../hooks';
 import { request } from '../../utils/api';
+import { Link, useSearch } from '../../router';
 import { can, config, queryArg, toElements } from '../../utils/config';
 import { formatMoney } from '../../utils/format';
 import relatedPanels from '../related-panels';
 import OrderEditor from './editor';
+import { createOrderView, MEMBERSHIP_FIELDS, ORDER_TABS } from './list-view';
 
 const LIST_MAPPING = {
 	orderby: {
@@ -41,18 +50,23 @@ const LIST_MAPPING = {
 function useCycles() {
 	const [ cycles, setCycles ] = useState( null );
 	useEffect( () => {
-		request( '/cycles', { query: { per_page: 100, orderby: 'opens_at', order: 'desc' } } )
+		request( '/cycles', {
+			query: { per_page: 100, orderby: 'opens_at', order: 'desc' },
+		} )
 			.then( setCycles )
 			.catch( () => setCycles( [] ) );
 	}, [] );
 	return cycles;
 }
 
-function buildFields( cycles ) {
-	return [
+function buildFields( cycles, tab ) {
+	const membership = tab === 'membership';
+	const fields = [
 		{
 			id: 'id',
-			label: __( 'Order', 'open-bulk-buying' ),
+			label: membership
+				? __( 'Payment', 'open-bulk-buying' )
+				: __( 'Order', 'open-bulk-buying' ),
 			type: 'integer',
 			render: ( { item } ) => `#${ item.id }`,
 			enableHiding: false,
@@ -75,7 +89,10 @@ function buildFields( cycles ) {
 			id: 'cycle_id',
 			label: __( 'Cycle', 'open-bulk-buying' ),
 			type: 'integer',
-			elements: cycles.map( ( cycle ) => ( { value: cycle.id, label: cycle.name } ) ),
+			elements: cycles.map( ( cycle ) => ( {
+				value: cycle.id,
+				label: cycle.name,
+			} ) ),
 			render: ( { item } ) => item.cycle_name,
 			filterBy: { operators: [ 'is' ], isPrimary: true },
 			enableSorting: false,
@@ -84,14 +101,30 @@ function buildFields( cycles ) {
 			id: 'status',
 			label: __( 'Status', 'open-bulk-buying' ),
 			type: 'text',
-			elements: toElements( config.orderStatuses ),
+			elements: toElements(
+				membership
+					? {
+							draft: config.orderStatuses.draft,
+							submitted: config.orderStatuses.submitted,
+							fulfilled: __( 'Paid', 'open-bulk-buying' ),
+							cancelled: config.orderStatuses.cancelled,
+					  }
+					: config.orderStatuses
+			),
 			render: ( { item } ) => (
 				<>
-					<span className={ `openbb-badge openbb-badge--order-${ item.status }` }>
+					<span
+						className={ `openbb-badge openbb-badge--order-${ item.status }` }
+					>
 						{ item.status_label }
 					</span>
 					{ item.is_abandoned && (
-						<div className="openbb-muted">{ __( 'Abandoned (uncollected)', 'open-bulk-buying' ) }</div>
+						<div className="openbb-muted">
+							{ __(
+								'Abandoned (uncollected)',
+								'open-bulk-buying'
+							) }
+						</div>
 					) }
 				</>
 			),
@@ -107,9 +140,12 @@ function buildFields( cycles ) {
 		},
 		{
 			id: 'total',
-			label: __( 'Total', 'open-bulk-buying' ),
+			label: membership
+				? __( 'Amount', 'open-bulk-buying' )
+				: __( 'Total', 'open-bulk-buying' ),
 			type: 'integer',
-			render: ( { item } ) => formatMoney( item.total ),
+			render: ( { item } ) =>
+				membership ? item.total_formatted : formatMoney( item.total ),
 			filterBy: false,
 		},
 		{
@@ -128,6 +164,20 @@ function buildFields( cycles ) {
 			filterBy: false,
 		},
 		{
+			id: 'paid_at',
+			label: __( 'Paid on', 'open-bulk-buying' ),
+			type: 'datetime',
+			enableSorting: false,
+			filterBy: false,
+		},
+		{
+			id: 'payment_reference',
+			label: __( 'Reference', 'open-bulk-buying' ),
+			type: 'text',
+			enableSorting: false,
+			filterBy: false,
+		},
+		{
 			id: 'updated_at',
 			label: __( 'Updated', 'open-bulk-buying' ),
 			type: 'datetime',
@@ -135,6 +185,11 @@ function buildFields( cycles ) {
 			filterBy: false,
 		},
 	];
+	return fields.filter( ( field ) =>
+		membership
+			? MEMBERSHIP_FIELDS.includes( field.id )
+			: ! [ 'paid_at', 'payment_reference' ].includes( field.id )
+	);
 }
 
 function MemberSearch( { value, onChange } ) {
@@ -158,8 +213,11 @@ function MemberSearch( { value, onChange } ) {
 							value: member.id,
 							label: `${ member.display_name } (${ member.email })`,
 						} ) );
-						const selected = prev.find( ( option ) => option.value === value );
-						return selected && ! next.some( ( o ) => o.value === value )
+						const selected = prev.find(
+							( option ) => option.value === value
+						);
+						return selected &&
+							! next.some( ( o ) => o.value === value )
 							? [ selected, ...next ]
 							: next;
 					} );
@@ -184,10 +242,20 @@ function MemberSearch( { value, onChange } ) {
 	);
 }
 
-function NewOrderPanel( { cycles, initialCycle, onClose, onCreated, onExisting } ) {
+function NewOrderPanel( {
+	cycles,
+	initialCycle,
+	onClose,
+	onCreated,
+	onExisting,
+} ) {
 	const open = cycles.filter( ( cycle ) => cycle.status !== 'complete' );
 	const [ cycleId, setCycleId ] = useState(
-		String( open.find( ( c ) => c.id === initialCycle )?.id || open[ 0 ]?.id || '' )
+		String(
+			open.find( ( c ) => c.id === initialCycle )?.id ||
+				open[ 0 ]?.id ||
+				''
+		)
 	);
 	const [ userId, setUserId ] = useState( null );
 	const [ isBusy, setIsBusy ] = useState( false );
@@ -216,12 +284,23 @@ function NewOrderPanel( { cycles, initialCycle, onClose, onCreated, onExisting }
 	};
 
 	return (
-		<SidePanel title={ __( 'New order', 'open-bulk-buying' ) } onClose={ onClose }>
+		<SidePanel
+			title={ __( 'New order', 'open-bulk-buying' ) }
+			onClose={ onClose }
+		>
 			<form onSubmit={ submit } className="openbb-edit-form">
 				<VStack spacing={ 4 }>
-					<ErrorNotice error={ error } onDismiss={ () => setError( null ) } />
+					<ErrorNotice
+						error={ error }
+						onDismiss={ () => setError( null ) }
+					/>
 					{ open.length === 0 ? (
-						<p>{ __( 'There are no open cycles to add an order to.', 'open-bulk-buying' ) }</p>
+						<p>
+							{ __(
+								'There are no open cycles to add an order to.',
+								'open-bulk-buying'
+							) }
+						</p>
 					) : (
 						<SelectControl
 							__next40pxDefaultSize
@@ -237,7 +316,10 @@ function NewOrderPanel( { cycles, initialCycle, onClose, onCreated, onExisting }
 					) }
 					<MemberSearch value={ userId } onChange={ setUserId } />
 					<p className="openbb-muted">
-						{ __( 'The order starts as a draft. Add products, then submit it to reserve stock.', 'open-bulk-buying' ) }
+						{ __(
+							'The order starts as a draft. Add products, then submit it to reserve stock.',
+							'open-bulk-buying'
+						) }
 					</p>
 					<HStack justify="flex-end" className="openbb-form-actions">
 						<Button
@@ -269,21 +351,61 @@ function NewOrderPanel( { cycles, initialCycle, onClose, onCreated, onExisting }
 }
 
 export default function OrdersScreen() {
-	const initialCycle = Number( queryArg( 'cycle' ) ) || 0;
-	const [ view, setView ] = useState( {
-		type: 'table',
-		search: '',
-		page: 1,
-		perPage: 20,
-		sort: { field: 'id', direction: 'desc' },
-		titleField: 'member_name',
-		fields: [ 'id', 'cycle_id', 'status', 'lines_count', 'total', 'aid_status', 'submitted_at' ],
-		filters: initialCycle ? [ { field: 'cycle_id', operator: 'is', value: initialCycle } ] : [],
-	} );
+	const search = useSearch();
+	const tab = ORDER_TABS.includes( search.tab ) ? search.tab : 'all';
+	const titles = {
+		all: __( 'All', 'open-bulk-buying' ),
+		cycle: __( 'Cycle Orders', 'open-bulk-buying' ),
+		membership: __( 'Membership Payments', 'open-bulk-buying' ),
+	};
+	const cycleId = Number( search.cycle ) || 0;
+	const tabs = (
+		<nav
+			className="openbb-tabs"
+			aria-label={ __( 'Order sections', 'open-bulk-buying' ) }
+		>
+			<ul className="openbb-tabs__list">
+				{ ORDER_TABS.map( ( name ) => (
+					<li key={ name }>
+						<Link
+							href={ `${ config.urls.orders }&tab=${ name }${
+								cycleId && name !== 'membership'
+									? `&cycle=${ cycleId }`
+									: ''
+							}` }
+							className={
+								'openbb-tabs__item' +
+								( name === tab ? ' is-active' : '' )
+							}
+							aria-current={ name === tab ? 'page' : undefined }
+						>
+							{ titles[ name ] }
+						</Link>
+					</li>
+				) ) }
+			</ul>
+		</nav>
+	);
+	return (
+		<OrdersList
+			key={ tab }
+			tab={ tab }
+			tabs={ tabs }
+			initialCycle={ cycleId }
+		/>
+	);
+}
+
+function OrdersList( { tab, tabs, initialCycle } ) {
+	const [ view, setView ] = useState( () =>
+		createOrderView( tab, initialCycle )
+	);
 	// An order id, or 0 to start a new order.
-	const [ openOrder, setOpenOrder ] = useState( () => Number( queryArg( 'order' ) ) || null );
+	const [ openOrder, setOpenOrder ] = useState(
+		() => Number( queryArg( 'order' ) ) || null
+	);
 	const cycles = useCycles();
-	const list = useList( '/orders', view, LIST_MAPPING );
+	const list = useList( '/orders', view, LIST_MAPPING, { type: tab } );
 	const notify = useNotify();
 	const canEdit = can( 'openbb_edit_orders' );
 	const [ guard, discardDialog ] = useDiscardGuard();
@@ -317,13 +439,18 @@ export default function OrdersScreen() {
 		[ openOrder, guard, nav.top, nav.reset ] // eslint-disable-line react-hooks/exhaustive-deps
 	);
 
-	const fields = useMemo( () => ( cycles ? buildFields( cycles ) : [] ), [ cycles ] );
+	const fields = useMemo(
+		() => ( cycles ? buildFields( cycles, tab ) : [] ),
+		[ cycles, tab ]
+	);
 
 	const actions = useMemo(
 		() => [
 			{
 				id: 'open',
-				label: canEdit ? __( 'Edit', 'open-bulk-buying' ) : __( 'View', 'open-bulk-buying' ),
+				label: canEdit
+					? __( 'Edit', 'open-bulk-buying' )
+					: __( 'View', 'open-bulk-buying' ),
 				icon: canEdit ? pencil : seen,
 				isPrimary: true,
 				callback: ( [ item ] ) => openPanel( item.id ),
@@ -339,21 +466,31 @@ export default function OrdersScreen() {
 					<ConfirmBody
 						message={ sprintf(
 							/* translators: 1: order number, 2: member name. */
-							__( 'Permanently delete order #%1$d for %2$s, including its items and event history? Any stock reservation will be released; stock-ledger entries are retained without their order reference. This cannot be undone.', 'open-bulk-buying' ),
+							__(
+								'Permanently delete order #%1$d for %2$s, including its items and event history? Any stock reservation will be released; stock-ledger entries are retained without their order reference. This cannot be undone.',
+								'open-bulk-buying'
+							),
 							item.id,
 							item.member.name
 						) }
-						confirmLabel={ __( 'Delete permanently', 'open-bulk-buying' ) }
+						confirmLabel={ __(
+							'Delete permanently',
+							'open-bulk-buying'
+						) }
 						isDestructive
 						closeModal={ closeModal }
 						onConfirm={ async () => {
-							await request( `/orders/${ item.id }`, { method: 'DELETE' } );
+							await request( `/orders/${ item.id }`, {
+								method: 'DELETE',
+							} );
 							if ( item.id === openOrder ) {
 								setOpenOrder( null );
 								nav.reset();
 							}
 							list.reload();
-							notify.success( __( 'Order deleted.', 'open-bulk-buying' ) );
+							notify.success(
+								__( 'Order deleted.', 'open-bulk-buying' )
+							);
 						} }
 					/>
 				),
@@ -371,7 +508,11 @@ export default function OrdersScreen() {
 		sidebar = (
 			<NewOrderPanel
 				cycles={ cycles }
-				initialCycle={ view.filters.find( ( filter ) => filter.field === 'cycle_id' )?.value }
+				initialCycle={
+					view.filters.find(
+						( filter ) => filter.field === 'cycle_id'
+					)?.value
+				}
 				onClose={ closePanel }
 				onCreated={ ( order ) => {
 					setOpenOrder( order.id );
@@ -403,13 +544,19 @@ export default function OrdersScreen() {
 			sidebarSize={ nav.size || ( openOrder ? 'wide' : 'default' ) }
 			sidebar={ nav.render( sidebar ) }
 			actions={
-				canEdit && (
-					<Button variant="primary" icon={ plus } onClick={ () => openPanel( 0 ) }>
+				canEdit &&
+				tab !== 'membership' && (
+					<Button
+						variant="primary"
+						icon={ plus }
+						onClick={ () => openPanel( 0 ) }
+					>
 						{ __( 'Add order', 'open-bulk-buying' ) }
 					</Button>
 				)
 			}
 		>
+			{ tabs }
 			<ErrorNotice error={ list.error } />
 			{ discardDialog }
 			<DataViews
@@ -424,7 +571,10 @@ export default function OrdersScreen() {
 				getItemId={ ( item ) => String( item.id ) }
 				onClickItem={ ( item ) => openPanel( item.id ) }
 				isItemClickable={ () => true }
-				searchLabel={ __( 'Search by order number, name or email', 'open-bulk-buying' ) }
+				searchLabel={ __(
+					'Search by order number, name or email',
+					'open-bulk-buying'
+				) }
 			/>
 		</Page>
 	);

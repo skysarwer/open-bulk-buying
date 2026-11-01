@@ -150,6 +150,44 @@ class Test_OPENBB_REST_Membership_Fees extends OPENBB_TestCase {
 		$this->assertCount( 1, $this->api( 'GET', "/members/{$member}" )->get_data()['membership_fee']['history'] );
 	}
 
+	public function test_orders_tabs_filter_before_pagination_and_include_payment_references(): void {
+		$this->set_one_time_fee( 2500 );
+		$member = $this->make_user( 'member' );
+		$paid   = $this->pay( $member, array( 'reference' => 'ET-123' ) )->get_data()['order']['id'];
+		$claim  = OPENBB_Membership_Fees::claim( $this->make_user( 'member' ), 'CLAIM-456' );
+		$this->assertNotWPError( $claim );
+		$cycle  = $this->make_cycle( OPENBB_Cycle::STATUS_ORDERING );
+		$order  = $this->make_order( $cycle, $member );
+
+		$all = $this->api( 'GET', '/orders', array( 'orderby' => 'id', 'order' => 'asc' ) );
+		$this->assertSame( 200, $all->get_status() );
+		$this->assertSame( array( $paid, $claim->id, $order ), wp_list_pluck( $all->get_data(), 'id' ) );
+
+		$cycles = $this->api( 'GET', '/orders', array( 'type' => 'cycle' ) );
+		$this->assertSame( array( $order ), wp_list_pluck( $cycles->get_data(), 'id' ) );
+		$this->assertSame( '', $cycles->get_data()[0]['payment_reference'] );
+
+		$params = array( 'type' => 'membership', 'per_page' => 1, 'orderby' => 'id', 'order' => 'asc' );
+		$first  = $this->api( 'GET', '/orders', $params );
+		$this->assertSame( '2', (string) $first->get_headers()['X-WP-Total'] );
+		$this->assertSame( '2', (string) $first->get_headers()['X-WP-TotalPages'] );
+		$this->assertSame( $paid, $first->get_data()[0]['id'] );
+		$this->assertSame( 'Paid', $first->get_data()[0]['status_label'] );
+		$this->assertSame( 'ET-123', $first->get_data()[0]['payment_reference'] );
+		$this->assertNotEmpty( $first->get_data()[0]['paid_at'] );
+		$second = $this->api( 'GET', '/orders', array_merge( $params, array( 'page' => 2 ) ) );
+		$this->assertSame( $claim->id, $second->get_data()[0]['id'] );
+		$this->assertSame( 'CLAIM-456', $second->get_data()[0]['payment_reference'] );
+		$this->assertNull( $second->get_data()[0]['paid_at'] );
+
+		$submitted = $this->api( 'GET', '/orders', array( 'type' => 'membership', 'status' => array( 'submitted' ) ) );
+		$this->assertSame( array( $claim->id ), wp_list_pluck( $submitted->get_data(), 'id' ) );
+		$this->assertSame( array(), $this->api( 'GET', '/orders', array( 'type' => 'membership', 'cycle_id' => $cycle ) )->get_data() );
+		$this->assertSame( 400, $this->api( 'GET', '/orders', array( 'type' => 'invalid' ) )->get_status() );
+		wp_set_current_user( $member );
+		$this->assertSame( 403, $this->api( 'GET', '/orders', array( 'type' => 'membership' ) )->get_status() );
+	}
+
 	public function test_no_fee_configured_is_not_applicable_and_not_recordable(): void {
 		$this->require_service();
 		$this->set_one_time_fee( 0 );
