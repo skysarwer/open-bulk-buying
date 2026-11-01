@@ -1,6 +1,6 @@
 <?php
 /**
- * Email template output stays unchanged when rendered outside the sending services.
+ * Email template output and shared signatures.
  *
  * @package Open_Bulk_Buying
  */
@@ -51,6 +51,9 @@ class Test_OPENBB_Email_Templates extends OPENBB_TestCase {
 		);
 
 		foreach ( $cases as list( $name, $data, $subject, $message ) ) {
+			$message .= in_array( $name, array( 'signup-code', 'login-code' ), true )
+				? '<p>Thank you!<br />' . "\n" . 'Food &amp; Friends</p>'
+				: "\n\nThank you!\nFood & Friends";
 			$this->assertSame(
 				array( 'subject' => $subject, 'message' => $message ),
 				OPENBB_Emails::render( $name, $data ),
@@ -61,6 +64,26 @@ class Test_OPENBB_Email_Templates extends OPENBB_TestCase {
 
 	private function welcome_footer(): string {
 		return "\n\nLog in at any time:\n" . wp_login_url() . "\n\nTo choose a password, use \"Lost your password?\":\n" . wp_lostpassword_url();
+	}
+
+	public function test_signature_can_be_customized_or_disabled(): void {
+		$custom = static function (): string { return "Kind regards,\nFood <Friends>"; };
+		add_filter( 'openbb_email_signature', $custom );
+		try {
+			$plain = OPENBB_Emails::render( 'account-exists' );
+			$html = OPENBB_Emails::render( 'signup-code', array( 'code' => '123456', 'minutes' => 10 ) );
+			$this->assertStringEndsWith( "\n\nKind regards,\nFood <Friends>", $plain['message'] );
+			$this->assertStringEndsWith( '<p>Kind regards,<br />' . "\nFood &lt;Friends&gt;</p>", $html['message'] );
+		} finally {
+			remove_filter( 'openbb_email_signature', $custom );
+		}
+		add_filter( 'openbb_email_signature', '__return_empty_string' );
+		try {
+			$mail = OPENBB_Emails::render( 'account-exists' );
+			$this->assertStringNotContainsString( 'Thank you!', $mail['message'] );
+		} finally {
+			remove_filter( 'openbb_email_signature', '__return_empty_string' );
+		}
 	}
 
 	public function test_unknown_templates_are_rejected(): void {

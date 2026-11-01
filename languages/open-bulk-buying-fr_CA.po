@@ -14,6 +14,38 @@ msgstr ""
 "X-Domain: open-bulk-buying\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+#: inc/emails/membership-event.php
+msgid "Membership payment updated"
+msgstr "Paiement des frais d’adhésion mis à jour"
+
+#: inc/emails/membership-event.php
+msgid "Amount paid"
+msgstr "Montant payé"
+
+#: inc/emails/membership-event.php
+msgid "Paid on"
+msgstr "Payé le"
+
+#: inc/emails/membership-event.php
+msgid "Claimed amount"
+msgstr "Montant déclaré"
+
+#: inc/emails/membership-event.php
+msgid "Thank you! Your membership payment has been confirmed. Keep this email as your payment receipt."
+msgstr "Merci! Votre paiement des frais d’adhésion a été confirmé. Conservez ce courriel comme reçu de paiement."
+
+#: inc/emails/membership-event.php
+msgid "Your membership payment claim was not accepted. This email is not a payment receipt. Please contact the co-op to clarify your payment or arrange payment of the membership fee."
+msgstr "Votre déclaration de paiement des frais d’adhésion n’a pas été acceptée. Ce courriel n’est pas un reçu de paiement. Veuillez communiquer avec la coopérative pour clarifier votre paiement ou convenir du paiement des frais d’adhésion."
+
+#: inc/emails/membership-event.php
+msgid "We have recorded your membership payment claim. Staff still need to verify it. This email is not a payment receipt; we will email you when the payment is confirmed."
+msgstr "Nous avons enregistré votre déclaration de paiement des frais d’adhésion. Le personnel doit encore la vérifier. Ce courriel n’est pas un reçu de paiement; nous vous enverrons un courriel lorsque le paiement sera confirmé."
+
+#: inc/emails/membership-event.php
+msgid "This email concerns your membership fee only, not a grocery order or confirmation of membership approval."
+msgstr "Ce courriel concerne uniquement vos frais d’adhésion, et non une commande d’épicerie ou une confirmation d’approbation de votre adhésion."
+
 #. Plugin Name of the plugin
 #: open-bulk-buying.php
 msgid "Open Bulk Buying"

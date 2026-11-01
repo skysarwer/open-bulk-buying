@@ -14,6 +14,38 @@ msgstr ""
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: open-bulk-buying\n"
 
+#: inc/emails/membership-event.php
+msgid "Membership payment updated"
+msgstr ""
+
+#: inc/emails/membership-event.php
+msgid "Amount paid"
+msgstr ""
+
+#: inc/emails/membership-event.php
+msgid "Paid on"
+msgstr ""
+
+#: inc/emails/membership-event.php
+msgid "Claimed amount"
+msgstr ""
+
+#: inc/emails/membership-event.php
+msgid "Thank you! Your membership payment has been confirmed. Keep this email as your payment receipt."
+msgstr ""
+
+#: inc/emails/membership-event.php
+msgid "Your membership payment claim was not accepted. This email is not a payment receipt. Please contact the co-op to clarify your payment or arrange payment of the membership fee."
+msgstr ""
+
+#: inc/emails/membership-event.php
+msgid "We have recorded your membership payment claim. Staff still need to verify it. This email is not a payment receipt; we will email you when the payment is confirmed."
+msgstr ""
+
+#: inc/emails/membership-event.php
+msgid "This email concerns your membership fee only, not a grocery order or confirmation of membership approval."
+msgstr ""
+
 #. Plugin Name of the plugin
 #: open-bulk-buying.php
 msgid "Open Bulk Buying"

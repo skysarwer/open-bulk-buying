@@ -136,6 +136,11 @@ Internal staff notes and financial-aid explanations are never emailed.
 Currency and product descriptions come from the order snapshots; email labels
 use the order language when a matching translation is available.
 
+All plugin email templates end with a shared signature: **Thank you!** followed
+by the site title, translated into the email's language. The
+`openbb_email_signature` filter accepts and returns plain text (newlines are
+preserved, and HTML emails escape it); return an empty string to omit it.
+
 Delivery uses WordPress `wp_mail()`, so configure and monitor your site's mail
 transport. A failed send is logged with order ID, revision and event and fires
 `openbb_order_email_failed( $order, $event )`; it does not undo the saved order or

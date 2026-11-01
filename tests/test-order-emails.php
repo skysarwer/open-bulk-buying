@@ -249,6 +249,63 @@ class Test_OPENBB_Order_Emails extends OPENBB_TestCase {
 		}
 	}
 
+	private function configure_membership_fee(): void {
+		update_option(
+			OPENBB_Settings::GENERAL_OPTION,
+			array_merge(
+				(array) get_option( OPENBB_Settings::GENERAL_OPTION, array() ),
+				array( 'membership_fee_type' => 'one_time', 'membership_fee_amount' => 2500 )
+			)
+		);
+	}
+
+	public function test_membership_claim_confirmation_and_retry_use_compact_receipts(): void {
+		$this->configure_membership_fee();
+		$actor = $this->make_user( 'coordinator', '' );
+		$claim = OPENBB_Membership_Fees::claim( $this->member, 'ET-123 & transfer' );
+		$this->assertInstanceOf( OPENBB_Order::class, $claim );
+		$this->assertCount( 1, $this->mail );
+		$this->assertStringContainsString( 'awaiting verification', $this->mail[0]['subject'] );
+		$this->assertStringContainsString( 'not a payment receipt', $this->mail[0]['message'] );
+		$this->assertStringNotContainsString( '>Paid on<', $this->mail[0]['message'] );
+
+		$paid = OPENBB_Membership_Fees::review( $this->member, $claim->id, $actor );
+		$this->assertInstanceOf( OPENBB_Order::class, $paid );
+		$this->assertCount( 2, $this->mail );
+		$message = $this->mail[1]['message'];
+		$this->assertStringContainsString( 'Membership payment confirmed', $this->mail[1]['subject'] );
+		$this->assertStringContainsString( 'Keep this email as your payment receipt', $message );
+		$this->assertStringContainsString( esc_html( openbb_format_money( $paid->paid_amount, $paid->paid_currency ) ), $message );
+		$this->assertStringContainsString( esc_html( get_date_from_gmt( $paid->paid_at, get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ) ), $message );
+		$this->assertStringContainsString( 'ET-123 &amp; transfer', $message );
+		foreach ( array( '<script', '>Package<', '>Quantity<', '>Container credit<', '>Donation<', '>Financial aid<' ) as $excluded ) {
+			$this->assertStringNotContainsString( $excluded, $message );
+		}
+		$this->assertInstanceOf( OPENBB_Order::class, OPENBB_Membership_Fees::review( $this->member, $claim->id, $actor ) );
+		$this->assertCount( 2, $this->mail );
+	}
+
+	public function test_separate_recorded_payment_and_rejected_claim_have_distinct_copy(): void {
+		$this->configure_membership_fee();
+		$actor = $this->make_user( 'coordinator', '' );
+		$paid = OPENBB_Membership_Fees::record( $this->member, $actor );
+		$this->assertInstanceOf( OPENBB_Order::class, $paid );
+		$this->assertCount( 1, $this->mail );
+		$this->assertStringContainsString( 'Membership payment confirmed', $this->mail[0]['subject'] );
+		$this->assertStringNotContainsString( '>Reference<', $this->mail[0]['message'] );
+
+		$member = $this->make_user( 'member' );
+		$claim = OPENBB_Membership_Fees::claim( $member, 'Claim reference' );
+		$this->assertInstanceOf( OPENBB_Order::class, $claim );
+		$rejected = OPENBB_Membership_Fees::review( $member, $claim->id, $actor, false, true );
+		$this->assertInstanceOf( OPENBB_Order::class, $rejected );
+		$this->assertCount( 3, $this->mail );
+		$this->assertStringContainsString( 'claim rejected', $this->mail[2]['subject'] );
+		$this->assertStringContainsString( 'not a payment receipt', $this->mail[2]['message'] );
+		$this->assertStringContainsString( 'contact the co-op', $this->mail[2]['message'] );
+		$this->assertStringNotContainsString( '>Paid on<', $this->mail[2]['message'] );
+	}
+
 	public function test_own_container_change_without_a_charge_is_still_in_the_diff(): void {
 		update_post_meta( $this->products[0]->id, OPENBB_META_PREFIX . 'container_charge', 0 );
 		$order = $this->create_order();

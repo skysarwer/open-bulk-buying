@@ -19,7 +19,20 @@ final class OPENBB_Emails {
 		}
 
 		$site = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
+		$signature = self::signature();
+		$mail = require __DIR__ . '/' . $template . '.php';
 
-		return require __DIR__ . '/' . $template . '.php';
+		// Full-document receipts place the signature inside their HTML layout.
+		if ( 'order-event' !== $template && '' !== $signature ) {
+			$mail['message'] .= in_array( $template, array( 'signup-code', 'login-code' ), true )
+				? '<p>' . nl2br( esc_html( $signature ) ) . '</p>'
+				: "\n\n" . $signature;
+		}
+		return $mail;
+	}
+
+	public static function signature(): string {
+		$site = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
+		return apply_filters( 'openbb_email_signature', __( 'Thank you!', 'open-bulk-buying' ) . "\n" . $site );
 	}
 }

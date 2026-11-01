@@ -10,6 +10,9 @@ defined( 'ABSPATH' ) || exit;
 $order   = $data['order'];
 $event   = $data['event'];
 $changes = $data['changes'];
+if ( ! $order->cycle_id ) {
+	return require __DIR__ . '/membership-event.php';
+}
 $titles  = array(
 	'created'   => __( 'Order created', 'open-bulk-buying' ),
 	'updated'   => __( 'Order updated', 'open-bulk-buying' ),
@@ -17,11 +20,6 @@ $titles  = array(
 	'cancelled' => __( 'Order cancelled', 'open-bulk-buying' ),
 	'fulfilled' => __( 'Order fulfilled', 'open-bulk-buying' ),
 );
-if ( ! $order->cycle_id ) {
-	$titles['created'] = __( 'Membership payment awaiting verification', 'open-bulk-buying' );
-	$titles['fulfilled'] = __( 'Membership payment confirmed', 'open-bulk-buying' );
-	$titles['cancelled'] = __( 'Membership payment claim rejected', 'open-bulk-buying' );
-}
 /* translators: 1: site name, 2: order event, 3: order ID. */
 $subject = sprintf( __( '[%1$s] %2$s (#%3$d)', 'open-bulk-buying' ), $site, $titles[ $event ], $order->id );
 $cycle   = OPENBB_Cycles::get( $order->cycle_id );
@@ -80,6 +78,9 @@ ob_start();
 	</tfoot>
 <?php endif; ?>
 </table>
+<?php if ( '' !== $signature ) : ?>
+<p><?php echo nl2br( esc_html( $signature ) ); ?></p>
+<?php endif; ?>
 </body></html>
 <?php
 return array( 'subject' => $subject, 'message' => ob_get_clean() );
