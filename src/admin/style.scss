@@ -709,6 +709,40 @@ $openbb-wide-sidebar-width: 640px;
 	color: $openbb-gray;
 }
 
+.openbb-prep {
+	width: auto;
+	margin: 0 24px 24px;
+
+	td,
+	th {
+		vertical-align: top;
+	}
+
+	&__section th {
+		background: #f6f7f7;
+		font-weight: 600;
+	}
+
+	&__check {
+		width: 1%;
+		white-space: nowrap;
+	}
+
+	.is-short {
+		box-shadow: inset 3px 0 0 $openbb-danger;
+	}
+}
+
+.openbb-prep__notice,
+.openbb-prep__negative {
+	color: $openbb-danger;
+	font-weight: 600;
+}
+
+.openbb-prep__warning {
+	color: #b26200;
+}
+
 .openbb-pre {
 	white-space: pre-wrap;
 }

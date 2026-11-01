@@ -164,8 +164,32 @@ cancelled, and already allocated requests are read-only. Decisions record the
 staff actor and date, reject stale revisions, and leave all order amounts unchanged.
 
 Approval means eligibility, not an allocated discount. Percentage-based allocation
-from available funding is not implemented here. Polls, packing, shifts, and a
+from available funding is not implemented here. Polls, shifts, and a
 distribution-screen launcher are intentionally absent until those workflows ship.
+
+### Processing pre-orders
+
+Each product has a **Preparation** setting: **Set aside by product** (gather the
+cycle's total from stock into a shared station) or **Pack into member baskets**.
+Products left on **Co-op default** follow the default in **Settings > General**.
+When a cycle enters processing, each pre-ordered product's method is frozen for
+that cycle. Later catalogue edits don't change it, but staff can still change it
+on the cycle's Preparation tab until a basket containing the product is packed.
+
+- **Orders** tab: the cycle's orders. When some products are packed into baskets,
+  a **Packed** checkbox marks those products as packed for the order. This sets
+  their prepared quantities and locks those lines in the order editor.
+- **Preparation** tab: pre-ordered products grouped by category, as on the order
+  form. Each row shows the ordered quantity, stock on hand, stock held for this
+  cycle and for others, and what is available. Rows short on stock are marked
+  red. **Update stock** and **History** open the stock ledger. Ticking **Set aside**
+  records the quantity confirmed. If orders change afterwards, the row is flagged
+  for re-confirmation.
+
+Preparing records no stock moves; stock leaves inventory when orders are handed
+out. Staff with **Process orders** can use both tabs while the cycle is
+processing or distributing. Shortage substitutions and printable lists are not
+implemented yet.
 
 ## Catalog display order
 

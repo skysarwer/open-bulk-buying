@@ -132,6 +132,56 @@ class OPENBB_Inventory {
 	}
 
 	/**
+	 * Pre-ordered products of one cycle, in base units: lines of orders that reserve
+	 * stock (see get_reserved()) plus those already handed out. Drafts, cancelled and
+	 * abandoned orders are left out.
+	 *
+	 * @return array<int, array{ordered: float, reserved: float, collected: float, orders: int, lines: int, packed_lines: int}>
+	 *         Product id => totals; 'packed_lines' counts lines with a prepared or final quantity.
+	 */
+	public static function get_cycle_demand( int $cycle_id ): array {
+		global $wpdb;
+
+		$condition = self::reservation_condition();
+		$quantity  = 'COALESCE(l.qty_final, l.qty_prepared, l.qty_requested)';
+		$rows      = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT l.product_id,
+					SUM({$quantity} * l.base_per_unit) AS ordered,
+					SUM(CASE WHEN o.collected_at IS NULL THEN {$quantity} * l.base_per_unit ELSE 0 END) AS reserved,
+					SUM(CASE WHEN o.collected_at IS NOT NULL THEN {$quantity} * l.base_per_unit ELSE 0 END) AS collected,
+					COUNT(DISTINCT o.id) AS orders,
+					COUNT(*) AS line_count,
+					SUM(l.qty_prepared IS NOT NULL OR l.qty_final IS NOT NULL) AS packed_lines
+				FROM {$wpdb->openbb_order_lines} l
+				INNER JOIN {$wpdb->openbb_orders} o ON o.id = l.order_id
+				INNER JOIN {$wpdb->openbb_cycles} c ON c.id = o.cycle_id
+				WHERE o.cycle_id = %d AND l.line_type = %s AND {$quantity} > 0
+				AND ( ({$condition}) OR (o.status = %s AND o.collected_at IS NOT NULL) )
+				GROUP BY l.product_id",
+				$cycle_id,
+				OPENBB_Order_Line::TYPE_PRODUCT,
+				OPENBB_Order::STATUS_FULFILLED
+			),
+			ARRAY_A
+		);
+
+		$demand = array();
+		foreach ( (array) $rows as $row ) {
+			$demand[ (int) $row['product_id'] ] = array(
+				'ordered'      => round( (float) $row['ordered'], 3 ),
+				'reserved'     => round( (float) $row['reserved'], 3 ),
+				'collected'    => round( (float) $row['collected'], 3 ),
+				'orders'       => (int) $row['orders'],
+				'lines'        => (int) $row['line_count'],
+				'packed_lines' => (int) $row['packed_lines'],
+			);
+		}
+
+		return $demand;
+	}
+
+	/**
 	 * Whether $order's lines currently count towards reserved stock (see get_reserved()).
 	 */
 	public static function order_reserves( OPENBB_Order $order, ?OPENBB_Cycle $cycle = null ): bool {

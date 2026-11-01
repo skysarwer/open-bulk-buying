@@ -23,6 +23,7 @@ export const WRITABLE = [
 	'category_ids',
 	'supplier_id',
 	'image_id',
+	'prep_method',
 	...config.translationLanguages.flatMap( ( lang ) => [
 		`name_${ lang }`,
 		`description_${ lang }`,
@@ -44,6 +45,7 @@ export const NEW_PRODUCT = {
 	supplier_id: 0,
 	image_id: 0,
 	image_url: '',
+	prep_method: '',
 };
 
 function ProductImage( { item } ) {
@@ -336,6 +338,35 @@ export function buildProductFields( { categories, suppliers } ) {
 			enableSorting: false,
 		},
 		{
+			id: 'prep_method',
+			label: __( 'Preparation', 'open-bulk-buying' ),
+			type: 'text',
+			elements: [
+				{ value: '', label: __( 'Co-op default', 'open-bulk-buying' ) },
+				...toElements( config.prepMethods || {} ),
+			],
+			Edit: ( { data, field, onChange } ) => (
+				<SelectControl
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
+					label={ field.label }
+					help={ field.description }
+					value={ data.prep_method || '' }
+					options={ field.elements }
+					onChange={ ( value ) => onChange( { prep_method: value } ) }
+				/>
+			),
+			render: ( { item } ) =>
+				config.prepMethods?.[ item.prep_method ] ||
+				__( 'Co-op default', 'open-bulk-buying' ),
+			description: __(
+				'How pre-orders of this product are prepared. A cycle keeps the method it had when processing started.',
+				'open-bulk-buying'
+			),
+			filterBy: false,
+			enableSorting: false,
+		},
+		{
 			id: 'active',
 			label: __( 'Status', 'open-bulk-buying' ),
 			type: 'boolean',
@@ -391,6 +422,7 @@ export const productForm = {
 		'category_ids',
 		'supplier_id',
 		'menu_order',
+		'prep_method',
 		'active',
 	],
 };

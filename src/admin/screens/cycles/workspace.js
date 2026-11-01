@@ -7,14 +7,32 @@ import { useNotify, useRecord } from '../../hooks';
 import { Link, navigate, useSearch } from '../../router';
 import { can, config } from '../../utils/config';
 import { CycleDetails, CycleSummary } from './list';
+import CycleOrders from './orders';
 import FinancialAid from './financial-aid';
+import Preparation from './preparation';
+
+const canProcess = () =>
+	can( 'openbb_process_orders' ) || can( 'openbb_view_orders' );
 
 const sections = [
 	{ name: 'details', title: __( 'Details', 'open-bulk-buying' ) },
 	{
+		name: 'orders',
+		title: __( 'Orders', 'open-bulk-buying' ),
+		isVisible: canProcess,
+		Component: CycleOrders,
+	},
+	{
+		name: 'preparation',
+		title: __( 'Preparation', 'open-bulk-buying' ),
+		isVisible: canProcess,
+		Component: Preparation,
+	},
+	{
 		name: 'financial-aid',
 		title: __( 'Financial Aid', 'open-bulk-buying' ),
-		cap: 'openbb_view_aid',
+		isVisible: () => can( 'openbb_view_aid' ),
+		Component: FinancialAid,
 	},
 ];
 
@@ -29,20 +47,17 @@ export default function CycleWorkspace( { cycleId } ) {
 	const search = useSearch();
 	const notify = useNotify();
 	const visible = sections.filter(
-		( section ) => ! section.cap || can( section.cap )
+		( section ) => ! section.isVisible || section.isVisible()
 	);
 	const current =
 		visible.find( ( section ) => section.name === search.tab ) ||
-		visible.find(
-			( section ) =>
-				section.name ===
-				( can( 'openbb_manage_cycles' ) ? 'details' : 'financial-aid' )
-		) ||
+		( can( 'openbb_manage_cycles' ) ? visible[ 0 ] : visible[ 1 ] ) ||
 		visible[ 0 ];
 
-	const renderPage = ( aid = null ) => (
+	const renderPage = ( tab = null ) => (
 		<Page
-			sidebar={ aid?.sidebar }
+			sidebar={ tab?.sidebar }
+			sidebarSize={ tab?.sidebarSize }
 			title={ cycle?.name || __( 'Manage cycle', 'open-bulk-buying' ) }
 			actions={
 				cycle && (
@@ -97,8 +112,8 @@ export default function CycleWorkspace( { cycleId } ) {
 							) ) }
 						</ul>
 					</nav>
-					{ current.name === 'financial-aid' ? (
-						aid?.content
+					{ current.Component ? (
+						tab?.content
 					) : (
 						<div className="openbb-cycle-workspace__details">
 							<h3>
@@ -191,9 +206,19 @@ export default function CycleWorkspace( { cycleId } ) {
 		</Page>
 	);
 
-	return cycle && current.name === 'financial-aid' ? (
-		<FinancialAid cycle={ cycle }>{ renderPage }</FinancialAid>
-	) : (
-		renderPage()
-	);
+	if ( cycle && current.Component ) {
+		const { Component } = current;
+		return (
+			<Component
+				key={ `${ current.name }:${ cycle.id }` }
+				cycle={ cycle }
+				onBasketsChange={ ( count ) =>
+					setRecord( { ...cycle, basket_products_count: count } )
+				}
+			>
+				{ renderPage }
+			</Component>
+		);
+	}
+	return renderPage();
 }

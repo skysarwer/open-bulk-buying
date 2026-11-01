@@ -25,7 +25,7 @@ define('OPENBB_META_PREFIX', 'openbb_');
 
 // Listing tables in $wpdb->tables makes switch_to_blog() re-prefix them on multisite.
 global $wpdb;
-foreach ( array( 'openbb_cycles', 'openbb_orders', 'openbb_order_lines', 'openbb_order_events', 'openbb_stock_moves', 'openbb_rules_versions' ) as $openbb_table ) {
+foreach ( array( 'openbb_cycles', 'openbb_cycle_products', 'openbb_orders', 'openbb_order_lines', 'openbb_order_events', 'openbb_stock_moves', 'openbb_rules_versions' ) as $openbb_table ) {
 	$wpdb->tables[]      = $openbb_table;
 	$wpdb->$openbb_table = $wpdb->prefix . $openbb_table;
 }
@@ -61,6 +61,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-editor.php'
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-lifecycle.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-aid.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-member-orders.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/model/cycle/class-openbb-cycle-preparation.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/rules/class-openbb-rules-version.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/rules/class-openbb-rules.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/access/class-openbb-roles.php';
@@ -101,6 +102,7 @@ add_filter( 'user_has_cap', array( 'OPENBB_Access', 'filter_user_has_cap' ), 10,
 add_filter( 'map_meta_cap', array( 'OPENBB_Access', 'filter_map_meta_cap' ), 10, 4 );
 add_action( 'openbb_member_status_changed', array( 'OPENBB_Signup', 'on_member_status_changed' ), 10, 3 );
 add_action( 'openbb_order_saved', array( 'OPENBB_Order_Emails', 'on_saved' ), 10, 2 );
+add_action( 'openbb_cycle_status_changed', array( 'OPENBB_Cycle_Preparation', 'on_cycle_status_changed' ), 10, 2 );
 foreach ( array( 'added_user_meta', 'updated_user_meta', 'deleted_user_meta' ) as $openbb_meta_action ) {
 	add_action( $openbb_meta_action, array( 'OPENBB_Access', 'on_user_meta_change' ) );
 }

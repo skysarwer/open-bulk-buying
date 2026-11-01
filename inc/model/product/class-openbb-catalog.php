@@ -16,11 +16,21 @@ defined( 'ABSPATH' ) || exit;
 class OPENBB_Catalog {
 
 	/**
+	 * @param OPENBB_Product[]|null $products Products to group; defaults to the active catalog.
+	 * @param bool                  $once     List each product only under its first category.
 	 * @return array<int, array{id: int, name: string, depth: int, products: OPENBB_Product[]}>
 	 *         Sections; id 0 is the uncategorized section.
 	 */
-	public static function sections(): array {
-		$products = self::active_products();
+	public static function sections( ?array $products = null, bool $once = false ): array {
+		if ( null !== $products ) {
+			usort(
+				$products,
+				static function ( OPENBB_Product $a, OPENBB_Product $b ): int {
+					return $a->menu_order <=> $b->menu_order ?: strnatcasecmp( $a->get_name(), $b->get_name() ) ?: $a->id <=> $b->id;
+				}
+			);
+		}
+		$products = $products ?? self::active_products();
 		if ( ! $products ) {
 			return array();
 		}
@@ -61,6 +71,9 @@ class OPENBB_Catalog {
 
 		$sections = array();
 		self::add_sections( $sections, $children, 0, 0, $by_category );
+		if ( $once ) {
+			$sections = self::dedupe( $sections );
+		}
 
 		if ( $uncategorized ) {
 			$sections[] = array(
@@ -144,6 +157,39 @@ class OPENBB_Catalog {
 		}
 
 		return $added;
+	}
+
+	/**
+	 * Keeps each product under its first section only, then drops sections left with
+	 * no products and no remaining subsections.
+	 */
+	private static function dedupe( array $sections ): array {
+		$seen = array();
+		foreach ( $sections as &$section ) {
+			$section['products'] = array_values(
+				array_filter(
+					$section['products'],
+					static function ( OPENBB_Product $product ) use ( &$seen ): bool {
+						if ( isset( $seen[ $product->id ] ) ) {
+							return false;
+						}
+						$seen[ $product->id ] = true;
+						return true;
+					}
+				)
+			);
+		}
+		unset( $section );
+
+		$kept = array();
+		for ( $i = count( $sections ) - 1; $i >= 0; $i-- ) {
+			$next = $kept[0] ?? null;
+			if ( $sections[ $i ]['products'] || ( $next && $next['depth'] > $sections[ $i ]['depth'] ) ) {
+				array_unshift( $kept, $sections[ $i ] );
+			}
+		}
+
+		return $kept;
 	}
 
 	private static function compare_terms( WP_Term $a, WP_Term $b ): int {

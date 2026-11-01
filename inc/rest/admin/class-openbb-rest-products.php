@@ -219,6 +219,10 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 			self::localized_args( 'description' ),
 			array(
 				'brand'            => array( 'type' => 'string' ),
+				'prep_method'      => array(
+					'type' => 'string',
+					'enum' => array_merge( array( '' ), OPENBB_Cycle_Preparation::METHODS ),
+				),
 				'menu_order'       => array( 'type' => 'integer' ),
 				'unit_amount'      => array(
 					'type'             => 'number',
@@ -385,6 +389,7 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 		$supplier_id      = $request->has_param( 'supplier_id' ) ? (int) $request['supplier_id'] : $current->supplier_id;
 		$image_id         = $request->has_param( 'image_id' ) ? (int) $request['image_id'] : $current->image_id;
 		$menu_order       = $request->has_param( 'menu_order' ) ? (int) $request['menu_order'] : $current->menu_order;
+		$prep_method      = $request->has_param( 'prep_method' ) ? OPENBB_Cycle_Preparation::sanitize_method( $request['prep_method'] ) : $current->prep_method;
 
 		foreach ( $category_ids as $term_id ) {
 			if ( ! term_exists( $term_id, OPENBB_PRODUCT_TAXONOMY ) ) {
@@ -433,6 +438,7 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 			'brand'            => $brand,
 			'price'            => $price,
 			'container_charge' => $container_charge,
+			'prep_method'      => $prep_method,
 		);
 		// Units may only change while inactive: deactivate first, activate last.
 		if ( ! $active ) {
@@ -472,6 +478,7 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 			|| $saved->unit_type !== $unit_type
 			|| $saved->active !== $active
 			|| $saved->menu_order !== $menu_order
+			|| $saved->prep_method !== $prep_method
 		) {
 			return new WP_Error( 'openbb_product_save_incomplete', __( 'Some product changes could not be saved. Reload the product and check its details.', 'open-bulk-buying' ), array( 'status' => 500 ) );
 		}
@@ -732,6 +739,7 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 			self::localized_out( 'description', $product->description ),
 			array(
 				'brand'            => $product->brand,
+				'prep_method'      => $product->prep_method,
 				'menu_order'       => $product->menu_order,
 				'unit_amount'      => $product->unit_amount,
 				'unit_type'        => $product->unit_type,

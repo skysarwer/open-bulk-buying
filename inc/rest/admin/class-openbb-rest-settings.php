@@ -70,6 +70,10 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 									'minimum' => 1,
 									'maximum' => 9007199254740991,
 								),
+								'default_prep_method'           => array(
+									'type' => 'string',
+									'enum' => OPENBB_Cycle_Preparation::METHODS,
+								),
 							),
 						),
 					),

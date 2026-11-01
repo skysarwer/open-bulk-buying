@@ -172,6 +172,7 @@ class OPENBB_Maintenance {
 			$wpdb->openbb_order_lines,
 			$wpdb->openbb_orders,
 			$wpdb->openbb_stock_moves,
+			$wpdb->openbb_cycle_products,
 			$wpdb->openbb_cycles,
 			$wpdb->openbb_rules_versions,
 		);

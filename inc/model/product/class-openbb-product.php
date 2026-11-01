@@ -24,6 +24,7 @@ class OPENBB_Product extends OPENBB_Entity {
 	public $supplier_id      = 0;
 	public $image_id         = 0;
 	public $menu_order       = 0;
+	public $prep_method      = '';
 
 	public static function get( int $id ): ?self {
 		$post = get_post( $id );
@@ -64,6 +65,7 @@ class OPENBB_Product extends OPENBB_Entity {
 		$this->supplier_id      = (int) $this->supplier_id;
 		$this->image_id         = (int) $this->image_id;
 		$this->menu_order       = (int) $this->menu_order;
+		$this->prep_method      = OPENBB_Cycle_Preparation::sanitize_method( $this->prep_method );
 	}
 
 	public function get_name( ?string $language = null ): string {

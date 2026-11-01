@@ -297,7 +297,7 @@ class OPENBB_Access {
 
 		switch ( $cap ) {
 			case 'openbb_access_cycles':
-				foreach ( array( 'openbb_manage_cycles', 'openbb_view_aid' ) as $cycle_cap ) {
+				foreach ( array( 'openbb_manage_cycles', 'openbb_view_aid', 'openbb_process_orders' ) as $cycle_cap ) {
 					if ( user_can( $user_id, $cycle_cap ) ) {
 						return array( $cycle_cap );
 					}

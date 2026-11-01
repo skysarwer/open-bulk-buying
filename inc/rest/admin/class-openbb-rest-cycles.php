@@ -14,7 +14,7 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 	public function register_routes(): void {
 		$this->register_aid_routes();
 		$can_read   = static function () {
-			return self::authorize_any( array( 'openbb_manage_cycles', 'openbb_view_orders', 'openbb_view_aid' ) );
+			return self::authorize_any( array( 'openbb_manage_cycles', 'openbb_view_orders', 'openbb_view_aid', 'openbb_process_orders' ) );
 		};
 		$can_manage = static function () {
 			return self::authorize( 'openbb_manage_cycles' );
@@ -94,6 +94,51 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 							'required' => true,
 						),
 					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/cycles/(?P<id>\d+)/preparation',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_preparation' ),
+				'permission_callback' => static function () {
+					return self::authorize_any( array( 'openbb_process_orders', 'openbb_view_orders', 'openbb_manage_cycles' ) );
+				},
+				'args'                => self::id_arg(),
+			)
+		);
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/cycles/(?P<id>\d+)/preparation/(?P<product_id>\d+)',
+			array(
+				'methods'             => WP_REST_Server::EDITABLE,
+				'callback'            => array( $this, 'update_preparation' ),
+				'permission_callback' => static function ( WP_REST_Request $request ) {
+					return $request->has_param( 'prepared' )
+						? self::authorize( 'openbb_process_orders' )
+						: self::authorize_any( array( 'openbb_process_orders', 'openbb_manage_cycles' ) );
+				},
+				'args'                => array_merge(
+					self::id_arg(),
+					array(
+						'product_id'       => array(
+							'type'     => 'integer',
+							'required' => true,
+						),
+						'prepared'         => array( 'type' => 'boolean' ),
+						// The ordered base quantity the user saw when ticking the product.
+						'expected_ordered' => array(
+							'type'    => 'number',
+							'minimum' => 0,
+						),
+						'method'           => array(
+							'type' => 'string',
+							'enum' => OPENBB_Cycle_Preparation::METHODS,
+						),
+					)
 				),
 			)
 		);
@@ -314,7 +359,7 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 			return self::not_found( __( 'Cycle not found.', 'open-bulk-buying' ) );
 		}
 
-		return rest_ensure_response( $this->prepare_cycles( array( $cycle ) )[0] );
+		return rest_ensure_response( $this->prepare_cycles( array( $cycle ), true )[0] );
 	}
 
 	public function create_item( WP_REST_Request $request ) {
@@ -336,7 +381,132 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 			return $cycle;
 		}
 
-		return rest_ensure_response( $this->prepare_cycles( array( $cycle ) )[0] );
+		return rest_ensure_response( $this->prepare_cycles( array( $cycle ), true )[0] );
+	}
+
+	public function get_preparation( WP_REST_Request $request ) {
+		$cycle = OPENBB_Cycles::get( (int) $request['id'] );
+		if ( ! $cycle ) {
+			return self::not_found( __( 'Cycle not found.', 'open-bulk-buying' ) );
+		}
+
+		return rest_ensure_response( $this->prepare_preparation( $cycle ) );
+	}
+
+	public function update_preparation( WP_REST_Request $request ) {
+		$cycle_id   = (int) $request['id'];
+		$product_id = (int) $request['product_id'];
+		if ( ! $request->has_param( 'method' ) && ! $request->has_param( 'prepared' ) ) {
+			return self::invalid( __( 'Nothing to change.', 'open-bulk-buying' ) );
+		}
+		if ( $request->has_param( 'method' ) ) {
+			$result = OPENBB_Cycle_Preparation::set_method( $cycle_id, $product_id, (string) $request['method'] );
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
+		}
+		if ( $request->has_param( 'prepared' ) ) {
+			$result = OPENBB_Cycle_Preparation::set_prepared(
+				$cycle_id,
+				$product_id,
+				(bool) $request['prepared'],
+				$request->has_param( 'expected_ordered' ) ? (float) $request['expected_ordered'] : null,
+				get_current_user_id()
+			);
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
+		}
+
+		$cycle = OPENBB_Cycles::get( $cycle_id );
+		return $cycle ? rest_ensure_response( $this->prepare_preparation( $cycle ) ) : self::not_found( __( 'Cycle not found.', 'open-bulk-buying' ) );
+	}
+
+	/**
+	 * The Preparation tab: pre-ordered products grouped by category, with stock.
+	 * Quantities ending in _units are selling units; the rest are base units.
+	 */
+	private function prepare_preparation( OPENBB_Cycle $cycle ): array {
+		$overview = OPENBB_Cycle_Preparation::overview( $cycle );
+		$open     = in_array( $cycle->status, OPENBB_Cycle_Preparation::STAGES, true );
+		$items    = array();
+		$summary  = array(
+			'products'        => 0,
+			'prepared'        => 0,
+			'changed'         => 0,
+			'short'           => 0,
+			'basket_products' => 0,
+		);
+		foreach ( $overview['products'] as $product_id => $data ) {
+			$product  = $data['product'];
+			$demand   = $data['demand'];
+			$row      = $data['row'];
+			$per_unit = $product->get_base_per_unit();
+			$ordered  = (float) ( $demand['ordered'] ?? 0.0 );
+			// Stock this cycle still needs: pre-orders not yet handed out.
+			$needed   = (float) ( $demand['reserved'] ?? 0.0 );
+			$short    = max( 0.0, round( $needed - $data['on_hand'], 3 ) );
+			$oversold = max( 0.0, round( $data['reserved'] - $data['on_hand'], 3 ) );
+			$prepared = isset( $row['prepared_qty'] ) && null !== $row['prepared_qty'] ? (float) $row['prepared_qty'] : null;
+			$state    = null === $prepared ? 'none' : ( abs( $prepared - $ordered ) <= OPENBB_Order_Editor::EPSILON ? 'prepared' : 'changed' );
+
+			$items[ $product_id ] = array_merge(
+				OPENBB_REST_Products::prepare_product( $product, $data['on_hand'], $data['reserved'] ),
+				array(
+					'method'               => $data['method'],
+					'product_method'       => $product->prep_method,
+					'orders_count'         => (int) ( $demand['orders'] ?? 0 ),
+					'lines_count'          => (int) ( $demand['lines'] ?? 0 ),
+					'packed_lines'         => (int) ( $demand['packed_lines'] ?? 0 ),
+					'ordered'              => round( $ordered, 3 ),
+					'ordered_units'        => round( $ordered / $per_unit, 3 ),
+					'collected_units'      => round( (float) ( $demand['collected'] ?? 0.0 ) / $per_unit, 3 ),
+					'cycle_reserved_units' => round( $needed / $per_unit, 3 ),
+					'other_reserved_units' => round( max( 0.0, $data['reserved'] - $needed ) / $per_unit, 3 ),
+					'is_short'             => $short > 0,
+					'short_units'          => round( $short / $per_unit, 3 ),
+					'oversold_units'       => round( $oversold / $per_unit, 3 ),
+					'prepared_state'       => $state,
+					'prepared_units'       => null === $prepared ? null : round( $prepared / $per_unit, 3 ),
+					'prepared_at'          => self::to_local_datetime( $row['prepared_at'] ?? null ),
+					'prepared_by'          => null !== $prepared && ! empty( $row['prepared_by'] ) ? self::user_summary( (int) $row['prepared_by'] ) : null,
+				)
+			);
+
+			++$summary['products'];
+			$summary['prepared'] += 'prepared' === $state ? 1 : 0;
+			$summary['changed']  += 'changed' === $state ? 1 : 0;
+			$summary['short']    += $short > 0 ? 1 : 0;
+			$summary['basket_products'] += OPENBB_Cycle_Preparation::METHOD_BASKET === $data['method'] ? 1 : 0;
+		}
+
+		$sections = array();
+		foreach ( $overview['sections'] as $section ) {
+			$section_items = array();
+			foreach ( $section['product_ids'] as $product_id ) {
+				$section_items[] = $items[ $product_id ];
+			}
+			$sections[] = array(
+				'id'    => $section['id'],
+				'name'  => $section['name'],
+				'depth' => $section['depth'],
+				'items' => $section_items,
+			);
+		}
+
+		return array(
+			'cycle_id'          => $cycle->id,
+			'status'            => $cycle->status,
+			'stage_open'        => $open,
+			'methods_frozen'    => OPENBB_Cycle_Preparation::is_frozen( $cycle ),
+			'default_method'    => OPENBB_Cycle_Preparation::default_method(),
+			'can_prepare'       => $open && current_user_can( 'openbb_process_orders' ),
+			'can_change_method' => OPENBB_Cycle::STATUS_COMPLETE !== $cycle->status
+				&& ( current_user_can( 'openbb_process_orders' ) || current_user_can( 'openbb_manage_cycles' ) ),
+			'can_adjust_stock'  => current_user_can( 'openbb_manage_inventory' ),
+			'summary'           => $summary,
+			'sections'          => $sections,
+		);
 	}
 
 	public function delete_item( WP_REST_Request $request ) {
@@ -400,7 +570,7 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 			return $stored;
 		}
 
-		$response = rest_ensure_response( $this->prepare_cycles( array( OPENBB_Cycles::get( $cycle->id ) ?? $cycle ) )[0] );
+		$response = rest_ensure_response( $this->prepare_cycles( array( OPENBB_Cycles::get( $cycle->id ) ?? $cycle ), true )[0] );
 		if ( ! $existing ) {
 			$response->set_status( 201 );
 		}
@@ -410,8 +580,9 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 
 	/**
 	 * @param OPENBB_Cycle[] $cycles
+	 * @param bool           $detail Include figures that are costly to compute for a list.
 	 */
-	private function prepare_cycles( array $cycles ): array {
+	private function prepare_cycles( array $cycles, bool $detail = false ): array {
 		global $wpdb;
 
 		$stats = array();
@@ -472,7 +643,8 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 					'fulfilled_count' => (int) ( $row['fulfilled_count'] ?? 0 ),
 					'orders_total'    => (int) ( $row['total'] ?? 0 ),
 					'modified'        => self::to_local_datetime( $cycle->updated_at ),
-				)
+				),
+				$detail ? array( 'basket_products_count' => OPENBB_Cycle_Preparation::basket_products_count( $cycle ) ) : array()
 			);
 		}
 

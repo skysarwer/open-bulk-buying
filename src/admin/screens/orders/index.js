@@ -34,7 +34,7 @@ import relatedPanels from '../related-panels';
 import OrderEditor from './editor';
 import { createOrderView, MEMBERSHIP_FIELDS, ORDER_TABS } from './list-view';
 
-const LIST_MAPPING = {
+export const LIST_MAPPING = {
 	orderby: {
 		id: 'id',
 		submitted_at: 'submitted_at',
@@ -59,7 +59,7 @@ function useCycles() {
 	return cycles;
 }
 
-function buildFields( cycles, tab ) {
+export function buildFields( cycles, tab ) {
 	const membership = tab === 'membership';
 	const fields = [
 		{

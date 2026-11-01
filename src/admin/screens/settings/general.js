@@ -50,7 +50,8 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 		draft.membership_fee_amount !==
 			String( toMajor( settings.membership_fee_amount ) ) ||
 		draft.membership_fee_order_interval !==
-			String( settings.membership_fee_order_interval );
+			String( settings.membership_fee_order_interval ) ||
+		draft.default_prep_method !== settings.default_prep_method;
 	useUnsavedChanges( isDirty );
 
 	const change = ( key ) => ( value ) =>
@@ -307,6 +308,26 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 							disabled={ isBusy }
 						/>
 					) }
+				</Section>
+				<Section title={ __( 'Order preparation', 'open-bulk-buying' ) }>
+					<SelectControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						label={ __(
+							'Prepare pre-ordered products by default',
+							'open-bulk-buying'
+						) }
+						help={ __(
+							'Products can override this, and each cycle can be adjusted in its Preparation tab.',
+							'open-bulk-buying'
+						) }
+						value={ draft.default_prep_method }
+						options={ Object.entries( config.prepMethods ?? {} ).map(
+							( [ value, label ] ) => ( { value, label } )
+						) }
+						onChange={ change( 'default_prep_method' ) }
+						disabled={ isBusy }
+					/>
 				</Section>
 				<div>
 					<Button

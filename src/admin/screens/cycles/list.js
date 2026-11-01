@@ -17,6 +17,9 @@ import { request } from '../../utils/api';
 import { can, config, localizedFieldLabel, localizedRecordField, toElements } from '../../utils/config';
 import { formatMoney } from '../../utils/format';
 
+const canOpenOrders = () =>
+	can( 'openbb_view_orders' ) || can( 'openbb_process_orders' );
+
 const DATE_FIELDS = [
 	'opens_at',
 	'closes_at',
@@ -147,8 +150,8 @@ const cycleFields = [
 		type: 'integer',
 		readOnly: true,
 		render: ( { item } ) =>
-			can( 'openbb_view_orders' ) ? (
-				<Link href={ `${ config.urls.orders }&cycle=${ item.id }` }>
+			canOpenOrders() ? (
+				<Link href={ `${ config.urls.cycles }&cycle=${ item.id }&tab=orders` }>
 					{ item.orders_count }
 				</Link>
 			) : (
@@ -289,9 +292,9 @@ export function CycleSummary( {
 			<dl className="openbb-details">
 				<dt>{ __( 'Orders', 'open-bulk-buying' ) }</dt>
 				<dd>
-					{ can( 'openbb_view_orders' ) ? (
+					{ canOpenOrders() ? (
 						<Link
-							href={ `${ config.urls.orders }&cycle=${ cycle.id }` }
+							href={ `${ config.urls.cycles }&cycle=${ cycle.id }&tab=orders` }
 						>
 							{ cycle.orders_count }
 						</Link>
@@ -503,10 +506,10 @@ export default function CyclesList() {
 						{
 							id: 'orders',
 							label: __( 'View orders', 'open-bulk-buying' ),
-							isEligible: () => can( 'openbb_view_orders' ),
+							isEligible: canOpenOrders,
 							callback: ( [ item ] ) => {
 								navigate(
-									`${ config.urls.orders }&cycle=${ item.id }`
+									`${ config.urls.cycles }&cycle=${ item.id }&tab=orders`
 								);
 							},
 						},

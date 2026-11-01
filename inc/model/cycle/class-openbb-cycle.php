@@ -109,6 +109,7 @@ class OPENBB_Cycle extends OPENBB_Entity {
 		if ( ! $this->delete_row( $wpdb->openbb_cycles ) ) {
 			return new WP_Error( 'openbb_cycle_delete_failed', __( 'The cycle could not be deleted.', 'open-bulk-buying' ) );
 		}
+		$wpdb->delete( $wpdb->openbb_cycle_products, array( 'cycle_id' => $this->id ), array( '%d' ) );
 
 		return true;
 	}
@@ -144,7 +145,8 @@ class OPENBB_Cycle extends OPENBB_Entity {
 				"DELETE FROM {$wpdb->openbb_order_lines} WHERE order_id IN ({$orders})"
 			);
 			$orders_deleted = $lines_deleted && false !== $wpdb->delete( $wpdb->openbb_orders, array( 'cycle_id' => $this->id ), array( '%d' ) );
-			$cycle_deleted = $orders_deleted && 1 === $wpdb->delete( $wpdb->openbb_cycles, array( 'id' => $this->id ), array( '%d' ) );
+			$prep_deleted   = $orders_deleted && false !== $wpdb->delete( $wpdb->openbb_cycle_products, array( 'cycle_id' => $this->id ), array( '%d' ) );
+			$cycle_deleted  = $prep_deleted && 1 === $wpdb->delete( $wpdb->openbb_cycles, array( 'id' => $this->id ), array( '%d' ) );
 			if ( ! $cycle_deleted ) {
 				$wpdb->query( 'ROLLBACK' );
 				return new WP_Error( 'openbb_cycle_delete_failed', __( 'The cycle could not be deleted.', 'open-bulk-buying' ) );

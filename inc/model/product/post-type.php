@@ -214,6 +214,12 @@ function openbb_product_meta_fields(): array {
 			'default'           => false,
 			'sanitize_callback' => 'rest_sanitize_boolean',
 		),
+		// How the product is prepared for pre-orders; '' follows the co-op default.
+		'prep_method'      => array(
+			'type'              => 'string',
+			'default'           => '',
+			'sanitize_callback' => array( 'OPENBB_Cycle_Preparation', 'sanitize_method' ),
+		),
 	);
 }
 

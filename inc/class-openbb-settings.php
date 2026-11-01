@@ -29,6 +29,7 @@ final class OPENBB_Settings {
 				'membership_fee_type'           => 'one_time',
 				'membership_fee_amount'         => 0,
 				'membership_fee_order_interval' => 1,
+				'default_prep_method'           => 'station',
 			),
 			$settings
 		);

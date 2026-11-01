@@ -15,8 +15,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 
 	public function register_routes(): void {
-		$can_view = static function () {
-			return self::authorize( 'openbb_view_orders' );
+		// Order processors see the orders of the cycle being prepared or distributed.
+		$can_list = static function ( WP_REST_Request $request ) {
+			return self::can_process_cycle( (int) $request['cycle_id'] ) ? true : self::authorize( 'openbb_view_orders' );
+		};
+		$can_view_one = static function ( WP_REST_Request $request ) {
+			$order = OPENBB_Orders::get( (int) $request['id'] );
+			return $order && $order->cycle_id && self::can_process_cycle( $order->cycle_id ) ? true : self::authorize( 'openbb_view_orders' );
 		};
 		$can_edit = static function () {
 			return self::authorize( 'openbb_edit_orders' );
@@ -29,7 +34,7 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_items' ),
-					'permission_callback' => $can_view,
+					'permission_callback' => $can_list,
 					'args'                => self::collection_args(
 						array( 'id', 'submitted_at', 'total', 'member' ),
 						'desc',
@@ -86,7 +91,7 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_item' ),
-					'permission_callback' => $can_view,
+					'permission_callback' => $can_view_one,
 				),
 				array(
 					'methods'             => WP_REST_Server::EDITABLE,
@@ -170,6 +175,38 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				),
 			)
 		);
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/orders/(?P<id>\d+)/pack',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'pack_order' ),
+				'permission_callback' => static function ( WP_REST_Request $request ) {
+					$allowed = self::authorize( 'openbb_view_order', (int) $request['id'] );
+					return true === $allowed ? self::authorize( 'openbb_process_orders' ) : $allowed;
+				},
+				'args'                => array_merge(
+					self::id_arg(),
+					array(
+						'packed'            => array( 'type' => 'boolean', 'required' => true ),
+						'expected_revision' => array( 'type' => 'integer', 'minimum' => 0, 'required' => true ),
+					)
+				),
+			)
+		);
+	}
+
+	private static function can_process_cycle( int $cycle_id ): bool {
+		if ( ! $cycle_id || ! current_user_can( 'openbb_process_orders' ) ) {
+			return false;
+		}
+		$cycle = OPENBB_Cycles::get( $cycle_id );
+		return $cycle && in_array( $cycle->status, OPENBB_Cycle_Preparation::STAGES, true );
+	}
+
+	public function pack_order( WP_REST_Request $request ) {
+		$order = OPENBB_Cycle_Preparation::pack_order( (int) $request['id'], (bool) $request['packed'], (int) $request['expected_revision'], get_current_user_id() );
+		return is_wp_error( $order ) ? $order : rest_ensure_response( $this->prepare_order_detail( $order ) );
 	}
 
 	public function reopen_order( WP_REST_Request $request ) {
@@ -487,11 +524,17 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 
 		$labels     = OPENBB_Order::status_labels();
 		$aid_labels = OPENBB_Order::aid_status_labels();
+		$baskets    = self::basket_counts( $orders, $cycles );
 		$items      = array();
 		foreach ( $orders as $order ) {
 			$cycle             = $cycles[ $order->cycle_id ] ?? null;
 			$can_edit          = current_user_can( 'openbb_edit_order', $order->id );
 			$can_edit_contents = OPENBB_Order_Policy::can_edit_contents( $order, $cycle );
+			$reserves_stock    = OPENBB_Inventory::order_reserves( $order, $cycle );
+			$basket            = $baskets[ $order->id ] ?? array(
+				'lines'  => 0,
+				'packed' => 0,
+			);
 			$item   = array(
 				'id'               => $order->id,
 				'cycle_id'         => $order->cycle_id,
@@ -516,7 +559,10 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				'collected_at'     => self::to_local_datetime( $order->collected_at ),
 				'updated_at'       => self::to_local_datetime( $order->updated_at ),
 				'revision'         => $order->revision,
-				'reserves_stock'   => OPENBB_Inventory::order_reserves( $order, $cycle ),
+				'reserves_stock'   => $reserves_stock,
+				'basket_lines'     => $basket['lines'],
+				'basket_packed'    => $basket['packed'],
+				'can_pack'         => $basket['lines'] > 0 && $reserves_stock && current_user_can( 'openbb_process_orders' ),
 				'is_locked'        => ! $can_edit_contents,
 				'can_edit_lines'   => $can_edit_contents && $can_edit,
 				'can_edit_amounts' => $can_edit_contents && $can_edit,
@@ -555,6 +601,61 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 		}
 
 		return $items;
+	}
+
+	/**
+	 * Per order, how many product lines are packed into baskets and how many of those
+	 * are packed. Only counted while the cycle is being prepared or distributed.
+	 *
+	 * @param OPENBB_Order[]                  $orders
+	 * @param array<int, OPENBB_Cycle|null> $cycles
+	 * @return array<int, array{lines: int, packed: int}>
+	 */
+	private static function basket_counts( array $orders, array $cycles ): array {
+		global $wpdb;
+
+		$basket_products = array();
+		foreach ( $cycles as $cycle_id => $cycle ) {
+			if ( ! $cycle || ! in_array( $cycle->status, OPENBB_Cycle_Preparation::STAGES, true ) ) {
+				continue;
+			}
+			$methods                      = OPENBB_Cycle_Preparation::methods_for( $cycle, array_keys( OPENBB_Inventory::get_cycle_demand( $cycle->id ) ) );
+			$basket_products[ $cycle_id ] = array_flip( array_keys( $methods, OPENBB_Cycle_Preparation::METHOD_BASKET, true ) );
+		}
+		$order_ids = array();
+		foreach ( $orders as $order ) {
+			if ( $order->id && ! empty( $basket_products[ $order->cycle_id ] ) ) {
+				$order_ids[ $order->id ] = $order->cycle_id;
+			}
+		}
+		if ( ! $order_ids ) {
+			return array();
+		}
+
+		$rows   = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT order_id, product_id, (qty_prepared IS NOT NULL OR qty_final IS NOT NULL) AS packed
+				FROM {$wpdb->openbb_order_lines}
+				WHERE line_type = %s AND qty_requested > 0 AND order_id IN (" . implode( ',', array_fill( 0, count( $order_ids ), '%d' ) ) . ')',
+				...array_merge( array( OPENBB_Order_Line::TYPE_PRODUCT ), array_keys( $order_ids ) )
+			),
+			ARRAY_A
+		);
+		$counts = array();
+		foreach ( (array) $rows as $row ) {
+			$order_id = (int) $row['order_id'];
+			if ( ! isset( $basket_products[ $order_ids[ $order_id ] ][ (int) $row['product_id'] ] ) ) {
+				continue;
+			}
+			$counts[ $order_id ]            = $counts[ $order_id ] ?? array(
+				'lines'  => 0,
+				'packed' => 0,
+			);
+			$counts[ $order_id ]['lines']  += 1;
+			$counts[ $order_id ]['packed'] += (int) $row['packed'];
+		}
+
+		return $counts;
 	}
 
 	private function prepare_order_detail( OPENBB_Order $order ): array {
