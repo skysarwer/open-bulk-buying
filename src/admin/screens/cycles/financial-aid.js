@@ -4,13 +4,14 @@ import {
 	Notice,
 	__experimentalVStack as VStack,
 } from '@wordpress/components';
-import { useState } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { useEffect, useState } from '@wordpress/element';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { DataViews } from '@wordpress/dataviews/wp';
 
 import { ConfirmBody, ErrorNotice, SidePanel } from '../../components';
 import { useList, useNotify } from '../../hooks';
 import { request } from '../../utils/api';
+import { formatMoney } from '../../utils/format';
 
 const statuses = [
 	{ value: 'pending', label: __( 'Pending', 'open-bulk-buying' ) },
@@ -184,10 +185,76 @@ function AidRequestPanel( { cycle, item, onClose, onSaved } ) {
 	);
 }
 
+function useAidSummary( cycleId ) {
+	const [ summary, setSummary ] = useState( null );
+	const [ error, setError ] = useState( null );
+	const [ version, setVersion ] = useState( 0 );
+
+	useEffect( () => {
+		let current = true;
+		setError( null );
+		request( `/cycles/${ cycleId }/aid/summary` )
+			.then( ( data ) => current && setSummary( data ) )
+			.catch( ( err ) => current && setError( err ) );
+		return () => {
+			current = false;
+		};
+	}, [ cycleId, version ] );
+
+	return { summary, error, reload: () => setVersion( ( v ) => v + 1 ) };
+}
+
+function AidFunds( { summary } ) {
+	if ( ! summary ) {
+		return null;
+	}
+	const { requests } = summary;
+	return (
+		<dl className="openbb-details openbb-details--inline">
+			<dt>{ __( 'Donated this cycle', 'open-bulk-buying' ) }</dt>
+			<dd>
+				<strong>{ formatMoney( summary.donated ) }</strong>{ ' ' }
+				{ sprintf(
+					/* translators: %d: number of orders with a donation. */
+					_n(
+						'(%d order)',
+						'(%d orders)',
+						summary.donors,
+						'open-bulk-buying'
+					),
+					summary.donors
+				) }
+			</dd>
+			<dt>{ __( 'Donations received', 'open-bulk-buying' ) }</dt>
+			<dd>{ formatMoney( summary.received ) }</dd>
+			<dt>{ __( 'Aid allocated', 'open-bulk-buying' ) }</dt>
+			<dd>{ formatMoney( summary.allocated ) }</dd>
+			<dt>{ __( 'Available for aid', 'open-bulk-buying' ) }</dt>
+			<dd>
+				<strong>{ formatMoney( summary.available ) }</strong>
+			</dd>
+			<dt>{ __( 'Requests', 'open-bulk-buying' ) }</dt>
+			<dd>
+				{ sprintf(
+					/* translators: 1: pending, 2: approved, 3: declined request counts. */
+					__(
+						'%1$d pending, %2$d approved, %3$d declined',
+						'open-bulk-buying'
+					),
+					requests.pending,
+					requests.approved,
+					requests.declined
+				) }
+			</dd>
+		</dl>
+	);
+}
+
 export default function FinancialAid( { cycle, children } ) {
 	const [ view, setView ] = useState( initialView );
 	const [ selected, setSelected ] = useState( null );
 	const list = useList( `/cycles/${ cycle.id }/aid`, view, mapping );
+	const funds = useAidSummary( cycle.id );
 	const notify = useNotify();
 	const actions = [
 		{
@@ -202,6 +269,14 @@ export default function FinancialAid( { cycle, children } ) {
 		<section aria-label={ __( 'Financial Aid', 'open-bulk-buying' ) }>
 			<div className="openbb-cycle-workspace__intro">
 				<h3>{ __( 'Financial Aid', 'open-bulk-buying' ) }</h3>
+				<AidFunds summary={ funds.summary } />
+				<p className="description">
+					{ __(
+						'Funds come from donations on this cycle\'s submitted orders (drafts and cancelled orders excluded). "Received" counts only paid orders.',
+						'open-bulk-buying'
+					) }
+				</p>
+				<ErrorNotice error={ funds.error } />
 				<Notice status="info" isDismissible={ false }>
 					{ __(
 						'Approve or decline eligibility here. Aid amounts and percentage-based allocation will be calculated separately; decisions do not change order totals. Draft requests are not shown. Paid, fulfilled, cancelled, allocated, and completed-cycle requests are read-only. You cannot decide your own request.',
@@ -213,6 +288,7 @@ export default function FinancialAid( { cycle, children } ) {
 					onClick={ () => {
 						setSelected( null );
 						list.reload();
+						funds.reload();
 					} }
 					disabled={ list.isLoading }
 				>
@@ -260,6 +336,7 @@ export default function FinancialAid( { cycle, children } ) {
 				onSaved={ ( saved ) => {
 					setSelected( saved );
 					list.reload();
+					funds.reload();
 					notify.success(
 						__( 'Aid decision saved.', 'open-bulk-buying' )
 					);

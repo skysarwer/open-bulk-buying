@@ -17,6 +17,56 @@ class OPENBB_Order_Aid {
 			&& in_array( $order->aid_status, array( OPENBB_Order::AID_PENDING, OPENBB_Order::AID_APPROVED, OPENBB_Order::AID_DECLINED ), true );
 	}
 
+	/**
+	 * Aid funds for one cycle, in minor units. The pool is currently only the
+	 * donations on the cycle's own orders; a carried-over balance can be added
+	 * as another source without changing the shape of the result.
+	 *
+	 * @return array|WP_Error
+	 */
+	public static function cycle_summary( int $cycle_id ) {
+		global $wpdb;
+
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT COALESCE(SUM(donation), 0) AS donated,
+					COALESCE(SUM(CASE WHEN paid_at IS NOT NULL THEN donation ELSE 0 END), 0) AS received,
+					COALESCE(SUM(aid_approved), 0) AS allocated,
+					SUM(donation > 0) AS donors,
+					SUM(aid_status = %s) AS pending,
+					SUM(aid_status = %s) AS approved,
+					SUM(aid_status = %s) AS declined
+				FROM {$wpdb->openbb_orders}
+				WHERE cycle_id = %d AND status NOT IN (%s, %s)",
+				OPENBB_Order::AID_PENDING,
+				OPENBB_Order::AID_APPROVED,
+				OPENBB_Order::AID_DECLINED,
+				$cycle_id,
+				OPENBB_Order::STATUS_DRAFT,
+				OPENBB_Order::STATUS_CANCELLED
+			),
+			ARRAY_A
+		);
+		if ( $wpdb->last_error || ! $row ) {
+			return new WP_Error( 'openbb_aid_load_failed', __( 'Aid funds could not be loaded.', 'open-bulk-buying' ), array( 'status' => 500 ) );
+		}
+		$donated   = (int) $row['donated'];
+		$allocated = (int) $row['allocated'];
+
+		return array(
+			'donated'   => $donated,
+			'received'  => (int) $row['received'],
+			'donors'    => (int) $row['donors'],
+			'allocated' => $allocated,
+			'available' => $donated - $allocated,
+			'requests'  => array(
+				OPENBB_Order::AID_PENDING  => (int) $row['pending'],
+				OPENBB_Order::AID_APPROVED => (int) $row['approved'],
+				OPENBB_Order::AID_DECLINED => (int) $row['declined'],
+			),
+		);
+	}
+
 	/** @return OPENBB_Order|WP_Error */
 	public static function decide( int $cycle_id, int $order_id, string $decision, int $revision, int $actor_id ) {
 		global $wpdb;

@@ -130,6 +130,18 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 		);
 		register_rest_route(
 			self::API_NAMESPACE,
+			'/cycles/(?P<id>\d+)/aid/summary',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_aid_summary' ),
+				'permission_callback' => static function () {
+					return self::authorize( 'openbb_view_aid' );
+				},
+				'args'                => self::id_arg(),
+			)
+		);
+		register_rest_route(
+			self::API_NAMESPACE,
 			'/cycles/(?P<id>\d+)/aid/(?P<order_id>\d+)',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -195,6 +207,15 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 			$total,
 			$per_page
 		);
+	}
+
+	public function get_aid_summary( WP_REST_Request $request ) {
+		$cycle = OPENBB_Cycles::get( (int) $request['id'] );
+		if ( ! $cycle ) {
+			return self::not_found( __( 'Cycle not found.', 'open-bulk-buying' ) );
+		}
+		$summary = OPENBB_Order_Aid::cycle_summary( $cycle->id );
+		return is_wp_error( $summary ) ? $summary : rest_ensure_response( $summary );
 	}
 
 	public function decide_aid( WP_REST_Request $request ) {

@@ -109,6 +109,34 @@ class Test_OPENBB_Cycle_Aid extends OPENBB_TestCase {
 		$this->assertSame( 404, $this->api( 'GET', '/cycles/999999/aid' )->get_status() );
 	}
 
+	public function test_summary_totals_cycle_donations_and_allocated_aid(): void {
+		global $wpdb;
+		$paid = $this->make_request( $this->cycle_id, $this->make_user( 'member' ) );
+		$wpdb->update( $wpdb->openbb_orders, array( 'donation' => 250, 'aid_status' => 'approved', 'aid_approved' => 150, 'paid_at' => '2026-01-01 00:00:00' ), array( 'id' => $paid ) );
+		foreach ( array( 'draft', 'cancelled' ) as $status ) {
+			$ignored = $this->make_request( $this->cycle_id, $this->make_user( 'member' ) );
+			$wpdb->update( $wpdb->openbb_orders, array( 'status' => $status, 'donation' => 9999, 'aid_approved' => 9999 ), array( 'id' => $ignored ) );
+		}
+		$this->make_request( $this->make_cycle( OPENBB_Cycle::STATUS_PROCESSING ), $this->make_user( 'member' ) );
+
+		$response = $this->api( 'GET', "/cycles/{$this->cycle_id}/aid/summary" );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame(
+			array(
+				'donated'   => 350,
+				'received'  => 250,
+				'donors'    => 2,
+				'allocated' => 150,
+				'available' => 200,
+				'requests'  => array( 'pending' => 1, 'approved' => 1, 'declined' => 0 ),
+			),
+			$response->get_data()
+		);
+		$this->assertSame( 404, $this->api( 'GET', '/cycles/999999/aid/summary' )->get_status() );
+		wp_set_current_user( $this->make_user( 'member' ) );
+		$this->assertSame( 403, $this->api( 'GET', "/cycles/{$this->cycle_id}/aid/summary" )->get_status() );
+	}
+
 	public function test_members_non_reviewers_and_request_owners_cannot_decide(): void {
 		$owner = OPENBB_Orders::get( $this->order_id )->user_id;
 		add_user_meta( $owner, openbb_member_meta_key( 'roles' ), 'aid_reviewer' );
