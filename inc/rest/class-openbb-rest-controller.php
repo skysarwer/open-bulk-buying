@@ -37,6 +37,7 @@ abstract class OPENBB_REST_Controller {
 					new OPENBB_REST_Members(),
 					new OPENBB_REST_Orders(),
 					new OPENBB_REST_Settings(),
+					new OPENBB_REST_Documents(),
 					new OPENBB_REST_Signup(),
 					new OPENBB_REST_Login(),
 					new OPENBB_REST_Order(),

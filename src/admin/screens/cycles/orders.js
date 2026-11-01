@@ -1,17 +1,24 @@
-import { Button, CheckboxControl, Notice } from '@wordpress/components';
+import {
+	Button,
+	CheckboxControl,
+	Notice,
+	__experimentalHStack as HStack,
+} from '@wordpress/components';
 import { useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
-import { pencil, seen } from '@wordpress/icons';
+import { page, pencil, seen } from '@wordpress/icons';
 import { DataViews } from '@wordpress/dataviews/wp';
 
 import { ErrorNotice, usePanelStack } from '../../components';
 import { useDiscardGuard, useList, useNotify } from '../../hooks';
 import { request } from '../../utils/api';
 import { can, config } from '../../utils/config';
+import { openOrderSlips } from '../../utils/documents';
 import relatedPanels from '../related-panels';
 import OrderEditor from '../orders/editor';
 import { buildFields, LIST_MAPPING } from '../orders';
 import { createOrderView } from '../orders/list-view';
+import PrintSlipsModal from './print-slips';
 
 const PREPARATION_STAGES = [ 'processing', 'distribution' ];
 
@@ -78,6 +85,7 @@ export default function CycleOrders( { cycle, children } ) {
 		};
 	} );
 	const [ openOrder, setOpenOrder ] = useState( null );
+	const [ isPrinting, setIsPrinting ] = useState( false );
 	const list = useList( '/orders', view, LIST_MAPPING, {
 		type: 'cycle',
 		cycle_id: cycle.id,
@@ -143,9 +151,21 @@ export default function CycleOrders( { cycle, children } ) {
 			isPrimary: true,
 			callback: ( [ item ] ) => openPanel( item.id ),
 		},
+		{
+			id: 'print-slip',
+			label: __( 'Print slip', 'open-bulk-buying' ),
+			icon: page,
+			supportsBulk: true,
+			isEligible: ( item ) => item.can_print,
+			callback: ( items ) =>
+				openOrderSlips( { orders: items.map( ( item ) => item.id ) } ),
+		},
 	];
 
 	const preparing = PREPARATION_STAGES.includes( cycle.status );
+	const canPrint =
+		preparing &&
+		( can( 'openbb_view_orders' ) || can( 'openbb_process_orders' ) );
 	const content = (
 		<section aria-label={ __( 'Orders', 'open-bulk-buying' ) }>
 			<div className="openbb-cycle-workspace__intro">
@@ -171,14 +191,32 @@ export default function CycleOrders( { cycle, children } ) {
 						) }
 					</Notice>
 				) }
-				<Button
-					variant="secondary"
-					onClick={ list.reload }
-					disabled={ list.isLoading }
-				>
-					{ __( 'Refresh orders', 'open-bulk-buying' ) }
-				</Button>
+				<HStack justify="flex-start">
+					{ canPrint && (
+						<Button
+							variant="primary"
+							icon={ page }
+							onClick={ () => setIsPrinting( true ) }
+						>
+							{ __( 'Print order slips', 'open-bulk-buying' ) }
+						</Button>
+					) }
+					<Button
+						variant="secondary"
+						onClick={ list.reload }
+						disabled={ list.isLoading }
+					>
+						{ __( 'Refresh orders', 'open-bulk-buying' ) }
+					</Button>
+				</HStack>
 			</div>
+			{ isPrinting && (
+				<PrintSlipsModal
+					cycle={ cycle }
+					view={ view }
+					onClose={ () => setIsPrinting( false ) }
+				/>
+			) }
 			<ErrorNotice error={ list.error } />
 			{ discardDialog }
 			<DataViews

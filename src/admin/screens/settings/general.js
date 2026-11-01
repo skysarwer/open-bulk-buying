@@ -51,7 +51,8 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 			String( toMajor( settings.membership_fee_amount ) ) ||
 		draft.membership_fee_order_interval !==
 			String( settings.membership_fee_order_interval ) ||
-		draft.default_prep_method !== settings.default_prep_method;
+		draft.default_prep_method !== settings.default_prep_method ||
+		draft.document_paper_size !== settings.document_paper_size;
 	useUnsavedChanges( isDirty );
 
 	const change = ( key ) => ( value ) =>
@@ -326,6 +327,27 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 							( [ value, label ] ) => ( { value, label } )
 						) }
 						onChange={ change( 'default_prep_method' ) }
+						disabled={ isBusy }
+					/>
+				</Section>
+				<Section title={ __( 'Printing', 'open-bulk-buying' ) }>
+					<SelectControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						label={ __( 'Paper size', 'open-bulk-buying' ) }
+						help={ __(
+							'Used for printed order slips.',
+							'open-bulk-buying'
+						) }
+						value={ draft.document_paper_size }
+						options={ [
+							{
+								label: __( 'Letter', 'open-bulk-buying' ),
+								value: 'letter',
+							},
+							{ label: __( 'A4', 'open-bulk-buying' ), value: 'a4' },
+						] }
+						onChange={ change( 'document_paper_size' ) }
 						disabled={ isBusy }
 					/>
 				</Section>

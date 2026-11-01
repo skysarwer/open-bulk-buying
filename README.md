@@ -193,8 +193,30 @@ on the cycle's Preparation tab until a basket containing the product is packed.
 
 Preparing records no stock moves; stock leaves inventory when orders are handed
 out. Staff with **Process orders** can use both tabs while the cycle is
-processing or distributing. Shortage substitutions and printable lists are not
-implemented yet.
+processing or distributing. Shortage substitutions are not implemented yet.
+
+### Printing order slips
+
+While a cycle is processing or distributing, its **Orders** tab has a **Print
+order slips** button. Choose all of the cycle's orders or only those matching
+the current search and filters, and paid, unpaid or both. Slips open in a new
+browser tab and the print dialog appears; use the browser's **Save as PDF** for
+a file. Slips run on one after another to save paper, with a dashed line to cut
+along; a slip moves to the next page rather than being split, unless it is longer
+than a page. Each slip has the member's name, the order number, the site title,
+the cycle, the pickup time and place, the products and quantities, and **Packed**
+and **Handed out** checkboxes. It shows **PAID** or the amount due, but no
+prices per product, phone number or email. Slips are sorted by last name and
+printed in each order's language.
+
+A single slip can also be printed from an order's row actions (on the cycle's
+Orders tab or **Co-op > Orders**) or with **Print slip** in the order editor.
+Slips are printed for Submitted, Prepaid and Fulfilled cycle orders, at most
+500 at a time. Staff who can view orders can print slips for any cycle; staff
+with **Process orders** only can print them while the cycle is processing or
+distributing.
+
+The paper size is set in **Settings > General > Printing**.
 
 ## Catalog display order
 
@@ -301,6 +323,9 @@ fees, **paid cycle orders count, including prepaid orders awaiting pickup**.
 Unpaid, cancelled, and membership-only orders do not advance the count. A fee
 paid on a cycle order covers that order and the remaining orders in its
 interval. A standalone payment covers the next interval of cycle orders.
+
+Under **Printing**, choose the **Paper size** (Letter or A4) used for
+[printed order slips](#printing-order-slips).
 
 ### Recording and reviewing membership payments
 

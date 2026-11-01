@@ -112,6 +112,24 @@ class OPENBB_Order extends OPENBB_Entity {
 		);
 	}
 
+	/**
+	 * The installed locale matching the order's language, for member-facing emails and documents.
+	 */
+	public function locale(): string {
+		$locales = array_unique( array_merge( array( get_locale(), 'en_US' ), get_available_languages(), array( 'fr_CA' ) ) );
+		foreach ( $locales as $locale ) {
+			if ( strtolower( $locale ) === strtolower( $this->language ) ) {
+				return $locale;
+			}
+		}
+		foreach ( $locales as $locale ) {
+			if ( strtolower( strtok( $locale, '_' ) ) === $this->language ) {
+				return $locale;
+			}
+		}
+		return get_locale();
+	}
+
 	public function is_collected(): bool {
 		return null !== $this->collected_at;
 	}

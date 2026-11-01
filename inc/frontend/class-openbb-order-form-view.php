@@ -541,16 +541,7 @@ final class OPENBB_Order_Form_View {
 	 * What the member commits to, naming the pickup place and time when set.
 	 */
 	private static function pickup_text( OPENBB_Cycle $cycle ): string {
-		$when = '';
-		if ( $cycle->pickup_opens_at && $cycle->pickup_closes_at ) {
-			$opens = strtotime( $cycle->pickup_opens_at . ' UTC' );
-			$close = strtotime( $cycle->pickup_closes_at . ' UTC' );
-			$when  = wp_date( 'Y-m-d', $opens ) === wp_date( 'Y-m-d', $close )
-				/* translators: 1: date, 2: start time, 3: end time. */
-				? sprintf( __( '%1$s, %2$s–%3$s', 'open-bulk-buying' ), wp_date( get_option( 'date_format' ), $opens ), wp_date( get_option( 'time_format' ), $opens ), wp_date( get_option( 'time_format' ), $close ) )
-				/* translators: 1: start date and time, 2: end date and time. */
-				: sprintf( __( '%1$s to %2$s', 'open-bulk-buying' ), self::local_datetime( $cycle->pickup_opens_at ), self::local_datetime( $cycle->pickup_closes_at ) );
-		}
+		$when  = $cycle->pickup_window();
 		$where = trim( $cycle->pickup_location );
 
 		if ( '' !== $where && '' !== $when ) {

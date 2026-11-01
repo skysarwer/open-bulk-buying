@@ -1,0 +1,161 @@
+/*
+ * Printable documents. Tables and blocks only: no flex, grid, CSS variables or calc(),
+ * so the markup can later be rendered to PDF on the server. Nothing relies on
+ * background colours, which browsers drop when printing by default.
+ */
+html {
+	background: #f0f0f1;
+	color: #000;
+}
+
+body {
+	margin: 0;
+	padding: 0 16px 32px;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	font-size: 11pt;
+	line-height: 1.35;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+th,
+td {
+	text-align: left;
+	vertical-align: top;
+}
+
+.openbb-document__toolbar {
+	max-width: 190mm;
+	margin: 0 auto;
+	padding: 12px 0;
+}
+
+.openbb-document__toolbar-actions {
+	text-align: right;
+}
+
+.openbb-document__toolbar button {
+	font: inherit;
+	padding: 6px 16px;
+	border: 1px solid #2271b1;
+	border-radius: 3px;
+	background: #2271b1;
+	color: #fff;
+	cursor: pointer;
+}
+
+.openbb-document__empty {
+	max-width: 190mm;
+	margin: 0 auto;
+	padding: 16px;
+	background: #fff;
+}
+
+.openbb-document__sheet {
+	max-width: 190mm;
+	margin: 0 auto;
+	padding: 8mm 10mm;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+}
+
+/*
+ * Slips run on one after another to save paper, separated by a dashed line to cut
+ * along. A slip moves to the next page rather than splitting, unless it is longer
+ * than a page.
+ */
+.openbb-slip {
+	display: block;
+	padding: 5mm 0;
+	border-top: 1px dashed #000;
+	page-break-inside: avoid;
+	break-inside: avoid;
+}
+
+.openbb-slip:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+
+.openbb-slip__header td {
+	padding: 0 0 2mm;
+	font-size: 9pt;
+}
+
+.openbb-slip__member {
+	margin: 0 0 1mm;
+	font-size: 14pt;
+	line-height: 1.2;
+}
+
+.openbb-slip__payment {
+	width: 40mm;
+	text-align: right;
+}
+
+.openbb-slip__payment strong {
+	font-size: 11pt;
+}
+
+.openbb-slip__items th,
+.openbb-slip__items td {
+	padding: 1mm 2mm 1mm 0;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+.openbb-slip__items th {
+	font-size: 8pt;
+	font-weight: normal;
+	border-bottom: 1px solid #000;
+}
+
+.openbb-slip__items tr {
+	page-break-inside: avoid;
+	break-inside: avoid;
+}
+
+.openbb-slip__brand-name {
+	color: #50575e;
+	font-size: 8pt;
+}
+
+.openbb-slip__qty {
+	white-space: nowrap;
+}
+
+.openbb-slip__check {
+	width: 16mm;
+	text-align: center;
+}
+
+.openbb-slip__items th.openbb-slip__check {
+	text-align: center;
+}
+
+.openbb-slip__extras,
+.openbb-slip__note {
+	margin: 2mm 0 0;
+	font-size: 9pt;
+}
+
+@media print {
+	html,
+	body {
+		background: #fff;
+		padding: 0;
+	}
+
+	.openbb-document__toolbar {
+		display: none;
+	}
+
+	.openbb-document__sheet {
+		max-width: none;
+		padding: 0;
+		border: 0;
+	}
+}
+

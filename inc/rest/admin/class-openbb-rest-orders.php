@@ -57,6 +57,11 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 								),
 								'default' => array(),
 							),
+							'paid'     => array(
+								'type'    => 'string',
+								'enum'    => array( 'all', 'paid', 'unpaid' ),
+								'default' => 'all',
+							),
 						)
 					),
 				),
@@ -196,7 +201,10 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 		);
 	}
 
-	private static function can_process_cycle( int $cycle_id ): bool {
+	/**
+	 * Order processors reach a cycle's orders while it is being prepared or distributed.
+	 */
+	public static function can_process_cycle( int $cycle_id ): bool {
 		if ( ! $cycle_id || ! current_user_can( 'openbb_process_orders' ) ) {
 			return false;
 		}
@@ -308,6 +316,11 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 		if ( $statuses ) {
 			$where[] = 'o.status IN (' . implode( ',', array_fill( 0, count( $statuses ), '%s' ) ) . ')';
 			$params  = array_merge( $params, $statuses );
+		}
+		if ( 'paid' === $request['paid'] ) {
+			$where[] = 'o.paid_at IS NOT NULL';
+		} elseif ( 'unpaid' === $request['paid'] ) {
+			$where[] = 'o.paid_at IS NULL';
 		}
 		$search = trim( (string) $request['search'] );
 		if ( '' !== $search ) {
@@ -590,6 +603,8 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 					)
 				),
 				'can_edit'         => $can_edit,
+				'can_print'        => $cycle && OPENBB_Order_Slip::is_eligible( $order )
+					&& ( current_user_can( 'openbb_view_orders' ) || ( current_user_can( 'openbb_process_orders' ) && in_array( $cycle->status, OPENBB_Cycle_Preparation::STAGES, true ) ) ),
 			);
 			if ( current_user_can( 'openbb_view_order_aid', $order->id ) ) {
 				$item['aid_status']       = $order->aid_status;

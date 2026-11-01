@@ -7,7 +7,7 @@ import {
 } from '@wordpress/components';
 import { useCallback, useEffect, useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
-import { pencil, plus, seen, trash } from '@wordpress/icons';
+import { page, pencil, plus, seen, trash } from '@wordpress/icons';
 import { DataViews } from '@wordpress/dataviews/wp';
 
 import {
@@ -29,6 +29,7 @@ import {
 import { request } from '../../utils/api';
 import { Link, useSearch } from '../../router';
 import { can, config, queryArg, toElements } from '../../utils/config';
+import { openOrderSlips } from '../../utils/documents';
 import { formatMoney } from '../../utils/format';
 import relatedPanels from '../related-panels';
 import OrderEditor from './editor';
@@ -454,6 +455,15 @@ function OrdersList( { tab, tabs, initialCycle } ) {
 				icon: canEdit ? pencil : seen,
 				isPrimary: true,
 				callback: ( [ item ] ) => openPanel( item.id ),
+			},
+			{
+				id: 'print-slip',
+				label: __( 'Print slip', 'open-bulk-buying' ),
+				icon: page,
+				supportsBulk: true,
+				isEligible: ( item ) => item.can_print,
+				callback: ( items ) =>
+					openOrderSlips( { orders: items.map( ( item ) => item.id ) } ),
 			},
 			{
 				id: 'delete',

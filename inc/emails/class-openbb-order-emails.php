@@ -28,7 +28,7 @@ final class OPENBB_Order_Emails {
 			return;
 		}
 
-		$switched = switch_to_locale( self::locale( $order ) );
+		$switched = switch_to_locale( $order->locale() );
 		try {
 			$changes = 'updated' === $event ? self::changes( $before, $order ) : array();
 			if ( 'updated' === $event && ! $changes ) {
@@ -53,21 +53,6 @@ final class OPENBB_Order_Emails {
 				restore_previous_locale();
 			}
 		}
-	}
-
-	private static function locale( OPENBB_Order $order ): string {
-		$locales = array_unique( array_merge( array( get_locale(), 'en_US' ), get_available_languages(), array( 'fr_CA' ) ) );
-		foreach ( $locales as $locale ) {
-			if ( strtolower( $locale ) === strtolower( $order->language ) ) {
-				return $locale;
-			}
-		}
-		foreach ( $locales as $locale ) {
-			if ( strtolower( strtok( $locale, '_' ) ) === $order->language ) {
-				return $locale;
-			}
-		}
-		return get_locale();
 	}
 
 	/** @return array<string, string> */

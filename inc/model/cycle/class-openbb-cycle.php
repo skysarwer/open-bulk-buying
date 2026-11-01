@@ -266,6 +266,26 @@ class OPENBB_Cycle extends OPENBB_Entity {
 		return openbb_localized( $this->pickup_instructions, $language );
 	}
 
+	/**
+	 * The pickup window in the current locale and site timezone, or '' when unset.
+	 */
+	public function pickup_window(): string {
+		if ( ! $this->pickup_opens_at || ! $this->pickup_closes_at ) {
+			return '';
+		}
+		$opens    = strtotime( $this->pickup_opens_at . ' UTC' );
+		$close    = strtotime( $this->pickup_closes_at . ' UTC' );
+		$date     = get_option( 'date_format' );
+		$time     = get_option( 'time_format' );
+		$same_day = wp_date( 'Y-m-d', $opens ) === wp_date( 'Y-m-d', $close );
+
+		return $same_day
+			/* translators: 1: date, 2: start time, 3: end time. */
+			? sprintf( __( '%1$s, %2$s–%3$s', 'open-bulk-buying' ), wp_date( $date, $opens ), wp_date( $time, $opens ), wp_date( $time, $close ) )
+			/* translators: 1: start date and time, 2: end date and time. */
+			: sprintf( __( '%1$s to %2$s', 'open-bulk-buying' ), wp_date( $date . ' ' . $time, $opens ), wp_date( $date . ' ' . $time, $close ) );
+	}
+
 	private static function invalid( string $message ): WP_Error {
 		return new WP_Error( 'openbb_invalid_cycle', $message, array( 'status' => 400 ) );
 	}

@@ -10,6 +10,9 @@
                 "lang": "fr_CA",
                 "plural-forms": "nplurals=2; plural=(n > 1);"
             },
+            "Paid on": [
+                "Pay\u00e9 le"
+            ],
             "Active": [
                 "Actif"
             ],
@@ -126,6 +129,9 @@
             ],
             "Approved": [
                 "Approuv\u00e9"
+            ],
+            "Suppliers": [
+                "Fournisseurs"
             ],
             "Supplier": [
                 "Fournisseur"
@@ -664,26 +670,14 @@
             "Pricing": [
                 "Tarification"
             ],
-            "Categories and suppliers": [
-                "Cat\u00e9gories et fournisseurs"
-            ],
             "Type": [
                 "Type"
             ],
             "Category": [
                 "Cat\u00e9gorie"
             ],
-            "Edit category order": [
-                "Modifier l\u2019ordre des cat\u00e9gories"
-            ],
-            "Choose a category": [
-                "Choisir une cat\u00e9gorie"
-            ],
             "Lower numbers appear first. Categories with the same order sort by name.": [
                 "Les nombres les plus petits apparaissent en premier. Les cat\u00e9gories ayant le m\u00eame ordre sont tri\u00e9es par nom."
-            ],
-            "Add": [
-                "Ajouter"
             ],
             "Inventory": [
                 "Stocks"
@@ -737,9 +731,6 @@
             ],
             "Stock updated.": [
                 "Stock mis \u00e0 jour."
-            ],
-            "Saved.": [
-                "Enregistr\u00e9."
             ],
             "Selling units (%s)": [
                 "Unit\u00e9s de vente (%s)"
@@ -1510,6 +1501,277 @@
             ],
             "Permanently delete order #%1$d for %2$s, including its items and event history? Any stock reservation will be released; stock-ledger entries are retained without their order reference. This cannot be undone.": [
                 "Supprimer d\u00e9finitivement la commande no %1$d de %2$s, y compris ses articles et son historique des \u00e9v\u00e9nements? Toute r\u00e9servation de stock sera lib\u00e9r\u00e9e; les \u00e9critures du registre des stocks seront conserv\u00e9es sans leur r\u00e9f\u00e9rence \u00e0 la commande. Cette action est irr\u00e9versible."
+            ],
+            "Print at most %d order slips at a time. Narrow the list and try again.": [
+                "Imprimez au plus %d bordereaux de commande \u00e0 la fois. R\u00e9duisez la liste et r\u00e9essayez."
+            ],
+            "Packed": [
+                "Emball\u00e9"
+            ],
+            "%1$s \u00d7 %2$s": [
+                "%1$s \u00d7 %2$s"
+            ],
+            "Products can be set aside only while the cycle is processing or distributing.": [
+                "Les produits ne peuvent \u00eatre mis de c\u00f4t\u00e9 que pendant la pr\u00e9paration ou la distribution du cycle."
+            ],
+            "Donated this cycle": [
+                "Dons de ce cycle"
+            ],
+            "(%d order)": [
+                "(%d commande)",
+                "(%d commandes)"
+            ],
+            "Donations received": [
+                "Dons re\u00e7us"
+            ],
+            "Aid allocated": [
+                "Aide accord\u00e9e"
+            ],
+            "Available for aid": [
+                "Disponible pour l\u2019aide"
+            ],
+            "Requests": [
+                "Demandes"
+            ],
+            "%1$d pending, %2$d approved, %3$d declined": [
+                "%1$d en attente, %2$d approuv\u00e9es, %3$d refus\u00e9es"
+            ],
+            "Funds come from donations on this cycle's submitted orders (drafts and cancelled orders excluded). \"Received\" counts only paid orders.": [
+                "Les fonds proviennent des dons sur les commandes soumises de ce cycle (brouillons et commandes annul\u00e9es exclus). \u00ab Re\u00e7us \u00bb ne compte que les commandes pay\u00e9es."
+            ],
+            "%1$d of %2$d packed": [
+                "%1$d sur %2$d emball\u00e9s"
+            ],
+            "Print slip": [
+                "Imprimer le bordereau"
+            ],
+            "Tick an order once its basket products are packed. Products set aside by product are tracked on the Preparation tab.": [
+                "Cochez une commande une fois les produits de son panier emball\u00e9s. Les produits mis de c\u00f4t\u00e9 par produit sont suivis dans l\u2019onglet Pr\u00e9paration."
+            ],
+            "Baskets can be packed once the cycle is processing.": [
+                "Les paniers peuvent \u00eatre emball\u00e9s d\u00e8s que le cycle est en pr\u00e9paration."
+            ],
+            "Orders are visible to preparers while the cycle is processing or distributing.": [
+                "Les commandes sont visibles par les personnes qui pr\u00e9parent pendant la pr\u00e9paration ou la distribution du cycle."
+            ],
+            "Print order slips": [
+                "Imprimer les bordereaux"
+            ],
+            "Refresh orders": [
+                "Actualiser les commandes"
+            ],
+            "Add or manage orders on the Orders screen": [
+                "Ajouter ou g\u00e9rer des commandes dans l\u2019\u00e9cran Commandes"
+            ],
+            "Orders changed: %1$s set aside, %2$s now ordered.": [
+                "Commandes modifi\u00e9es : %1$s mis de c\u00f4t\u00e9, %2$s maintenant command\u00e9s."
+            ],
+            "By %s": [
+                "Par %s"
+            ],
+            "Set aside %s": [
+                "Mettre de c\u00f4t\u00e9 %s"
+            ],
+            "Preparation": [
+                "Pr\u00e9paration"
+            ],
+            "Unpack baskets to change.": [
+                "D\u00e9faites les paniers pour modifier."
+            ],
+            "%d order": [
+                "%d commande",
+                "%d commandes"
+            ],
+            "%1$d\/%2$d packed": [
+                "%1$d\/%2$d emball\u00e9s"
+            ],
+            "%s handed out": [
+                "%s remis"
+            ],
+            "Short by %s": [
+                "Manque %s"
+            ],
+            "History": [
+                "Historique"
+            ],
+            "Products pre-ordered": [
+                "Produits pr\u00e9command\u00e9s"
+            ],
+            "Set aside": [
+                "Mis de c\u00f4t\u00e9"
+            ],
+            "%1$d of %2$d": [
+                "%1$d sur %2$d"
+            ],
+            "Changed since set aside": [
+                "Modifi\u00e9 depuis la mise de c\u00f4t\u00e9"
+            ],
+            "Short on stock": [
+                "Stock insuffisant"
+            ],
+            "Packed into baskets": [
+                "Emball\u00e9 dans les paniers"
+            ],
+            "No products have been pre-ordered in this cycle yet.": [
+                "Aucun produit n\u2019a encore \u00e9t\u00e9 pr\u00e9command\u00e9 dans ce cycle."
+            ],
+            "Ordered": [
+                "Command\u00e9"
+            ],
+            "Held for this cycle": [
+                "R\u00e9serv\u00e9 pour ce cycle"
+            ],
+            "Held elsewhere": [
+                "R\u00e9serv\u00e9 ailleurs"
+            ],
+            "Stock": [
+                "Stock"
+            ],
+            "Gather each pre-ordered product from stock and tick it once it is set aside. Products packed into member baskets are ticked off per order on the Orders tab. Setting products aside does not change stock; stock leaves inventory when orders are handed out.": [
+                "Rassemblez chaque produit pr\u00e9command\u00e9 \u00e0 partir du stock et cochez-le une fois mis de c\u00f4t\u00e9. Les produits emball\u00e9s dans les paniers des membres sont coch\u00e9s par commande dans l\u2019onglet Commandes. Mettre des produits de c\u00f4t\u00e9 ne modifie pas le stock; le stock sort de l\u2019inventaire lorsque les commandes sont remises."
+            ],
+            "Products can be set aside once the cycle is processing. Until then, each product follows its own preparation setting or the co-op default.": [
+                "Les produits peuvent \u00eatre mis de c\u00f4t\u00e9 d\u00e8s que le cycle est en pr\u00e9paration. D\u2019ici l\u00e0, chaque produit suit son propre r\u00e9glage de pr\u00e9paration ou celui de la coop\u00e9rative."
+            ],
+            "Refresh": [
+                "Actualiser"
+            ],
+            "Counting orders\u2026": [
+                "D\u00e9compte des commandes\u2026"
+            ],
+            "%d order slip will be printed.": [
+                "%d bordereau de commande sera imprim\u00e9.",
+                "%d bordereaux de commande seront imprim\u00e9s."
+            ],
+            "All orders in this cycle": [
+                "Toutes les commandes de ce cycle"
+            ],
+            "Only orders matching the current search and filters": [
+                "Seulement les commandes correspondant \u00e0 la recherche et aux filtres actuels"
+            ],
+            "Payment": [
+                "Paiement"
+            ],
+            "Paid and unpaid": [
+                "Pay\u00e9es et non pay\u00e9es"
+            ],
+            "Unpaid only": [
+                "Non pay\u00e9es seulement"
+            ],
+            "Paid only": [
+                "Pay\u00e9es seulement"
+            ],
+            "Open printable slips": [
+                "Ouvrir les bordereaux \u00e0 imprimer"
+            ],
+            "Save your changes before printing the slip.": [
+                "Enregistrez vos modifications avant d\u2019imprimer le bordereau."
+            ],
+            "All": [
+                "Toutes"
+            ],
+            "Cycle Orders": [
+                "Commandes de cycle"
+            ],
+            "Membership Payments": [
+                "Paiements d\u2019adh\u00e9sion"
+            ],
+            "Order sections": [
+                "Sections des commandes"
+            ],
+            "Co-op default": [
+                "Valeur par d\u00e9faut de la coop\u00e9rative"
+            ],
+            "How pre-orders of this product are prepared. A cycle keeps the method it had when processing started.": [
+                "Comment les pr\u00e9commandes de ce produit sont pr\u00e9par\u00e9es. Un cycle conserve le mode en vigueur au d\u00e9but de sa pr\u00e9paration."
+            ],
+            "Product sections": [
+                "Sections des produits"
+            ],
+            "%d product": [
+                "%d produit",
+                "%d produits"
+            ],
+            "Add category": [
+                "Ajouter une cat\u00e9gorie"
+            ],
+            "New category": [
+                "Nouvelle cat\u00e9gorie"
+            ],
+            "Create category": [
+                "Cr\u00e9er la cat\u00e9gorie"
+            ],
+            "Category created.": [
+                "Cat\u00e9gorie cr\u00e9\u00e9e."
+            ],
+            "Category saved.": [
+                "Cat\u00e9gorie enregistr\u00e9e."
+            ],
+            "Category deleted.": [
+                "Cat\u00e9gorie supprim\u00e9e."
+            ],
+            "Delete category": [
+                "Supprimer la cat\u00e9gorie"
+            ],
+            "Search categories": [
+                "Rechercher des cat\u00e9gories"
+            ],
+            "Delete \"%s\"? Its products stay, but lose this category, and its sub-categories move up a level.": [
+                "Supprimer \u00ab %s \u00bb? Ses produits sont conserv\u00e9s, mais perdent cette cat\u00e9gorie, et ses sous-cat\u00e9gories remontent d\u2019un niveau."
+            ],
+            "Add supplier": [
+                "Ajouter un fournisseur"
+            ],
+            "New supplier": [
+                "Nouveau fournisseur"
+            ],
+            "Create supplier": [
+                "Cr\u00e9er le fournisseur"
+            ],
+            "Supplier created.": [
+                "Fournisseur cr\u00e9\u00e9."
+            ],
+            "Supplier saved.": [
+                "Fournisseur enregistr\u00e9."
+            ],
+            "Supplier deleted.": [
+                "Fournisseur supprim\u00e9."
+            ],
+            "Delete supplier": [
+                "Supprimer le fournisseur"
+            ],
+            "Search suppliers": [
+                "Rechercher des fournisseurs"
+            ],
+            "Delete \"%s\"? Its products stay, but lose this supplier.": [
+                "Supprimer \u00ab %s \u00bb? Ses produits sont conserv\u00e9s, mais perdent ce fournisseur."
+            ],
+            "Order preparation": [
+                "Pr\u00e9paration des commandes"
+            ],
+            "Prepare pre-ordered products by default": [
+                "Pr\u00e9parer les produits pr\u00e9command\u00e9s par d\u00e9faut"
+            ],
+            "Products can override this, and each cycle can be adjusted in its Preparation tab.": [
+                "Les produits peuvent remplacer ce r\u00e9glage, et chaque cycle peut \u00eatre ajust\u00e9 dans son onglet Pr\u00e9paration."
+            ],
+            "Printing": [
+                "Impression"
+            ],
+            "Paper size": [
+                "Format du papier"
+            ],
+            "Letter": [
+                "Lettre"
+            ],
+            "A4": [
+                "A4"
+            ],
+            "Slips are sorted by last name and printed one after another with a line to cut along, each with a checklist for packing and handing out. Slips are printed for submitted, prepaid and fulfilled orders.": [
+                "Les bordereaux sont tri\u00e9s par nom de famille et imprim\u00e9s les uns \u00e0 la suite des autres avec une ligne de d\u00e9coupe, chacun avec une liste de v\u00e9rification pour l\u2019emballage et la remise. Les bordereaux sont imprim\u00e9s pour les commandes soumises, pr\u00e9pay\u00e9es et remplies."
+            ],
+            "Used for printed order slips.": [
+                "Utilis\u00e9 pour les bordereaux de commande imprim\u00e9s."
             ]
         }
     }

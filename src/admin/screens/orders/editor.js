@@ -12,12 +12,13 @@ import {
 import { useEffect, useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n, getSettings } from '@wordpress/date';
-import { closeSmall } from '@wordpress/icons';
+import { closeSmall, page } from '@wordpress/icons';
 
 import { ErrorNotice, RecordLink, SidePanel } from '../../components';
 import { discardUnsavedChanges, useDebouncedValue, useUnsavedChanges } from '../../hooks';
 import { request } from '../../utils/api';
 import { can, config } from '../../utils/config';
+import { openOrderSlips } from '../../utils/documents';
 import { formatMoney, formatQty, toMajor, toMinor } from '../../utils/format';
 
 const EPSILON = 0.0005;
@@ -652,9 +653,19 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 						) }
 					</VStack>
 				) }
-				{ ( order.can_prepay || order.can_fulfill ) && (
+				{ ( order.can_prepay || order.can_fulfill || order.can_print ) && (
 					<VStack spacing={ 3 }>
 						<HStack justify="flex-start">
+							{ order.can_print && (
+								<Button
+									variant="secondary"
+									icon={ page }
+									disabled={ changed || noteChanged }
+									onClick={ () => openOrderSlips( { orders: [ order.id ] } ) }
+								>
+									{ __( 'Print slip', 'open-bulk-buying' ) }
+								</Button>
+							) }
 							{ order.can_prepay && (
 								<Button
 									variant="secondary"
@@ -676,10 +687,12 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 						</HStack>
 						{ ( changed || noteChanged ) && (
 							<p>
-								{ __(
-									'Save your changes before confirming payment or fulfillment.',
-									'open-bulk-buying'
-								) }
+								{ order.can_prepay || order.can_fulfill
+									? __(
+											'Save your changes before confirming payment or fulfillment.',
+											'open-bulk-buying'
+									  )
+									: __( 'Save your changes before printing the slip.', 'open-bulk-buying' ) }
 							</p>
 						) }
 						{ confirmation && (

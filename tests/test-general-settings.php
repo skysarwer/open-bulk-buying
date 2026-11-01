@@ -35,6 +35,7 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 				'membership_fee_amount'         => 0,
 				'membership_fee_order_interval' => 1,
 				'default_prep_method'           => 'station',
+				'document_paper_size'           => 'letter',
 			),
 			$response->get_data()['general']
 		);
@@ -54,6 +55,7 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 				'membership_fee_amount'         => 1250,
 				'membership_fee_order_interval' => 5,
 				'default_prep_method'           => 'recurring' === $type ? 'basket' : 'station',
+				'document_paper_size'           => 'recurring' === $type ? 'a4' : 'letter',
 			);
 			$response = $this->api( 'POST', array( 'general' => $general ) );
 			$this->assertSame( 200, $response->get_status() );
@@ -78,6 +80,7 @@ class Test_OPENBB_General_Settings extends OPENBB_TestCase {
 			array( 'membership_fee_order_interval' => 1.5 ),
 			array( 'membership_fee_order_interval' => 'many' ),
 			array( 'default_prep_method' => 'shelf' ),
+			array( 'document_paper_size' => 'legal' ),
 			array( 'require_member_approval' => 'maybe' ),
 			array( 'allow_signups' => 'yes' ),
 			array( 'allow_login_codes' => 'yes' ),

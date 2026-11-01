@@ -30,8 +30,17 @@ final class OPENBB_Settings {
 				'membership_fee_amount'         => 0,
 				'membership_fee_order_interval' => 1,
 				'default_prep_method'           => 'station',
+				'document_paper_size'           => self::default_paper_size(),
 			),
 			$settings
 		);
+	}
+
+	/**
+	 * Letter where it is the usual office paper, A4 elsewhere.
+	 */
+	public static function default_paper_size(): string {
+		$region = strtoupper( (string) substr( strrchr( '_' . get_locale(), '_' ), 1 ) );
+		return in_array( $region, array( 'US', 'CA', 'MX', 'PH' ), true ) ? 'letter' : 'a4';
 	}
 }

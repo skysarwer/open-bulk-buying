@@ -174,7 +174,9 @@ class OPENBB_Admin {
 			$caps[ $cap ] = current_user_can( $cap );
 		}
 
-		$urls    = array();
+		$urls    = array(
+			'orderSlip' => rest_url( OPENBB_REST_Controller::API_NAMESPACE . '/documents/order-slip' ),
+		);
 		$screens = array();
 		foreach ( self::screen_titles() as $name => $title ) {
 			list( $slug, $cap ) = self::SCREENS[ $name ];
@@ -217,6 +219,8 @@ class OPENBB_Admin {
 			'manualStockReasons'   => OPENBB_Stock_Move::MANUAL_REASONS,
 			'caps'                 => $caps,
 			'urls'                 => $urls,
+			// For documents opened as plain links; API requests use the api-fetch nonce.
+			'restNonce'            => wp_create_nonce( 'wp_rest' ),
 			'screens'              => $screens,
 		);
 	}
