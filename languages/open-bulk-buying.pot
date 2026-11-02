@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-01T23:38:46+00:00\n"
+"POT-Creation-Date: 2026-11-02T04:40:40+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: open-bulk-buying\n"
@@ -266,8 +266,8 @@ msgstr ""
 #: inc/admin/class-openbb-admin.php:75
 #: src/admin/screens/cycles/list.js:149
 #: src/admin/screens/cycles/list.js:293
-#: src/admin/screens/cycles/orders.js:170
-#: src/admin/screens/cycles/orders.js:172
+#: src/admin/screens/cycles/orders.js:171
+#: src/admin/screens/cycles/orders.js:173
 #: src/admin/screens/cycles/print-slips.js:103
 #: src/admin/screens/cycles/workspace.js:21
 #: src/admin/screens/members/fields.js:137
@@ -283,8 +283,8 @@ msgid "Members"
 msgstr ""
 
 #: inc/access/class-openbb-roles.php:163
-#: src/admin/screens/orders/editor.js:423
-#: src/admin/screens/orders/editor.js:502
+#: src/admin/screens/orders/editor.js:429
+#: src/admin/screens/orders/editor.js:563
 #: src/admin/screens/orders/index.js:154
 msgid "Aid"
 msgstr ""
@@ -539,6 +539,10 @@ msgstr ""
 msgid "Too many attempts. Please wait a few minutes and try again."
 msgstr ""
 
+#: inc/documents/class-openbb-documents.php:50
+msgid "This print link has expired. Reload the admin page and print again."
+msgstr ""
+
 #: inc/documents/class-openbb-order-slip.php:94
 msgid "The order slips could not be prepared."
 msgstr ""
@@ -567,7 +571,7 @@ msgstr[1] ""
 #: inc/documents/class-openbb-order-slip.php:153
 #: inc/frontend/templates/order-totals.php:32
 #: inc/model/member/class-openbb-membership-fees.php:115
-#: src/admin/screens/members/membership-fee.js:140
+#: src/admin/screens/members/membership-fee.js:141
 msgid "Membership fee"
 msgstr ""
 
@@ -608,7 +612,7 @@ msgstr ""
 #: inc/emails/order-event.php:51
 #: inc/model/product/post-type.php:22
 #: src/admin/screens/cycles/preparation.js:304
-#: src/admin/screens/orders/editor.js:462
+#: src/admin/screens/orders/editor.js:523
 #: src/admin/screens/products/products-tab.js:98
 msgid "Product"
 msgstr ""
@@ -616,7 +620,7 @@ msgstr ""
 #: inc/documents/templates/order-slip.php:48
 #: inc/emails/order-event.php:51
 #: src/admin/screens/orders/editor.js:162
-#: src/admin/screens/orders/editor.js:463
+#: src/admin/screens/orders/editor.js:524
 #: src/admin/screens/products/inventory.js:76
 msgid "Quantity"
 msgstr ""
@@ -708,21 +712,21 @@ msgid "Thank you!"
 msgstr ""
 
 #: inc/emails/class-openbb-order-emails.php:61
-#: src/admin/screens/orders/editor.js:489
+#: src/admin/screens/orders/editor.js:550
 msgid "Subtotal"
 msgstr ""
 
 #: inc/emails/class-openbb-order-emails.php:62
 #: inc/emails/class-openbb-order-emails.php:76
 #: inc/emails/order-event.php:51
-#: src/admin/screens/orders/editor.js:495
+#: src/admin/screens/orders/editor.js:556
 msgid "Container credit"
 msgstr ""
 
 #: inc/emails/class-openbb-order-emails.php:63
 #: inc/frontend/templates/order-totals.php:28
-#: src/admin/screens/orders/editor.js:509
-#: src/admin/screens/orders/editor.js:575
+#: src/admin/screens/orders/editor.js:570
+#: src/admin/screens/orders/editor.js:636
 msgid "Donation"
 msgstr ""
 
@@ -733,8 +737,8 @@ msgstr ""
 
 #: inc/emails/class-openbb-order-emails.php:65
 #: src/admin/screens/members/panel.js:195
-#: src/admin/screens/orders/editor.js:465
-#: src/admin/screens/orders/editor.js:518
+#: src/admin/screens/orders/editor.js:526
+#: src/admin/screens/orders/editor.js:579
 #: src/admin/screens/orders/index.js:146
 msgid "Total"
 msgstr ""
@@ -825,7 +829,7 @@ msgstr ""
 #: inc/emails/membership-event.php:23
 #: src/admin/screens/cycles/financial-aid.js:30
 #: src/admin/screens/members/panel.js:239
-#: src/admin/screens/orders/editor.js:390
+#: src/admin/screens/orders/editor.js:396
 #: src/admin/screens/orders/index.js:78
 #: src/admin/screens/orders/index.js:237
 msgid "Member"
@@ -865,7 +869,7 @@ msgstr ""
 
 #: inc/emails/membership-event.php:42
 #: inc/model/order/class-openbb-order.php:96
-#: src/admin/screens/orders/editor.js:405
+#: src/admin/screens/orders/editor.js:411
 #: src/admin/screens/orders/index.js:163
 msgid "Submitted"
 msgstr ""
@@ -1586,7 +1590,7 @@ msgid "Cancelled order total (not due):"
 msgstr ""
 
 #: inc/frontend/templates/order-cancelled.php:45
-#: inc/rest/admin/class-openbb-rest-orders.php:569
+#: inc/rest/admin/class-openbb-rest-orders.php:605
 msgid "Unknown currency"
 msgstr ""
 
@@ -1692,7 +1696,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: inc/frontend/templates/signup.php:219
-#: src/admin/screens/orders/editor.js:723
+#: src/admin/screens/orders/editor.js:784
 msgid "Confirm"
 msgstr ""
 
@@ -1763,12 +1767,13 @@ msgstr ""
 #: inc/model/cycle/class-openbb-cycle-preparation.php:246
 #: inc/model/order/class-openbb-order-editor.php:160
 #: inc/model/order/class-openbb-order-lifecycle.php:34
-#: inc/rest/admin/class-openbb-rest-documents.php:81
-#: inc/rest/admin/class-openbb-rest-orders.php:226
-#: inc/rest/admin/class-openbb-rest-orders.php:366
-#: inc/rest/admin/class-openbb-rest-orders.php:388
-#: inc/rest/admin/class-openbb-rest-orders.php:401
-#: inc/rest/admin/class-openbb-rest-orders.php:432
+#: inc/rest/admin/class-openbb-rest-documents.php:82
+#: inc/rest/admin/class-openbb-rest-orders.php:250
+#: inc/rest/admin/class-openbb-rest-orders.php:271
+#: inc/rest/admin/class-openbb-rest-orders.php:402
+#: inc/rest/admin/class-openbb-rest-orders.php:424
+#: inc/rest/admin/class-openbb-rest-orders.php:437
+#: inc/rest/admin/class-openbb-rest-orders.php:468
 msgid "Order not found."
 msgstr ""
 
@@ -2702,7 +2707,7 @@ msgstr ""
 msgid "Pickup ends"
 msgstr ""
 
-#: inc/rest/admin/class-openbb-rest-documents.php:78
+#: inc/rest/admin/class-openbb-rest-documents.php:79
 msgid "Choose the orders or the cycle to print."
 msgstr ""
 
@@ -2767,7 +2772,7 @@ msgid "The membership payment could not be saved."
 msgstr ""
 
 #: inc/rest/admin/class-openbb-rest-members.php:729
-#: inc/rest/admin/class-openbb-rest-orders.php:559
+#: inc/rest/admin/class-openbb-rest-orders.php:595
 #: src/admin/screens/members/membership-fee.js:22
 #: src/admin/screens/members/membership-fee.js:36
 #: src/admin/screens/orders/index.js:110
@@ -2775,15 +2780,19 @@ msgid "Paid"
 msgstr ""
 
 #: inc/rest/admin/class-openbb-rest-members.php:760
-#: inc/rest/admin/class-openbb-rest-orders.php:554
+#: inc/rest/admin/class-openbb-rest-orders.php:590
 msgid "Membership payment"
 msgstr ""
 
-#: inc/rest/admin/class-openbb-rest-orders.php:222
+#: inc/rest/admin/class-openbb-rest-orders.php:246
 msgid "Confirm reopening and explain why this order is being reopened."
 msgstr ""
 
-#: inc/rest/admin/class-openbb-rest-orders.php:243
+#: inc/rest/admin/class-openbb-rest-orders.php:267
+msgid "Confirm the payment review before continuing."
+msgstr ""
+
+#: inc/rest/admin/class-openbb-rest-orders.php:279
 msgid "Confirm payment and reload the order before continuing."
 msgstr ""
 
@@ -2941,9 +2950,10 @@ msgstr ""
 #: src/admin/components/edit-form.js:38
 #: src/admin/screens/cycles/print-slips.js:161
 #: src/admin/screens/members/index.js:282
-#: src/admin/screens/orders/editor.js:650
-#: src/admin/screens/orders/editor.js:730
-#: src/admin/screens/orders/editor.js:748
+#: src/admin/screens/orders/editor.js:513
+#: src/admin/screens/orders/editor.js:711
+#: src/admin/screens/orders/editor.js:791
+#: src/admin/screens/orders/editor.js:809
 #: src/admin/screens/orders/index.js:335
 #: src/admin/screens/settings/profile-fields/field-panel.js:458
 #: src/admin/screens/settings/profile-fields/index.js:122
@@ -2972,7 +2982,7 @@ msgid "Back to %s"
 msgstr ""
 
 #: src/admin/components/side-panel.js:129
-#: src/admin/screens/orders/editor.js:749
+#: src/admin/screens/orders/editor.js:810
 #: src/admin/screens/settings/roles/role-panel.js:207
 msgid "Close"
 msgstr ""
@@ -3148,11 +3158,11 @@ msgstr ""
 #: src/admin/screens/members/fields.js:112
 #: src/admin/screens/members/index.js:249
 #: src/admin/screens/members/membership-fee.js:34
-#: src/admin/screens/members/membership-fee.js:144
+#: src/admin/screens/members/membership-fee.js:145
 #: src/admin/screens/members/panel.js:114
 #: src/admin/screens/members/panel.js:194
-#: src/admin/screens/orders/editor.js:557
-#: src/admin/screens/orders/editor.js:563
+#: src/admin/screens/orders/editor.js:618
+#: src/admin/screens/orders/editor.js:624
 #: src/admin/screens/orders/index.js:103
 #: src/admin/screens/products/fields.js:371
 msgid "Status"
@@ -3341,42 +3351,42 @@ msgid "View"
 msgstr ""
 
 #: src/admin/screens/cycles/orders.js:156
-#: src/admin/screens/orders/editor.js:666
+#: src/admin/screens/orders/editor.js:727
 #: src/admin/screens/orders/index.js:461
 msgid "Print slip"
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:176
+#: src/admin/screens/cycles/orders.js:177
 msgid "Tick an order once its basket products are packed. Products set aside by product are tracked on the Preparation tab."
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:180
+#: src/admin/screens/cycles/orders.js:181
 msgid "Baskets can be packed once the cycle is processing."
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:188
+#: src/admin/screens/cycles/orders.js:189
 msgid "Orders are visible to preparers while the cycle is processing or distributing."
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:201
+#: src/admin/screens/cycles/orders.js:202
 #: src/admin/screens/cycles/print-slips.js:90
 msgid "Print order slips"
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:209
+#: src/admin/screens/cycles/orders.js:210
 msgid "Refresh orders"
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:234
+#: src/admin/screens/cycles/orders.js:235
 #: src/admin/screens/orders/index.js:584
 msgid "Search by order number, name or email"
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:244
+#: src/admin/screens/cycles/orders.js:245
 msgid "Add or manage orders on the Orders screen"
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:266
+#: src/admin/screens/cycles/orders.js:267
 #: src/admin/screens/orders/index.js:545
 #: src/admin/screens/related-panels.js:18
 msgid "Order saved."
@@ -3716,84 +3726,89 @@ msgid "Payment claimed, waiting for verification"
 msgstr ""
 
 #: src/admin/screens/members/membership-fee.js:35
-#: src/admin/screens/members/membership-fee.js:148
+#: src/admin/screens/members/membership-fee.js:149
 #: src/admin/screens/orders/index.js:145
 msgid "Amount"
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:128
+#: src/admin/screens/members/membership-fee.js:129
 msgid "Membership approved and payment confirmed."
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:135
+#: src/admin/screens/members/membership-fee.js:136
 msgid "Membership approved. The claimed payment is still waiting for verification."
 msgstr ""
 
 #. translators: %d: order number.
-#: src/admin/screens/members/membership-fee.js:158
+#: src/admin/screens/members/membership-fee.js:159
 #, js-format
 msgid "This person says they have paid (order #%d). Check that the payment arrived before confirming it."
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:168
+#: src/admin/screens/members/membership-fee.js:169
 msgid "Confirm claimed membership payment"
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:169
+#: src/admin/screens/members/membership-fee.js:170
 msgid "Approves the membership and marks the fee paid in one step. Leave unchecked to approve the membership only; the claim then stays waiting for verification."
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:184
+#: src/admin/screens/members/membership-fee.js:185
 msgid "Approve membership and confirm payment"
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:185
+#: src/admin/screens/members/membership-fee.js:186
 msgid "Approve membership"
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:204
+#: src/admin/screens/members/membership-fee.js:205
 msgid "Membership payment confirmed."
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:208
+#: src/admin/screens/members/membership-fee.js:209
+#: src/admin/screens/orders/editor.js:476
+#: src/admin/screens/orders/editor.js:510
 msgid "Confirm payment"
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:220
+#: src/admin/screens/members/membership-fee.js:221
+#: src/admin/screens/orders/editor.js:484
 msgid "Reject claimed payment"
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:230
+#: src/admin/screens/members/membership-fee.js:231
 msgid "Payment reference (optional)"
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:231
+#: src/admin/screens/members/membership-fee.js:232
 msgid "For example a receipt, cheque or e-transfer number."
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:247
+#: src/admin/screens/members/membership-fee.js:248
 msgid "Membership payment recorded."
 msgstr ""
 
 #. translators: %s: fee amount.
-#: src/admin/screens/members/membership-fee.js:253
+#: src/admin/screens/members/membership-fee.js:254
 #, js-format
 msgid "Record %s payment"
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:254
+#: src/admin/screens/members/membership-fee.js:255
 msgid "Record payment"
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:272
+#: src/admin/screens/members/membership-fee.js:273
 msgid "Claimed membership payment rejected."
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:275
+#: src/admin/screens/members/membership-fee.js:276
+#: src/admin/screens/orders/editor.js:509
 msgid "Reject payment"
 msgstr ""
 
-#: src/admin/screens/members/membership-fee.js:277
+#: src/admin/screens/members/membership-fee.js:278
+#: src/admin/screens/orders/editor.js:494
 msgid "Reject this claimed payment? Its order is cancelled and the fee stays due."
 msgstr ""
 
@@ -3823,7 +3838,7 @@ msgid "No orders yet."
 msgstr ""
 
 #: src/admin/screens/members/panel.js:193
-#: src/admin/screens/orders/editor.js:388
+#: src/admin/screens/orders/editor.js:394
 #: src/admin/screens/orders/index.js:91
 #: src/admin/screens/orders/index.js:309
 msgid "Cycle"
@@ -3890,115 +3905,129 @@ msgid "Not enough stock for \"%1$s\": at most %2$s × %3$s."
 msgstr ""
 
 #. translators: 1: order number, 2: member name.
-#: src/admin/screens/orders/editor.js:383
+#: src/admin/screens/orders/editor.js:389
 #, js-format
 msgid "Order #%1$d — %2$s"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:409
+#: src/admin/screens/orders/editor.js:415
 msgid "Payment settled"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:417
+#: src/admin/screens/orders/editor.js:423
 msgid "Collected"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:435
+#: src/admin/screens/orders/editor.js:441
 msgid "This order is cancelled. Reopen it as a draft before changing its contents. Staff can still update its note."
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:436
+#: src/admin/screens/orders/editor.js:442
 msgid "This order is locked against quantity, amount, and status edits. Staff can still update its note."
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:441
+#: src/admin/screens/orders/editor.js:447
 msgid "Preparation cleanup is available while this cycle is in Setup and no committed order activity has occurred outside Setup. Eligible orders can be permanently deleted from the orders list."
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:446
+#: src/admin/screens/orders/editor.js:452
 msgid "This order was not collected before its hold expired. It is abandoned and no longer reserves stock. Its payment status is retained."
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:454
+#: src/admin/screens/orders/editor.js:460
 msgid "Member note:"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:464
+#: src/admin/screens/orders/editor.js:468
+msgid "This person says they have paid. Check that the payment arrived before confirming it. Confirming payment does not approve their membership."
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:488
+msgid "Save your changes before reviewing payment."
+msgstr ""
+
+#. translators: %s: membership payment amount.
+#: src/admin/screens/orders/editor.js:497
+#, js-format
+msgid "Confirm that the membership payment (%s) has been received. This marks the fee paid without handing over goods or approving membership."
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:525
 msgid "Container"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:467
+#: src/admin/screens/orders/editor.js:528
 msgid "Actions"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:474
+#: src/admin/screens/orders/editor.js:535
 msgid "No products yet."
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:517
+#: src/admin/screens/orders/editor.js:578
 msgid "Estimated total"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:587
-#: src/admin/screens/orders/editor.js:596
+#: src/admin/screens/orders/editor.js:648
+#: src/admin/screens/orders/editor.js:657
 msgid "Staff note"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:588
+#: src/admin/screens/orders/editor.js:649
 msgid "Only visible to staff."
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:604
+#: src/admin/screens/orders/editor.js:665
 msgid "Reason for the change (required)"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:605
+#: src/admin/screens/orders/editor.js:666
 msgid "Added to the staff note with your name and the date."
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:629
+#: src/admin/screens/orders/editor.js:690
 msgid "Reopen as draft"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:633
+#: src/admin/screens/orders/editor.js:694
 msgid "Reopen this cancelled order as a draft? Its items and history will be retained, but no stock is reserved until it is submitted again. Availability will be checked on submission."
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:636
+#: src/admin/screens/orders/editor.js:697
 msgid "Reason for reopening (required)"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:647
+#: src/admin/screens/orders/editor.js:708
 msgid "Confirm reopening"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:675
+#: src/admin/screens/orders/editor.js:736
 msgid "Mark prepaid"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:684
+#: src/admin/screens/orders/editor.js:745
 msgid "Fulfill order"
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:691
+#: src/admin/screens/orders/editor.js:752
 msgid "Save your changes before confirming payment or fulfillment."
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:695
+#: src/admin/screens/orders/editor.js:756
 msgid "Save your changes before printing the slip."
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:703
+#: src/admin/screens/orders/editor.js:764
 #, js-format
 msgid "Confirm that the full amount due (%s) is settled. Stock will remain reserved; no goods are handed over."
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:710
+#: src/admin/screens/orders/editor.js:771
 #, js-format
 msgid "Confirm that the full amount due (%s) is settled and the listed quantities have been handed over. This deducts stock and cannot be undone here."
 msgstr ""
 
-#: src/admin/screens/orders/editor.js:765
+#: src/admin/screens/orders/editor.js:826
 msgid "Save order"
 msgstr ""
 

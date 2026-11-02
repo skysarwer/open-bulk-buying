@@ -16,8 +16,58 @@ final class OPENBB_Documents {
 	const TEMPLATES   = array( 'order-slip' );
 	const PAPER_SIZES = array( 'letter', 'a4' );
 
+	// admin-post.php action and nonce action for printing order slips.
+	const ORDER_SLIP_ACTION = 'openbb_order_slip';
+	const ORDER_SLIP_ARGS   = array( 'orders', 'cycle_id', 'status', 'paid', 'search', 'autoprint' );
+
 	public static function register_hooks(): void {
 		add_filter( 'rest_pre_serve_request', array( __CLASS__, 'serve' ), 10, 2 );
+		add_action( 'admin_post_' . self::ORDER_SLIP_ACTION, array( __CLASS__, 'print_order_slips' ) );
+	}
+
+	/**
+	 * Link for opening order slips in a new tab. The nonce in it only allows printing
+	 * slips, so it is harmless if the URL ends up in history or a printed page footer.
+	 */
+	public static function order_slip_url(): string {
+		return add_query_arg(
+			array(
+				'action'   => self::ORDER_SLIP_ACTION,
+				'_wpnonce' => wp_create_nonce( self::ORDER_SLIP_ACTION ),
+			),
+			admin_url( 'admin-post.php' )
+		);
+	}
+
+	/**
+	 * Serves order slips at admin-post.php. Runs the REST route internally, so access
+	 * checks, filters and rate limits are the same.
+	 */
+	public static function print_order_slips(): void {
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, self::ORDER_SLIP_ACTION ) ) {
+			wp_die(
+				esc_html__( 'This print link has expired. Reload the admin page and print again.', 'open-bulk-buying' ),
+				'',
+				array( 'response' => 403 )
+			);
+		}
+
+		$request = new WP_REST_Request( 'GET', '/' . OPENBB_REST_Controller::API_NAMESPACE . '/documents/order-slip' );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Validated and sanitized by the REST route's argument schema.
+		$request->set_query_params( wp_unslash( array_intersect_key( $_GET, array_flip( self::ORDER_SLIP_ARGS ) ) ) );
+		$response = rest_do_request( $request );
+
+		if ( $response->is_error() ) {
+			wp_die( esc_html( $response->as_error()->get_error_message() ), '', array( 'response' => $response->get_status() ) );
+		}
+
+		status_header( $response->get_status() );
+		foreach ( $response->get_headers() as $name => $value ) {
+			header( $name . ': ' . $value );
+		}
+		echo $response->get_data(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by the templates.
+		exit;
 	}
 
 	/**

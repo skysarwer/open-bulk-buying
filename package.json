@@ -21,6 +21,7 @@
 		"assets",
 		"build",
 		"inc/**/*.php",
+		"inc/documents/document.css",
 		"languages",
 		"open-bulk-buying.php",
 		"uninstall.php",

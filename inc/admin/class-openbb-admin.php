@@ -175,7 +175,7 @@ class OPENBB_Admin {
 		}
 
 		$urls    = array(
-			'orderSlip' => rest_url( OPENBB_REST_Controller::API_NAMESPACE . '/documents/order-slip' ),
+			'orderSlip' => OPENBB_Documents::order_slip_url(),
 		);
 		$screens = array();
 		foreach ( self::screen_titles() as $name => $title ) {

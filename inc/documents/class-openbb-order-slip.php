@@ -175,7 +175,7 @@ final class OPENBB_Order_Slip extends OPENBB_Document {
 			'extras'       => $extras,
 			'paid'         => $paid,
 			'paid_on'      => $paid ? wp_date( get_option( 'date_format' ), strtotime( $order->paid_at . ' UTC' ) ) : '',
-			'amount_due'   => $paid ? '' : ( preg_match( '/^[A-Z]{3}$/', $order->currency ) ? openbb_format_money( $order->total, $order->currency ) : '' ),
+			'amount_due'   => $paid ? '' : openbb_format_money( $order->total, preg_match( '/^[A-Z]{3}$/', (string) $order->currency ) ? $order->currency : null ),
 			'member_note'  => trim( $order->member_note ),
 		);
 	}

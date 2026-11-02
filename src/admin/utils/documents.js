@@ -1,4 +1,3 @@
-import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 
 import { config } from './config';
@@ -24,9 +23,8 @@ export function orderSlipUrl( {
 	paid = 'all',
 	search = '',
 } ) {
-	// The middleware nonce is refreshed by apiFetch; the boot nonce is the fallback.
-	const nonce = apiFetch.nonceMiddleware?.nonce || config.restNonce;
-	const args = { _wpnonce: nonce, autoprint: 1 };
+	// The base URL carries a print-only nonce.
+	const args = { autoprint: 1 };
 	if ( orders?.length ) {
 		args.orders = orders.join( ',' );
 	} else {

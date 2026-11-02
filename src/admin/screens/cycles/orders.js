@@ -164,8 +164,8 @@ export default function CycleOrders( { cycle, children } ) {
 
 	const preparing = PREPARATION_STAGES.includes( cycle.status );
 	const canPrint =
-		preparing &&
-		( can( 'openbb_view_orders' ) || can( 'openbb_process_orders' ) );
+		can( 'openbb_view_orders' ) ||
+		( preparing && can( 'openbb_process_orders' ) );
 	const content = (
 		<section aria-label={ __( 'Orders', 'open-bulk-buying' ) }>
 			<div className="openbb-cycle-workspace__intro">

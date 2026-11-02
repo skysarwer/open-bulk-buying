@@ -1,7 +1,8 @@
 <?php
 /**
- * Printable documents for staff. Opened as a plain link in a new tab, so the wp_rest
- * nonce travels in the query string (_wpnonce) and the response is HTML.
+ * Printable documents for staff. The admin opens them through admin-post.php (see
+ * OPENBB_Documents::print_order_slips()), which dispatches this route internally; the
+ * response is HTML.
  *
  * Order slips need openbb_view_orders, or openbb_process_orders while the order's cycle
  * is being prepared or distributed. Members never reach this route for their own orders.
