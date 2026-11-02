@@ -359,15 +359,21 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 	const confirmOrder = async () => {
 		setIsBusy( true );
 		setError( null );
+		const isMembershipReview = [ 'confirm-membership-payment', 'reject-membership-payment' ].includes( confirmation );
 		try {
-			const saved = await request( `/orders/${ order.id }/${ confirmation }`, {
+			const saved = await request( `/orders/${ order.id }/${ isMembershipReview ? 'membership-payment' : confirmation }`, {
 				method: 'POST',
-				data: {
-					confirmed: true,
-					expected_updated_at: order.updated_at,
-					expected_revision: order.revision,
-					...( confirmation === 'reopen' ? { reason } : {} ),
-				},
+				data: isMembershipReview
+					? {
+							confirmed: true,
+							reject: confirmation === 'reject-membership-payment',
+					  }
+					: {
+							confirmed: true,
+							expected_updated_at: order.updated_at,
+							expected_revision: order.revision,
+							...( confirmation === 'reopen' ? { reason } : {} ),
+					  },
 			} );
 			load( saved );
 			onSaved( saved );
@@ -429,7 +435,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 					) }
 				</dl>
 
-				{ order.is_locked && (
+				{ order.is_locked && ! order.can_review_membership_payment && (
 					<Notice status="info" isDismissible={ false }>
 						{ order.can_reopen
 							? __( 'This order is cancelled. Reopen it as a draft before changing its contents. Staff can still update its note.', 'open-bulk-buying' )
@@ -455,6 +461,61 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 					</Notice>
 				) }
 				<ErrorNotice error={ error } onDismiss={ () => setError( null ) } />
+
+				{ order.can_review_membership_payment && (
+					<VStack spacing={ 3 }>
+						<Notice status="warning" isDismissible={ false }>
+							{ __( 'This person says they have paid. Check that the payment arrived before confirming it. Confirming payment does not approve their membership.', 'open-bulk-buying' ) }
+						</Notice>
+						<HStack justify="flex-start">
+							<Button
+								variant="primary"
+								disabled={ isBusy || changed || noteChanged }
+								onClick={ () => setConfirmation( 'confirm-membership-payment' ) }
+							>
+								{ __( 'Confirm payment', 'open-bulk-buying' ) }
+							</Button>
+							<Button
+								variant="secondary"
+								isDestructive
+								disabled={ isBusy || changed || noteChanged }
+								onClick={ () => setConfirmation( 'reject-membership-payment' ) }
+							>
+								{ __( 'Reject claimed payment', 'open-bulk-buying' ) }
+							</Button>
+						</HStack>
+						{ ( changed || noteChanged ) && (
+							<p>{ __( 'Save your changes before reviewing payment.', 'open-bulk-buying' ) }</p>
+						) }
+						{ [ 'confirm-membership-payment', 'reject-membership-payment' ].includes( confirmation ) && (
+							<Notice status="warning" isDismissible={ false }>
+								<p>
+									{ confirmation === 'reject-membership-payment'
+										? __( 'Reject this claimed payment? Its order is cancelled and the fee stays due.', 'open-bulk-buying' )
+										: sprintf(
+												/* translators: %s: membership payment amount. */
+												__( 'Confirm that the membership payment (%s) has been received. This marks the fee paid without handing over goods or approving membership.', 'open-bulk-buying' ),
+												order.total_formatted
+										  ) }
+								</p>
+								<Button
+									variant="primary"
+									isDestructive={ confirmation === 'reject-membership-payment' }
+									isBusy={ isBusy }
+									disabled={ isBusy || changed || noteChanged }
+									onClick={ confirmOrder }
+								>
+									{ confirmation === 'reject-membership-payment'
+										? __( 'Reject payment', 'open-bulk-buying' )
+										: __( 'Confirm payment', 'open-bulk-buying' ) }
+								</Button>
+								<Button variant="tertiary" disabled={ isBusy } onClick={ () => setConfirmation( null ) }>
+									{ __( 'Cancel', 'open-bulk-buying' ) }
+								</Button>
+							</Notice>
+						) }
+					</VStack>
+				) }
 
 				<table className="widefat openbb-lines">
 					<thead>

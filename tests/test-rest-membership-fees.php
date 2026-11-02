@@ -188,6 +188,66 @@ class Test_OPENBB_REST_Membership_Fees extends OPENBB_TestCase {
 		$this->assertSame( 403, $this->api( 'GET', '/orders', array( 'type' => 'membership' ) )->get_status() );
 	}
 
+	public function test_order_detail_can_confirm_membership_claim_without_approving_applicant(): void {
+		$this->set_one_time_fee( 2500 );
+		$applicant = $this->make_user( 'applicant' );
+		$order_id  = $this->claim( $applicant );
+		$detail    = $this->api( 'GET', "/orders/{$order_id}" )->get_data();
+		$this->assertTrue( $detail['can_review_membership_payment'] );
+		$this->assertFalse( $detail['can_prepay'] );
+		$this->assertFalse( $detail['can_fulfill'] );
+
+		$response = $this->api( 'POST', "/orders/{$order_id}/membership-payment", array( 'confirmed' => true ) );
+		$this->assertSame( 200, $response->get_status(), wp_json_encode( $response->get_data() ) );
+		$saved = $response->get_data();
+		$this->assertSame( $order_id, $saved['id'] );
+		$this->assertSame( 'Paid', $saved['status_label'] );
+		$this->assertSame( 2500, $saved['paid_amount'] );
+		$this->assertSame( $this->coordinator, $saved['paid_by'] );
+		$this->assertNotEmpty( $saved['paid_at'] );
+		$this->assertNotEmpty( $saved['lines'] );
+		$this->assertFalse( $saved['can_review_membership_payment'] );
+		$this->assertSame( OPENBB_Access::STATUS_APPLICANT, OPENBB_Access::get_status( $applicant ) );
+	}
+
+	public function test_order_detail_can_reject_membership_claim_and_prevents_later_confirmation(): void {
+		$this->set_one_time_fee( 2500 );
+		$member   = $this->make_user( 'member' );
+		$order_id = $this->claim( $member );
+		$response = $this->api( 'POST', "/orders/{$order_id}/membership-payment", array( 'confirmed' => true, 'reject' => true ) );
+
+		$this->assertSame( 200, $response->get_status(), wp_json_encode( $response->get_data() ) );
+		$this->assertSame( OPENBB_Order::STATUS_CANCELLED, $response->get_data()['status'] );
+		$this->assertFalse( $response->get_data()['can_review_membership_payment'] );
+		$this->assertNull( $response->get_data()['paid_at'] );
+		$this->assertSame( 'due', OPENBB_Membership_Fees::summary( $member )['status'] );
+		$this->assertSame( 409, $this->api( 'POST', "/orders/{$order_id}/membership-payment", array( 'confirmed' => true ) )->get_status() );
+	}
+
+	public function test_order_payment_review_requires_confirmation_and_rejects_non_membership_orders(): void {
+		$this->set_one_time_fee( 2500 );
+		$member   = $this->make_user( 'member' );
+		$order_id = $this->claim( $member );
+		$this->assertSame( 400, $this->api( 'POST', "/orders/{$order_id}/membership-payment" )->get_status() );
+		$this->assertSame( 400, $this->api( 'POST', "/orders/{$order_id}/membership-payment", array( 'confirmed' => false ) )->get_status() );
+		$this->assertSame( OPENBB_Order::STATUS_SUBMITTED, OPENBB_Orders::get( $order_id )->status );
+		$this->assertSame( 404, $this->api( 'POST', '/orders/999999/membership-payment', array( 'confirmed' => true ) )->get_status() );
+
+		$cycle_order = $this->make_order( $this->make_cycle( OPENBB_Cycle::STATUS_ORDERING ), $member );
+		$this->assertFalse( $this->api( 'GET', "/orders/{$cycle_order}" )->get_data()['can_review_membership_payment'] );
+		$this->assertSame( 400, $this->api( 'POST', "/orders/{$cycle_order}/membership-payment", array( 'confirmed' => true ) )->get_status() );
+	}
+
+	public function test_order_payment_review_requires_payment_and_member_permissions(): void {
+		$this->set_one_time_fee( 2500 );
+		$order_id = $this->claim( $this->make_user( 'member' ) );
+		foreach ( array( 0, $this->make_user( 'member' ), $this->make_user( 'distribution_helper' ) ) as $viewer ) {
+			wp_set_current_user( $viewer );
+			$this->assertSame( $viewer ? 403 : 401, $this->api( 'POST', "/orders/{$order_id}/membership-payment", array( 'confirmed' => true ) )->get_status() );
+		}
+		$this->assertSame( OPENBB_Order::STATUS_SUBMITTED, OPENBB_Orders::get( $order_id )->status );
+	}
+
 	public function test_no_fee_configured_is_not_applicable_and_not_recordable(): void {
 		$this->require_service();
 		$this->set_one_time_fee( 0 );

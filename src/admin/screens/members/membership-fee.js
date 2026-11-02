@@ -68,7 +68,8 @@ function FeeHistory( { history } ) {
  * The member's membership fee: its status and history and, for staff who may record
  * payments, recording a payment or reviewing a claimed one.
  *
- * Payments are only ever added or reviewed here, never toggled back to unpaid.
+ * Payments are added here; claims can also be reviewed from their order.
+ * Settled payments are never toggled back to unpaid.
  *
  * @param {Object}   props
  * @param {Object}   props.member

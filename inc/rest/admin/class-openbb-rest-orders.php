@@ -116,6 +116,30 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 
 		register_rest_route(
 			self::API_NAMESPACE,
+			'/orders/(?P<id>\d+)/membership-payment',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'review_membership_payment' ),
+				'permission_callback' => static function () {
+					foreach ( array( 'openbb_view_orders', 'openbb_record_payments', 'openbb_edit_members' ) as $cap ) {
+						$allowed = self::authorize( $cap );
+						if ( true !== $allowed ) {
+							return $allowed;
+						}
+					}
+					return true;
+				},
+				'args'                => array_merge(
+					self::id_arg(),
+					array(
+						'confirmed' => array( 'type' => 'boolean', 'required' => true ),
+						'reject'    => array( 'type' => 'boolean', 'default' => false ),
+					)
+				),
+			)
+		);
+		register_rest_route(
+			self::API_NAMESPACE,
 			'/orders/(?P<id>\d+)/reopen',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -235,6 +259,18 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 			),
 			get_current_user_id()
 		);
+		return is_wp_error( $saved ) ? $saved : rest_ensure_response( $this->prepare_order_detail( $saved ) );
+	}
+
+	public function review_membership_payment( WP_REST_Request $request ) {
+		if ( true !== $request['confirmed'] ) {
+			return new WP_Error( 'openbb_confirmation_required', __( 'Confirm the payment review before continuing.', 'open-bulk-buying' ), array( 'status' => 400 ) );
+		}
+		$order = OPENBB_Orders::get( (int) $request['id'] );
+		if ( ! $order ) {
+			return self::not_found( __( 'Order not found.', 'open-bulk-buying' ) );
+		}
+		$saved = OPENBB_Membership_Fees::review( $order->user_id, $order->id, get_current_user_id(), false, (bool) $request['reject'] );
 		return is_wp_error( $saved ) ? $saved : rest_ensure_response( $this->prepare_order_detail( $saved ) );
 	}
 
@@ -677,6 +713,10 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 		$item                = $this->prepare_orders( array( $order ) )[0];
 		$item['member_note'] = $order->member_note;
 		$item['staff_note']  = $order->staff_note;
+		$item['can_review_membership_payment'] = ! $order->cycle_id
+			&& OPENBB_Order::STATUS_SUBMITTED === $order->status && $order->membership_fee() > 0
+			&& current_user_can( 'openbb_record_payments' ) && current_user_can( 'openbb_edit_members' )
+			&& current_user_can( 'openbb_edit_member', $order->user_id );
 
 		$lines  = $order->get_lines();
 		$limits = OPENBB_Order_Editor::limits_for( array_unique( wp_list_pluck( $lines, 'product_id' ) ), $order );
