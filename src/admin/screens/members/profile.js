@@ -4,7 +4,7 @@ import { useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import { request } from '../../utils/api';
-import { config } from '../../utils/config';
+import { config, profileFieldAdminLabel } from '../../utils/config';
 import { localized } from '../settings/profile-fields/utils';
 
 /** Form data keeps edited profile values flat, as `profile__{key}`. */
@@ -16,7 +16,7 @@ const LANG = ( () => {
 	return config.translationLanguages?.includes( code ) ? code : '';
 } )();
 
-export const fieldLabel = ( def ) => localized( def.label, LANG ) || def.key;
+export const fieldLabel = ( def ) => profileFieldAdminLabel( def, LANG );
 
 let cache = null;
 

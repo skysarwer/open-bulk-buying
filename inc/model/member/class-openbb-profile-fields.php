@@ -175,6 +175,7 @@ class OPENBB_Profile_Fields {
 		$field = array(
 			'key'             => is_string( $input['key'] ?? null ) ? $input['key'] : '',
 			'label'           => openbb_sanitize_localized_text( $input['label'] ?? '' ),
+			'admin_label'     => openbb_sanitize_localized_text( $input['admin_label'] ?? '' ),
 			'help'            => openbb_sanitize_localized_text( $input['help'] ?? '' ),
 			'type'            => $type,
 			'required'        => ! empty( $input['required'] ),

@@ -19,7 +19,7 @@ import {
 } from '../../../components';
 import { useDiscardGuard, useNotify, useRecord } from '../../../hooks';
 import { request } from '../../../utils/api';
-import { localized } from '../../../utils/config';
+import { profileFieldAdminLabel } from '../../../utils/config';
 import Section from '../section';
 import SettingsPage from '../settings-page';
 import FieldPanel, { TYPE_LABELS } from './field-panel';
@@ -97,7 +97,7 @@ function PurgeModal( { field, onDone, onClose } ) {
 								'This deletes the field “%s” and every member’s answer to it. This can’t be undone, and the key can never be used again.',
 								'open-bulk-buying'
 							),
-							localized( field.label ) || field.key
+							profileFieldAdminLabel( field )
 						) }
 					</Text>
 					<TextControl
@@ -317,9 +317,7 @@ export default function ProfileFieldsTab( { nav } ) {
 							className="openbb-profile-fields"
 							items={ schema.fields }
 							getKey={ ( field ) => field.key }
-							getLabel={ ( field ) =>
-								localized( field.label ) || field.key
-							}
+							getLabel={ profileFieldAdminLabel }
 							onMove={ ( from, to ) =>
 								saveList( moveItem( schema.fields, from, to ) )
 							}
@@ -339,7 +337,7 @@ export default function ProfileFieldsTab( { nav } ) {
 											variant="link"
 											onClick={ () => open( field.key ) }
 										>
-											{ localized( field.label ) || field.key }
+											{ profileFieldAdminLabel( field ) }
 										</Button>{ ' ' }
 										<code>{ field.key }</code>
 										<Badges field={ field } />

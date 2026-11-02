@@ -84,6 +84,65 @@ class Test_OPENBB_Profile_Fields extends OPENBB_TestCase {
 		$this->assertSame( '', OPENBB_Profile_Fields::key_from_label( 'アレルギー' ) );
 	}
 
+	public function test_legacy_fields_work_without_an_admin_label_or_migration(): void {
+		$legacy = $this->boolean_field( 'newsletter' );
+		$stored = array( 'version' => 1, 'revision' => 7, 'fields' => array( $legacy ) );
+		update_option( OPENBB_Profile_Fields::OPTION, $stored );
+
+		$schema = OPENBB_Profile_Fields::get_schema();
+
+		$this->assertSame( 7, $schema['revision'] );
+		$this->assertSame( array( 'default' => '' ), $schema['fields'][0]['admin_label'] );
+		$this->assertSame( $legacy['label'], $schema['fields'][0]['label'] );
+		$this->assertSame( $stored, get_option( OPENBB_Profile_Fields::OPTION ) );
+		$this->assertArrayHasKey( 'newsletter', OPENBB_Profile_Fields::get_fields_for_context( 'staff' ) );
+		$this->assertArrayHasKey( 'newsletter', OPENBB_Profile_Fields::get_fields_for_context( 'self' ) );
+	}
+
+	public function test_admin_labels_round_trip_through_rest_and_can_be_cleared(): void {
+		wp_set_current_user( $this->make_user( 'manager' ) );
+		$field = $this->boolean_field(
+			'newsletter',
+			array( 'admin_label' => array( 'default' => ' <b>Mailing list</b> ', 'fr' => 'Liste' ) )
+		);
+		$saved = $this->api( 'PUT', '/settings/profile-fields', array( 'revision' => 0, 'fields' => array( $field ) ) );
+
+		$this->assertSame( 200, $saved->get_status() );
+		$definition = $saved->get_data()['fields'][0];
+		$this->assertSame( array( 'default' => 'Mailing list', 'fr' => 'Liste' ), $definition['admin_label'] );
+		$this->assertSame( $field['label'], $definition['label'] );
+		$this->assertSame( $definition, $this->api( 'GET', '/settings/profile-fields' )->get_data()['fields'][0] );
+		$this->assertSame( $definition, $this->api( 'GET', '/profile-fields' )->get_data()[0] );
+
+		$member = $this->make_user( 'member' );
+		OPENBB_Profile_Fields::set_values( $member, array( 'newsletter' => true ), 'staff' );
+		$definition['admin_label'] = array( 'default' => '' );
+		$cleared = $this->api( 'PUT', '/settings/profile-fields', array( 'revision' => 1, 'fields' => array( $definition ) ) );
+
+		$this->assertSame( 200, $cleared->get_status() );
+		$this->assertSame( array( 'default' => '' ), $cleared->get_data()['fields'][0]['admin_label'] );
+		$this->assertSame( array( 'newsletter' => true ), OPENBB_Profile_Fields::get_values( $member, 'staff' ) );
+	}
+
+	public function test_admin_labels_do_not_change_member_facing_labels_for_any_field_type(): void {
+		$fields = array(
+			$this->boolean_field( 'newsletter' ),
+			$this->diet_field(),
+			array( 'key' => 'notes', 'label' => array( 'default' => 'Notes' ), 'type' => 'text' ),
+		);
+		foreach ( $fields as &$field ) {
+			$field['admin_label'] = array( 'default' => 'Internal label' );
+		}
+		unset( $field );
+		$this->save( $fields );
+
+		foreach ( OPENBB_Profile_Fields::get_fields_for_context( 'signup' ) as $definition ) {
+			$input = openbb_profile_field_input( $definition, null );
+			$this->assertSame( $definition['label']['default'], $input['label'] );
+			$this->assertNotSame( 'Internal label', $input['label'] );
+		}
+	}
+
 	public function test_reserved_keys_are_rejected(): void {
 		$result = OPENBB_Profile_Fields::save_schema( array( $this->boolean_field( 'status' ) ), 0 );
 

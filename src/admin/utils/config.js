@@ -53,6 +53,21 @@ export const localized = ( value, language = config.currentLanguage ) =>
 	( language && value?.[ language ] ) || value?.default || '';
 
 /**
+ * Optional admin label, falling back to the member-facing label for old fields.
+ *
+ * @param {Object} field    Profile field definition.
+ * @param {string} language Language code; defaults to the admin language.
+ * @return {string} Display label.
+ */
+export const profileFieldAdminLabel = (
+	field,
+	language = config.currentLanguage
+) =>
+	localized( field.admin_label, language ) ||
+	localized( field.label, language ) ||
+	field.key;
+
+/**
  * Display text for a flattened REST field, without changing its editable value.
  *
  * @param {Object} item  REST record.

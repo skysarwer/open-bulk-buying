@@ -191,6 +191,7 @@ export function toDraft( field ) {
 			key: '',
 			keyTouched: false,
 			label: { default: '' },
+			admin_label: { default: '' },
 			help: { default: '' },
 			type: 'text',
 			required: false,
@@ -206,6 +207,7 @@ export function toDraft( field ) {
 	const { options, ...rest } = field;
 	return {
 		...rest,
+		admin_label: field.admin_label || { default: '' },
 		keyTouched: true,
 		text: field.text || defaultText(),
 		options: options
@@ -225,6 +227,7 @@ export function fromDraft( draft ) {
 	const field = {
 		key: draft.key,
 		label: draft.label,
+		admin_label: draft.admin_label,
 		help: draft.help,
 		type: draft.type,
 		required: draft.required,

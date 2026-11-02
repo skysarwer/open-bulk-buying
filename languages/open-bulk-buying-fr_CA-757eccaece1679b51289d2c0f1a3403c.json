@@ -10,6 +10,12 @@
                 "lang": "fr_CA",
                 "plural-forms": "nplurals=2; plural=(n > 1);"
             },
+            "Admin label": [
+                "Libell\u00e9 d\u2019administration"
+            ],
+            "Optional label for admin screens only. Leave blank to use the regular label. Members still see the regular label.": [
+                "Libell\u00e9 facultatif r\u00e9serv\u00e9 aux \u00e9crans d\u2019administration. Laissez vide pour utiliser le libell\u00e9 habituel. Les membres voient toujours le libell\u00e9 habituel."
+            ],
             "Paid on": [
                 "Pay\u00e9 le"
             ],

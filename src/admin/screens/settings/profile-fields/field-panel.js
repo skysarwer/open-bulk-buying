@@ -27,7 +27,7 @@ import {
 	toDraft,
 	uniqueKey,
 } from './utils';
-import { localized } from '../../../utils/config';
+import { profileFieldAdminLabel } from '../../../utils/config';
 
 const STALE = 'openbb_profile_fields_stale';
 
@@ -157,7 +157,7 @@ export default function FieldPanel( {
 
 	const title = isNew
 		? __( 'New profile field', 'open-bulk-buying' )
-		: localized( draft.label ) || field.key;
+		: profileFieldAdminLabel( draft );
 
 	return (
 		<SidePanel title={ title } onClose={ onClose }>
@@ -214,6 +214,18 @@ export default function FieldPanel( {
 						label={ __( 'Label', 'open-bulk-buying' ) }
 						value={ draft.label }
 						onChange={ ( label ) => change( { label } ) }
+					/>
+
+					<LocalizedTextControl
+						label={ __( 'Admin label', 'open-bulk-buying' ) }
+						value={ draft.admin_label }
+						onChange={ ( admin_label ) =>
+							change( { admin_label } )
+						}
+						help={ __(
+							'Optional label for admin screens only. Leave blank to use the regular label. Members still see the regular label.',
+							'open-bulk-buying'
+						) }
 					/>
 
 					{ isNew ? (
