@@ -1502,9 +1502,6 @@
             "Permanently delete order #%1$d for %2$s, including its items and event history? Any stock reservation will be released; stock-ledger entries are retained without their order reference. This cannot be undone.": [
                 "Supprimer d\u00e9finitivement la commande no %1$d de %2$s, y compris ses articles et son historique des \u00e9v\u00e9nements? Toute r\u00e9servation de stock sera lib\u00e9r\u00e9e; les \u00e9critures du registre des stocks seront conserv\u00e9es sans leur r\u00e9f\u00e9rence \u00e0 la commande. Cette action est irr\u00e9versible."
             ],
-            "Print at most %d order slips at a time. Narrow the list and try again.": [
-                "Imprimez au plus %d bordereaux de commande \u00e0 la fois. R\u00e9duisez la liste et r\u00e9essayez."
-            ],
             "Packed": [
                 "Emball\u00e9"
             ],
@@ -1636,33 +1633,8 @@
             "Refresh": [
                 "Actualiser"
             ],
-            "Counting orders\u2026": [
-                "D\u00e9compte des commandes\u2026"
-            ],
-            "%d order slip will be printed.": [
-                "%d bordereau de commande sera imprim\u00e9.",
-                "%d bordereaux de commande seront imprim\u00e9s."
-            ],
-            "All orders in this cycle": [
-                "Toutes les commandes de ce cycle"
-            ],
-            "Only orders matching the current search and filters": [
-                "Seulement les commandes correspondant \u00e0 la recherche et aux filtres actuels"
-            ],
             "Payment": [
                 "Paiement"
-            ],
-            "Paid and unpaid": [
-                "Pay\u00e9es et non pay\u00e9es"
-            ],
-            "Unpaid only": [
-                "Non pay\u00e9es seulement"
-            ],
-            "Paid only": [
-                "Pay\u00e9es seulement"
-            ],
-            "Open printable slips": [
-                "Ouvrir les bordereaux \u00e0 imprimer"
             ],
             "Save your changes before printing the slip.": [
                 "Enregistrez vos modifications avant d\u2019imprimer le bordereau."
@@ -1778,9 +1750,6 @@
             ],
             "Confirm that the membership payment (%s) has been received. This marks the fee paid without handing over goods or approving membership.": [
                 "Confirmez que le paiement de l\u2019adh\u00e9sion (%s) a \u00e9t\u00e9 re\u00e7u. Les frais seront marqu\u00e9s comme pay\u00e9s, sans remise de produits ni approbation de l\u2019adh\u00e9sion."
-            ],
-            "Slips are sorted by last name and printed one after another with a line to cut along, each with a box to tick as products are packed. Slips are printed for submitted, prepaid and fulfilled orders.": [
-                "Les bordereaux sont tri\u00e9s par nom de famille et imprim\u00e9s les uns \u00e0 la suite des autres avec une ligne de d\u00e9coupe, chacun avec une case \u00e0 cocher \u00e0 mesure que les produits sont emball\u00e9s. Les bordereaux sont imprim\u00e9s pour les commandes soumises, pr\u00e9pay\u00e9es et remplies."
             ]
         }
     }

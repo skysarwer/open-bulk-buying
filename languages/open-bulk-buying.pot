@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-02T05:15:19+00:00\n"
+"POT-Creation-Date: 2026-11-02T05:21:37+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: open-bulk-buying\n"
@@ -266,9 +266,8 @@ msgstr ""
 #: inc/admin/class-openbb-admin.php:75
 #: src/admin/screens/cycles/list.js:149
 #: src/admin/screens/cycles/list.js:293
+#: src/admin/screens/cycles/orders.js:168
 #: src/admin/screens/cycles/orders.js:170
-#: src/admin/screens/cycles/orders.js:172
-#: src/admin/screens/cycles/print-slips.js:103
 #: src/admin/screens/cycles/workspace.js:21
 #: src/admin/screens/members/fields.js:137
 #: src/admin/screens/members/panel.js:233
@@ -549,8 +548,7 @@ msgstr ""
 
 #. translators: %d: maximum number of order slips.
 #: inc/documents/class-openbb-order-slip.php:100
-#: src/admin/screens/cycles/print-slips.js:151
-#, php-format,js-format
+#, php-format
 msgid "Print at most %d order slips at a time. Narrow the list and try again."
 msgstr ""
 
@@ -633,7 +631,7 @@ msgid "Own container"
 msgstr ""
 
 #: inc/documents/templates/order-slip.php:50
-#: src/admin/screens/cycles/orders.js:123
+#: src/admin/screens/cycles/orders.js:121
 msgid "Packed"
 msgstr ""
 
@@ -2944,7 +2942,6 @@ msgstr ""
 
 #: src/admin/components/confirm-body.js:49
 #: src/admin/components/edit-form.js:38
-#: src/admin/screens/cycles/print-slips.js:161
 #: src/admin/screens/members/index.js:282
 #: src/admin/screens/orders/editor.js:513
 #: src/admin/screens/orders/editor.js:711
@@ -3327,12 +3324,12 @@ msgid "Search cycles"
 msgstr ""
 
 #. translators: 1: packed basket products, 2: basket products in the order.
-#: src/admin/screens/cycles/orders.js:34
+#: src/admin/screens/cycles/orders.js:33
 #, js-format
 msgid "%1$d of %2$d packed"
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:148
+#: src/admin/screens/cycles/orders.js:146
 #: src/admin/screens/members/index.js:354
 #: src/admin/screens/orders/index.js:453
 #: src/admin/screens/products/products-tab.js:232
@@ -3340,32 +3337,31 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:149
+#: src/admin/screens/cycles/orders.js:147
 #: src/admin/screens/members/index.js:354
 #: src/admin/screens/orders/index.js:454
 msgid "View"
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:156
+#: src/admin/screens/cycles/orders.js:154
 #: src/admin/screens/orders/editor.js:727
 #: src/admin/screens/orders/index.js:461
 msgid "Print slip"
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:176
+#: src/admin/screens/cycles/orders.js:174
 msgid "Tick an order once its basket products are packed. Products set aside by product are tracked on the Preparation tab."
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:180
+#: src/admin/screens/cycles/orders.js:178
 msgid "Baskets can be packed once the cycle is processing."
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:188
+#: src/admin/screens/cycles/orders.js:186
 msgid "Orders are visible to preparers while the cycle is processing or distributing."
 msgstr ""
 
 #: src/admin/screens/cycles/orders.js:201
-#: src/admin/screens/cycles/print-slips.js:90
 msgid "Print order slips"
 msgstr ""
 
@@ -3373,16 +3369,16 @@ msgstr ""
 msgid "Refresh orders"
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:234
+#: src/admin/screens/cycles/orders.js:227
 #: src/admin/screens/orders/index.js:584
 msgid "Search by order number, name or email"
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:244
+#: src/admin/screens/cycles/orders.js:237
 msgid "Add or manage orders on the Orders screen"
 msgstr ""
 
-#: src/admin/screens/cycles/orders.js:266
+#: src/admin/screens/cycles/orders.js:259
 #: src/admin/screens/orders/index.js:545
 #: src/admin/screens/related-panels.js:18
 msgid "Order saved."
@@ -3529,51 +3525,6 @@ msgstr ""
 #: src/admin/screens/cycles/preparation.js:405
 #: src/admin/screens/products/products-tab.js:359
 msgid "Stock updated."
-msgstr ""
-
-#: src/admin/screens/cycles/print-slips.js:73
-msgid "Counting orders…"
-msgstr ""
-
-#. translators: %d: number of order slips.
-#: src/admin/screens/cycles/print-slips.js:77
-#, js-format
-msgid "%d order slip will be printed."
-msgid_plural "%d order slips will be printed."
-msgstr[0] ""
-msgstr[1] ""
-
-#: src/admin/screens/cycles/print-slips.js:96
-msgid "Slips are sorted by last name and printed one after another with a line to cut along, each with a box to tick as products are packed. Slips are printed for submitted, prepaid and fulfilled orders."
-msgstr ""
-
-#: src/admin/screens/cycles/print-slips.js:108
-msgid "All orders in this cycle"
-msgstr ""
-
-#: src/admin/screens/cycles/print-slips.js:115
-msgid "Only orders matching the current search and filters"
-msgstr ""
-
-#: src/admin/screens/cycles/print-slips.js:125
-#: src/admin/screens/orders/index.js:69
-msgid "Payment"
-msgstr ""
-
-#: src/admin/screens/cycles/print-slips.js:130
-msgid "Paid and unpaid"
-msgstr ""
-
-#: src/admin/screens/cycles/print-slips.js:134
-msgid "Unpaid only"
-msgstr ""
-
-#: src/admin/screens/cycles/print-slips.js:138
-msgid "Paid only"
-msgstr ""
-
-#: src/admin/screens/cycles/print-slips.js:176
-msgid "Open printable slips"
 msgstr ""
 
 #: src/admin/screens/cycles/workspace.js:18
@@ -4025,6 +3976,10 @@ msgstr ""
 
 #: src/admin/screens/orders/editor.js:826
 msgid "Save order"
+msgstr ""
+
+#: src/admin/screens/orders/index.js:69
+msgid "Payment"
 msgstr ""
 
 #: src/admin/screens/orders/index.js:124

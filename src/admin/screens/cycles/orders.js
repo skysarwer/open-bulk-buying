@@ -18,7 +18,6 @@ import relatedPanels from '../related-panels';
 import OrderEditor from '../orders/editor';
 import { buildFields, LIST_MAPPING } from '../orders';
 import { createOrderView } from '../orders/list-view';
-import PrintSlipsModal from './print-slips';
 
 const PREPARATION_STAGES = [ 'processing', 'distribution' ];
 
@@ -85,7 +84,6 @@ export default function CycleOrders( { cycle, children } ) {
 		};
 	} );
 	const [ openOrder, setOpenOrder ] = useState( null );
-	const [ isPrinting, setIsPrinting ] = useState( false );
 	const list = useList( '/orders', view, LIST_MAPPING, {
 		type: 'cycle',
 		cycle_id: cycle.id,
@@ -196,7 +194,9 @@ export default function CycleOrders( { cycle, children } ) {
 						<Button
 							variant="primary"
 							icon={ page }
-							onClick={ () => setIsPrinting( true ) }
+							onClick={ () =>
+								openOrderSlips( { cycleId: cycle.id } )
+							}
 						>
 							{ __( 'Print order slips', 'open-bulk-buying' ) }
 						</Button>
@@ -210,13 +210,6 @@ export default function CycleOrders( { cycle, children } ) {
 					</Button>
 				</HStack>
 			</div>
-			{ isPrinting && (
-				<PrintSlipsModal
-					cycle={ cycle }
-					view={ view }
-					onClose={ () => setIsPrinting( false ) }
-				/>
-			) }
 			<ErrorNotice error={ list.error } />
 			{ discardDialog }
 			<DataViews
