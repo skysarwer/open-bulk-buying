@@ -94,7 +94,7 @@ export default function PrintSlipsModal( { cycle, view, onClose } ) {
 			<VStack spacing={ 4 }>
 				<p>
 					{ __(
-						'Slips are sorted by last name and printed one after another with a line to cut along, each with a checklist for packing and handing out. Slips are printed for submitted, prepaid and fulfilled orders.',
+						'Slips are sorted by last name and printed one after another with a line to cut along, each with a box to tick as products are packed. Slips are printed for submitted, prepaid and fulfilled orders.',
 						'open-bulk-buying'
 					) }
 				</p>

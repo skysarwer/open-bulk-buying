@@ -261,9 +261,9 @@ class Test_OPENBB_Order_Slips extends OPENBB_TestCase {
 			$html  = $this->slips( array( 'cycle_id' => $this->cycle ) )->get_data();
 			$pages = explode( 'class="openbb-slip"', $html );
 			$this->assertCount( 3, $pages );
-			$this->assertStringContainsString( 'Remis', $pages[1] );
+			$this->assertStringContainsString( 'Emballé', $pages[1] );
 			$this->assertStringContainsString( 'Commande no ' . $french, $pages[1] );
-			$this->assertStringContainsString( 'Handed out', $pages[2] );
+			$this->assertStringContainsString( '>Packed<', $pages[2] );
 			$this->assertStringContainsString( '<html lang="en-US">', $html );
 			$this->assertSame( $original_locale, determine_locale() );
 		} finally {

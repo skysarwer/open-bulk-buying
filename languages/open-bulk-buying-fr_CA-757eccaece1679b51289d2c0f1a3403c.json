@@ -1767,9 +1767,6 @@
             "A4": [
                 "A4"
             ],
-            "Slips are sorted by last name and printed one after another with a line to cut along, each with a checklist for packing and handing out. Slips are printed for submitted, prepaid and fulfilled orders.": [
-                "Les bordereaux sont tri\u00e9s par nom de famille et imprim\u00e9s les uns \u00e0 la suite des autres avec une ligne de d\u00e9coupe, chacun avec une liste de v\u00e9rification pour l\u2019emballage et la remise. Les bordereaux sont imprim\u00e9s pour les commandes soumises, pr\u00e9pay\u00e9es et remplies."
-            ],
             "Used for printed order slips.": [
                 "Utilis\u00e9 pour les bordereaux de commande imprim\u00e9s."
             ],
@@ -1781,6 +1778,9 @@
             ],
             "Confirm that the membership payment (%s) has been received. This marks the fee paid without handing over goods or approving membership.": [
                 "Confirmez que le paiement de l\u2019adh\u00e9sion (%s) a \u00e9t\u00e9 re\u00e7u. Les frais seront marqu\u00e9s comme pay\u00e9s, sans remise de produits ni approbation de l\u2019adh\u00e9sion."
+            ],
+            "Slips are sorted by last name and printed one after another with a line to cut along, each with a box to tick as products are packed. Slips are printed for submitted, prepaid and fulfilled orders.": [
+                "Les bordereaux sont tri\u00e9s par nom de famille et imprim\u00e9s les uns \u00e0 la suite des autres avec une ligne de d\u00e9coupe, chacun avec une case \u00e0 cocher \u00e0 mesure que les produits sont emball\u00e9s. Les bordereaux sont imprim\u00e9s pour les commandes soumises, pr\u00e9pay\u00e9es et remplies."
             ]
         }
     }

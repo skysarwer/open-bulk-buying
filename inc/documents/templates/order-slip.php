@@ -48,7 +48,6 @@ $openbb_slip = $vars['data'];
 					<th scope="col" class="openbb-slip__qty"><?php esc_html_e( 'Quantity', 'open-bulk-buying' ); ?></th>
 					<th scope="col" class="openbb-slip__check"><?php esc_html_e( 'Own container', 'open-bulk-buying' ); ?></th>
 					<th scope="col" class="openbb-slip__check"><?php esc_html_e( 'Packed', 'open-bulk-buying' ); ?></th>
-					<th scope="col" class="openbb-slip__check"><?php esc_html_e( 'Handed out', 'open-bulk-buying' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -67,7 +66,6 @@ $openbb_slip = $vars['data'];
 							?>
 						</td>
 						<td class="openbb-slip__check"><?php echo $openbb_item['own_container'] ? esc_html__( 'Yes', 'open-bulk-buying' ) : ''; ?></td>
-						<td class="openbb-slip__check">&#9744;</td>
 						<td class="openbb-slip__check">&#9744;</td>
 					</tr>
 				<?php endforeach; ?>

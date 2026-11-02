@@ -204,8 +204,8 @@ browser tab and the print dialog appears; use the browser's **Save as PDF** for
 a file. Slips run on one after another to save paper, with a dashed line to cut
 along; a slip moves to the next page rather than being split, unless it is longer
 than a page. Each slip has the member's name, the order number, the site title,
-the cycle, the pickup time and place, the products and quantities, and **Packed**
-and **Handed out** checkboxes. It shows **PAID** or the amount due, but no
+the cycle, the pickup time and place, the products and quantities, and a
+**Packed** checkbox for each product. It shows **PAID** or the amount due, but no
 prices per product, phone number or email. Slips are sorted by last name and
 printed in each order's language.
 

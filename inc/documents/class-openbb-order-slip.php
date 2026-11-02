@@ -1,7 +1,7 @@
 <?php
 /**
- * Order slips handed out at distribution: one page per order with the member's name,
- * pickup details, what to pack and whether the order is paid.
+ * Order slips handed out at distribution: one compact slip per order with the member's
+ * name, pickup details, what to pack and whether the order is paid.
  *
  * Slips show no prices per line, contact details, staff notes or financial-aid details.
  * Each slip is printed in the order's language.

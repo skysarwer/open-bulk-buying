@@ -291,8 +291,8 @@ msgstr "Produits et cycles"
 #: inc/admin/class-openbb-admin.php:75
 #: src/admin/screens/cycles/list.js:149
 #: src/admin/screens/cycles/list.js:293
-#: src/admin/screens/cycles/orders.js:171
-#: src/admin/screens/cycles/orders.js:173
+#: src/admin/screens/cycles/orders.js:170
+#: src/admin/screens/cycles/orders.js:172
 #: src/admin/screens/cycles/print-slips.js:103
 #: src/admin/screens/cycles/workspace.js:21
 #: src/admin/screens/members/fields.js:137
@@ -656,7 +656,7 @@ msgstr "Prix unitaire"
 msgid "Own container"
 msgstr "Contenant personnel"
 
-#: inc/documents/templates/order-slip.php:69
+#: inc/documents/templates/order-slip.php:68
 #: inc/emails/class-openbb-order-emails.php:75
 #: inc/emails/order-event.php:65
 #: inc/privacy/class-openbb-privacy-profile-fields.php:90
@@ -3239,7 +3239,7 @@ msgstr "Supprimer la commande"
 msgid "Order deleted."
 msgstr "Commande supprimée."
 
-#: src/admin/screens/cycles/orders.js:267
+#: src/admin/screens/cycles/orders.js:266
 #: src/admin/screens/orders/index.js:545
 #: src/admin/screens/related-panels.js:18
 msgid "Order saved."
@@ -3249,7 +3249,7 @@ msgstr "Commande enregistrée."
 msgid "Add order"
 msgstr "Ajouter une commande"
 
-#: src/admin/screens/cycles/orders.js:235
+#: src/admin/screens/cycles/orders.js:234
 #: src/admin/screens/orders/index.js:584
 msgid "Search by order number, name or email"
 msgstr "Rechercher par numéro de commande, nom ou courriel"
@@ -4864,27 +4864,23 @@ msgstr "Montant dû"
 msgid "Packed"
 msgstr "Emballé"
 
-#: inc/documents/templates/order-slip.php:51
-msgid "Handed out"
-msgstr "Remis"
-
 #. translators: 1: quantity, 2: unit, e.g. "500 g".
 #. translators: 1: quantity, 2: selling unit, e.g. "500 g".
-#: inc/documents/templates/order-slip.php:66
+#: inc/documents/templates/order-slip.php:65
 #: src/admin/screens/cycles/preparation.js:55
 #, php-format,js-format
 msgid "%1$s × %2$s"
 msgstr "%1$s × %2$s"
 
-#: inc/documents/templates/order-slip.php:77
+#: inc/documents/templates/order-slip.php:75
 msgid "No products on this order."
 msgstr "Aucun produit dans cette commande."
 
-#: inc/documents/templates/order-slip.php:82
+#: inc/documents/templates/order-slip.php:80
 msgid "Also on this order:"
 msgstr "Aussi dans cette commande :"
 
-#: inc/documents/templates/order-slip.php:89
+#: inc/documents/templates/order-slip.php:87
 msgid "Note from the member:"
 msgstr "Note du membre :"
 
@@ -5016,28 +5012,28 @@ msgstr "%1$d sur %2$d emballés"
 msgid "Print slip"
 msgstr "Imprimer le bordereau"
 
-#: src/admin/screens/cycles/orders.js:177
+#: src/admin/screens/cycles/orders.js:176
 msgid "Tick an order once its basket products are packed. Products set aside by product are tracked on the Preparation tab."
 msgstr "Cochez une commande une fois les produits de son panier emballés. Les produits mis de côté par produit sont suivis dans l’onglet Préparation."
 
-#: src/admin/screens/cycles/orders.js:181
+#: src/admin/screens/cycles/orders.js:180
 msgid "Baskets can be packed once the cycle is processing."
 msgstr "Les paniers peuvent être emballés dès que le cycle est en préparation."
 
-#: src/admin/screens/cycles/orders.js:189
+#: src/admin/screens/cycles/orders.js:188
 msgid "Orders are visible to preparers while the cycle is processing or distributing."
 msgstr "Les commandes sont visibles par les personnes qui préparent pendant la préparation ou la distribution du cycle."
 
-#: src/admin/screens/cycles/orders.js:202
+#: src/admin/screens/cycles/orders.js:201
 #: src/admin/screens/cycles/print-slips.js:90
 msgid "Print order slips"
 msgstr "Imprimer les bordereaux"
 
-#: src/admin/screens/cycles/orders.js:210
+#: src/admin/screens/cycles/orders.js:209
 msgid "Refresh orders"
 msgstr "Actualiser les commandes"
 
-#: src/admin/screens/cycles/orders.js:245
+#: src/admin/screens/cycles/orders.js:244
 msgid "Add or manage orders on the Orders screen"
 msgstr "Ajouter ou gérer des commandes dans l’écran Commandes"
 
@@ -5347,10 +5343,6 @@ msgstr "Lettre"
 msgid "A4"
 msgstr "A4"
 
-#: src/admin/screens/cycles/print-slips.js:96
-msgid "Slips are sorted by last name and printed one after another with a line to cut along, each with a checklist for packing and handing out. Slips are printed for submitted, prepaid and fulfilled orders."
-msgstr "Les bordereaux sont triés par nom de famille et imprimés les uns à la suite des autres avec une ligne de découpe, chacun avec une liste de vérification pour l’emballage et la remise. Les bordereaux sont imprimés pour les commandes soumises, prépayées et remplies."
-
 #: src/admin/screens/settings/general.js:338
 msgid "Used for printed order slips."
 msgstr "Utilisé pour les bordereaux de commande imprimés."
@@ -5376,3 +5368,7 @@ msgstr "Enregistrez vos modifications avant de vérifier le paiement."
 #, js-format
 msgid "Confirm that the membership payment (%s) has been received. This marks the fee paid without handing over goods or approving membership."
 msgstr "Confirmez que le paiement de l’adhésion (%s) a été reçu. Les frais seront marqués comme payés, sans remise de produits ni approbation de l’adhésion."
+
+#: src/admin/screens/cycles/print-slips.js:96
+msgid "Slips are sorted by last name and printed one after another with a line to cut along, each with a box to tick as products are packed. Slips are printed for submitted, prepaid and fulfilled orders."
+msgstr "Les bordereaux sont triés par nom de famille et imprimés les uns à la suite des autres avec une ligne de découpe, chacun avec une case à cocher à mesure que les produits sont emballés. Les bordereaux sont imprimés pour les commandes soumises, prépayées et remplies."
