@@ -401,7 +401,7 @@ class Test_OPENBB_REST_Admin extends OPENBB_TestCase {
 		wp_set_current_user( $this->make_user( 'member' ) );
 		$this->assertSame( 403, $this->api( 'POST', "/orders/{$order_id}/prepay", $params )->get_status() );
 		wp_set_current_user( $this->coordinator );
-		$this->assertSame( 409, $this->api( 'POST', "/orders/{$order_id}/fulfill", $params )->get_status() );
+		$this->assertTrue( $this->api( 'GET', "/orders/{$order_id}" )->get_data()['can_fulfill'] );
 		$paid = $this->api( 'POST', "/orders/{$order_id}/prepay", $params );
 		$this->assertSame( 200, $paid->get_status() );
 		$this->assertSame( 'prepaid', $paid->get_data()['status'] );

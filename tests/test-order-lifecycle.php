@@ -212,8 +212,10 @@ class Test_OPENBB_Order_Lifecycle extends OPENBB_TestCase {
 		$this->assertFalse( $fulfilled->is_abandoned() );
 		$this->assertFalse( $draft->is_abandoned() );
 		$this->assert_stock( 8, 0 );
-		$this->assertWPError( $this->confirm( $unpaid, 'fulfill' ) );
-		$this->assertWPError( $this->confirm( $unpaid, 'prepay' ) );
+		// Late payment and handoff can still be recorded after the cycle closes.
+		$late = $this->confirm( $unpaid, 'fulfill' );
+		$this->assertInstanceOf( OPENBB_Order::class, $late );
+		$this->assertSame( 'fulfilled', $late->status );
 		$this->assertInstanceOf( OPENBB_Order::class, $this->confirm( $fulfilled, 'fulfill' ) );
 		$closed->finalized_at = '2000-01-01 00:00:00';
 		$this->assertTrue( OPENBB_Cycles::store( $closed, 'complete', $this->actor ) );

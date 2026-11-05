@@ -91,6 +91,8 @@ function AidRequestPanel( { cycle, item, onClose, onSaved } ) {
 					<dd>{ item.status_label }</dd>
 					<dt>{ __( 'Aid status', 'open-bulk-buying' ) }</dt>
 					<dd>{ item.aid_status_label }</dd>
+					<dt>{ __( 'Aid allocated', 'open-bulk-buying' ) }</dt>
+					<dd>{ formatMoney( item.aid_approved || 0 ) }</dd>
 					<dt>{ __( 'Decision date', 'open-bulk-buying' ) }</dt>
 					<dd>
 						{ item.aid_decided_at ||
@@ -108,7 +110,7 @@ function AidRequestPanel( { cycle, item, onClose, onSaved } ) {
 					<>
 						<p>
 							{ __(
-								'This records eligibility only. No amount is allocated and the order total is unchanged.',
+								'This records eligibility only. Use "Distribute aid" to allocate amounts to approved orders.',
 								'open-bulk-buying'
 							) }
 						</p>
@@ -157,7 +159,7 @@ function AidRequestPanel( { cycle, item, onClose, onSaved } ) {
 						message={ sprintf(
 							/* translators: 1: member name, 2: eligibility decision. */
 							__(
-								'Set the aid request for %1$s to %2$s? This records eligibility only; it does not allocate an amount or change the order total.',
+								'Set the aid request for %1$s to %2$s? This records eligibility only; amounts are allocated with "Distribute aid".',
 								'open-bulk-buying'
 							),
 							item.member_name,
@@ -250,6 +252,74 @@ function AidFunds( { summary } ) {
 	);
 }
 
+function AidDistribution( { cycle, summary, onDistributed } ) {
+	const [ isConfirming, setIsConfirming ] = useState( false );
+	const plan = summary?.distribution;
+	if ( ! plan ) {
+		return null;
+	}
+	return (
+		<div className="openbb-aid-distribution">
+			<h4>{ __( 'Equal distribution', 'open-bulk-buying' ) }</h4>
+			<p>
+				{ plan.recipients > 0
+					? sprintf(
+							/* translators: 1: percentage, 2: number of orders, 3: amount distributed, 4: eligible goods total. */
+							__(
+								'Each approved, unpaid order gets %1$s%% off its goods (%2$d orders, %3$s of %4$s). Membership fees and donations are never covered.',
+								'open-bulk-buying'
+							),
+							plan.percent,
+							plan.recipients,
+							formatMoney( plan.allocated ),
+							formatMoney( plan.eligible )
+					  )
+					: __(
+							'No approved, unpaid orders to distribute aid to.',
+							'open-bulk-buying'
+					  ) }
+			</p>
+			{ plan.can_distribute && (
+				<Button
+					variant="primary"
+					disabled={ plan.recipients === 0 }
+					onClick={ () => setIsConfirming( true ) }
+				>
+					{ __( 'Distribute aid', 'open-bulk-buying' ) }
+				</Button>
+			) }
+			{ isConfirming && (
+				<Modal
+					title={ __( 'Distribute aid', 'open-bulk-buying' ) }
+					onRequestClose={ () => setIsConfirming( false ) }
+					size="small"
+				>
+					<ConfirmBody
+						message={ sprintf(
+							/* translators: 1: percentage, 2: number of orders. */
+							__(
+								'Apply a %1$s%% discount to the goods on %2$d approved, unpaid orders? Their totals will change. You can run this again if donations or approvals change; paid and fulfilled orders keep the aid they already received.',
+								'open-bulk-buying'
+							),
+							plan.percent,
+							plan.recipients
+						) }
+						confirmLabel={ __( 'Distribute', 'open-bulk-buying' ) }
+						closeModal={ () => setIsConfirming( false ) }
+						onConfirm={ async () => {
+							const saved = await request(
+								`/cycles/${ cycle.id }/aid/distribute`,
+								{ method: 'POST', data: { confirmed: true } }
+							);
+							onDistributed( saved );
+						} }
+					/>
+				</Modal>
+			) }
+		</div>
+	);
+}
+
 export default function FinancialAid( { cycle, children } ) {
 	const [ view, setView ] = useState( initialView );
 	const [ selected, setSelected ] = useState( null );
@@ -277,9 +347,21 @@ export default function FinancialAid( { cycle, children } ) {
 					) }
 				</p>
 				<ErrorNotice error={ funds.error } />
+				<AidDistribution
+					cycle={ cycle }
+					summary={ funds.summary }
+					onDistributed={ () => {
+						setSelected( null );
+						list.reload();
+						funds.reload();
+						notify.success(
+							__( 'Aid distributed.', 'open-bulk-buying' )
+						);
+					} }
+				/>
 				<Notice status="info" isDismissible={ false }>
 					{ __(
-						'Approve or decline eligibility here. Aid amounts and percentage-based allocation will be calculated separately; decisions do not change order totals. Draft requests are not shown. Paid, fulfilled, cancelled, allocated, and completed-cycle requests are read-only. You cannot decide your own request.',
+						'Approve or decline eligibility here, then distribute: the pool is split so every approved, unpaid order gets the same percentage off its goods, up to 100%. Draft requests are not shown. Paid, fulfilled, cancelled, allocated, and completed-cycle requests are read-only. You cannot decide your own request.',
 						'open-bulk-buying'
 					) }
 				</Notice>

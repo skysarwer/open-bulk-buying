@@ -168,9 +168,20 @@ and before the cycle is complete. Draft requests are not shown; paid, fulfilled,
 cancelled, and already allocated requests are read-only. Decisions record the
 staff actor and date, reject stale revisions, and leave all order amounts unchanged.
 
-Approval means eligibility, not an allocated discount. Percentage-based allocation
-from available funding is not implemented here. Polls, shifts, and a
-distribution-screen launcher are intentionally absent until those workflows ship.
+**Distribute aid** (requires **Decide aid**) splits the pool so every approved,
+submitted, unpaid order gets the same percentage off its goods, the largest the
+pool can fund, capped at 100%: `percent = min(100%, pool ÷ total approved goods)`.
+Goods are line totals after container credits; membership fees and donations are
+never covered. The pool is this cycle's submitted-order donations minus aid
+already fixed on paid or collected orders. Cents are rounded down per order and
+the few leftover cents go to the largest remainders, so the pool is used exactly.
+The section previews the percentage before you confirm. Distribution updates
+order totals, records an `aid_allocated` event per changed order, and can be
+rerun as donations or approvals change; paid and fulfilled orders keep the aid
+they already received. It is unavailable in completed cycles.
+
+Polls, shifts, and a distribution-screen launcher are intentionally absent until
+those workflows ship.
 
 ### Processing pre-orders
 
@@ -233,10 +244,13 @@ along with `order` so a future order form can preserve the category hierarchy.
 ## Order payment and fulfillment
 
 Orders start as **Draft**, then become **Submitted** when committed. Submitted
-and **Prepaid** orders reserve stock. Use **Mark prepaid** after confirming that
-the full amount due is settled; this does not remove inventory. During a cycle's
-**Distribution** stage, **Fulfill order** confirms settlement and handoff of the
-listed quantities, deducts stock once, and marks the order **Fulfilled**.
+and **Prepaid** orders reserve stock. In the order editor's **Status** dropdown,
+choose **Prepaid** after confirming that the full amount due is settled; this
+does not remove inventory. Choose **Fulfilled** to confirm settlement and handoff
+of the listed quantities; this deducts stock once (recorded stock must cover the
+order). Both ask for confirmation and are available for any submitted or prepaid,
+uncollected order at every cycle stage, including after the cycle is complete or
+the order's hold has expired, so late payments and pickups can still be recorded.
 Save edits before using either confirmation. Zero-balance orders are supported.
 
 Prepaid quantities, amounts, and cancellations are locked until payment

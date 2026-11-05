@@ -55,7 +55,7 @@ async function editor( overrides = {}, failure = null ) {
 				case '../../hooks':
 					return { useUnsavedChanges: () => {} };
 				case '../../utils/config':
-					return { can: () => true, config: { urls: {} } };
+					return { can: () => true, config: { urls: {}, orderStatuses: {} } };
 				case '../../utils/format':
 					return { toMinor: ( value ) => Number( value ) * 100, toMajor: ( value ) => value / 100, formatMoney: String };
 				case '@wordpress/date':
@@ -152,19 +152,34 @@ test( 'cancelling review does not write a payment', async () => {
 	assert.equal( view.saved.length, 0 );
 } );
 
-test( 'cycle payment and fulfillment keep their existing routes and concurrency checks', async () => {
+test( 'cycle payment and fulfillment are chosen from the status dropdown and keep their routes and concurrency checks', async () => {
 	for ( const action of [ 'prepay', 'fulfill' ] ) {
 		const view = await editor( {
 			can_review_membership_payment: false,
 			can_prepay: action === 'prepay',
 			can_fulfill: action === 'fulfill',
+			editable_statuses: [ 'submitted' ],
 			updated_at: '2026-11-01T10:00:00',
 			revision: 3,
 		} );
-		buttons( view.render(), action === 'prepay' ? 'Mark prepaid' : 'Fulfill order' )[ 0 ].props.onClick();
+		const select = () => nodes( view.render(), ( node ) => node.type === 'SelectControl' && node.props.label === 'Status' )[ 0 ];
+		const target = action === 'prepay' ? 'prepaid' : 'fulfilled';
+		assert.equal( select().props.options.map( ( option ) => option.value ).join( ',' ), `submitted,${ target }` );
+		select().props.onChange( target );
+		assert.equal( view.requests.length, 1, 'Choosing a status must not write until confirmed.' );
+		assert.equal( select().props.value, target );
 		await buttons( view.render(), 'Confirm' )[ 0 ].props.onClick();
 		assert.equal( view.requests[ 1 ].route, `/orders/42/${ action }` );
 		assert.equal( view.requests[ 1 ].options.data.expected_revision, 3 );
 		assert.equal( view.requests[ 1 ].options.data.expected_updated_at, '2026-11-01T10:00:00' );
 	}
+} );
+
+test( 'cancelling a dropdown settlement restores the saved status', async () => {
+	const view = await editor( { can_review_membership_payment: false, can_fulfill: true, editable_statuses: [ 'submitted' ] } );
+	const select = () => nodes( view.render(), ( node ) => node.type === 'SelectControl' )[ 0 ];
+	select().props.onChange( 'fulfilled' );
+	buttons( view.render(), 'Cancel' )[ 0 ].props.onClick();
+	assert.equal( select().props.value, 'submitted' );
+	assert.equal( view.requests.length, 1 );
 } );

@@ -22,13 +22,14 @@ class Test_OPENBB_Order_Policy extends OPENBB_TestCase {
 		$order = new OPENBB_Order( array( 'id' => 1, 'status' => $status ) );
 		$cycle = new OPENBB_Cycle( array( 'status' => $stage ) );
 		$editable = in_array( $status, array( 'draft', 'submitted' ), true ) && 'complete' !== $stage;
-		$committed = in_array( $status, array( 'submitted', 'prepaid' ), true ) && 'complete' !== $stage;
+		$committed = in_array( $status, array( 'submitted', 'prepaid' ), true );
 
 		$this->assertSame( $editable, OPENBB_Order_Policy::can_edit_contents( $order, $cycle ) );
 		$this->assertSame( $editable, OPENBB_Order_Policy::can_cancel( $order, $cycle ) );
 		$this->assertSame( 'draft' === $status, OPENBB_Order_Policy::can_delete( $order ) );
-		$this->assertSame( 'submitted' === $status && 'complete' !== $stage, OPENBB_Order_Policy::can_confirm( $order, $cycle, 'prepay' ) );
-		$this->assertSame( $committed && 'distribution' === $stage, OPENBB_Order_Policy::can_confirm( $order, $cycle, 'fulfill' ) );
+		// Payment and handoff can be recorded at any cycle stage.
+		$this->assertSame( 'submitted' === $status, OPENBB_Order_Policy::can_confirm( $order, $cycle, 'prepay' ) );
+		$this->assertSame( $committed, OPENBB_Order_Policy::can_confirm( $order, $cycle, 'fulfill' ) );
 		$this->assertTrue( OPENBB_Order_Policy::validate_edit( $order, $cycle, array( 'staff_note' => 'Note' ) ) );
 
 		foreach ( OPENBB_Order_Policy::EDITABLE_STATUSES as $target ) {

@@ -22,6 +22,8 @@ import { openOrderSlips } from '../../utils/documents';
 import { formatMoney, formatQty, toMajor, toMinor } from '../../utils/format';
 
 const EPSILON = 0.0005;
+/** Confirmation action => resulting order status. */
+const CONFIRMATION_TARGETS = { prepay: 'prepaid', fulfill: 'fulfilled' };
 
 let nextKey = 1;
 
@@ -298,6 +300,23 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 		.filter( ( line ) => line.line_type === 'membership_fee' )
 		.reduce( ( sum, line ) => sum + lineTotal( line ), 0 );
 	const total = Math.max( 0, subtotal - credit - membershipFee - aid ) + membershipFee + donation;
+
+	// Prepaid and Fulfilled are offered in the status dropdown but go through the
+	// confirmation endpoints, since they record payment and deduct stock.
+	const canSettle = order.can_prepay || order.can_fulfill;
+	const statusOptions = [
+		...( isLocked ? [ order.status ] : order.editable_statuses ).map( ( value ) => ( {
+			value,
+			label: config.orderStatuses[ value ] || value,
+		} ) ),
+		...Object.entries( CONFIRMATION_TARGETS )
+			.filter( ( [ action, value ] ) => order[ `can_${ action }` ] && value !== order.status )
+			.map( ( [ , value ] ) => ( {
+				value,
+				label: config.orderStatuses[ value ] || value,
+				disabled: changed || noteChanged,
+			} ) ),
+	];
 
 	const updateLine = ( key, changes ) =>
 		setLines( ( prev ) =>
@@ -613,7 +632,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 				) }
 
 				<HStack alignment="top" className="openbb-order-editor__meta">
-					{ isLocked ? (
+					{ isLocked && ! canSettle ? (
 						<div>
 							<strong>{ __( 'Status', 'open-bulk-buying' ) }:</strong> { order.status_label }
 						</div>
@@ -622,12 +641,24 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 							__next40pxDefaultSize
 							__nextHasNoMarginBottom
 							label={ __( 'Status', 'open-bulk-buying' ) }
-							value={ status }
-							options={ order.editable_statuses.map( ( value ) => ( {
-								value,
-								label: config.orderStatuses[ value ] || value,
-							} ) ) }
-							onChange={ setStatus }
+							value={ CONFIRMATION_TARGETS[ confirmation ] || status }
+							options={ statusOptions }
+							help={
+								canSettle && ( changed || noteChanged )
+									? __( 'Save your changes before marking the order prepaid or fulfilled.', 'open-bulk-buying' )
+									: undefined
+							}
+							onChange={ ( value ) => {
+								const action = Object.keys( CONFIRMATION_TARGETS ).find(
+									( key ) => CONFIRMATION_TARGETS[ key ] === value
+								);
+								if ( action ) {
+									setConfirmation( action );
+									return;
+								}
+								setConfirmation( null );
+								setStatus( value );
+							} }
 						/>
 					) }
 					{ order.can_edit_amounts && (
@@ -727,36 +758,11 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 									{ __( 'Print slip', 'open-bulk-buying' ) }
 								</Button>
 							) }
-							{ order.can_prepay && (
-								<Button
-									variant="secondary"
-									disabled={ isBusy || changed || noteChanged }
-									onClick={ () => setConfirmation( 'prepay' ) }
-								>
-									{ __( 'Mark prepaid', 'open-bulk-buying' ) }
-								</Button>
-							) }
-							{ order.can_fulfill && (
-								<Button
-									variant="secondary"
-									disabled={ isBusy || changed || noteChanged }
-									onClick={ () => setConfirmation( 'fulfill' ) }
-								>
-									{ __( 'Fulfill order', 'open-bulk-buying' ) }
-								</Button>
-							) }
 						</HStack>
-						{ ( changed || noteChanged ) && (
-							<p>
-								{ order.can_prepay || order.can_fulfill
-									? __(
-											'Save your changes before confirming payment or fulfillment.',
-											'open-bulk-buying'
-									  )
-									: __( 'Save your changes before printing the slip.', 'open-bulk-buying' ) }
-							</p>
+						{ ( changed || noteChanged ) && order.can_print && (
+							<p>{ __( 'Save your changes before printing the slip.', 'open-bulk-buying' ) }</p>
 						) }
-						{ confirmation && (
+						{ CONFIRMATION_TARGETS[ confirmation ] && (
 							<Notice status="warning" isDismissible={ false }>
 								<p>
 									{ confirmation === 'prepay'

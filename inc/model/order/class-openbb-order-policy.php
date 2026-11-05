@@ -165,11 +165,11 @@ class OPENBB_Order_Policy {
 		if ( ! isset( self::CONFIRMATION_STATUSES[ $action ] ) ) {
 			return new WP_Error( 'openbb_invalid_action', __( 'Choose a payment or fulfillment action.', 'open-bulk-buying' ), array( 'status' => 400 ) );
 		}
-		if ( ! $cycle || ! OPENBB_Inventory::order_reserves( $order, $cycle ) ) {
-			return new WP_Error( 'openbb_order_transition', __( 'Only committed orders with an active stock hold can be paid or fulfilled.', 'open-bulk-buying' ), array( 'status' => 409 ) );
-		}
-		if ( 'fulfill' === $action && OPENBB_Cycle::STATUS_DISTRIBUTION !== $cycle->status ) {
-			return new WP_Error( 'openbb_not_distributing', __( 'Start distribution before fulfilling orders.', 'open-bulk-buying' ), array( 'status' => 409 ) );
+		// Deliberately independent of cycle stage and hold expiry: staff record payment
+		// and handoff whenever they happen. Fulfillment still checks stock on hand.
+		if ( ! $cycle || ! $order->id || $order->is_collected()
+			|| ! in_array( $order->status, OPENBB_Order::COMMITTED_STATUSES, true ) ) {
+			return new WP_Error( 'openbb_order_transition', __( 'Only submitted or prepaid orders that have not been collected can be paid or fulfilled.', 'open-bulk-buying' ), array( 'status' => 409 ) );
 		}
 		return true;
 	}

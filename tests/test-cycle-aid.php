@@ -121,6 +121,12 @@ class Test_OPENBB_Cycle_Aid extends OPENBB_TestCase {
 
 		$response = $this->api( 'GET', "/cycles/{$this->cycle_id}/aid/summary" );
 		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertSame(
+			array( 'pool' => 200, 'eligible' => 0, 'recipients' => 0, 'percent' => 0.0, 'allocated' => 0, 'can_distribute' => true ),
+			$data['distribution']
+		);
+		unset( $data['distribution'] );
 		$this->assertSame(
 			array(
 				'donated'   => 350,
@@ -130,11 +136,87 @@ class Test_OPENBB_Cycle_Aid extends OPENBB_TestCase {
 				'available' => 200,
 				'requests'  => array( 'pending' => 1, 'approved' => 1, 'declined' => 0 ),
 			),
-			$response->get_data()
+			$data
 		);
 		$this->assertSame( 404, $this->api( 'GET', '/cycles/999999/aid/summary' )->get_status() );
 		wp_set_current_user( $this->make_user( 'member' ) );
 		$this->assertSame( 403, $this->api( 'GET', "/cycles/{$this->cycle_id}/aid/summary" )->get_status() );
+	}
+
+	public function test_equal_share_gives_every_amount_the_largest_fundable_percentage(): void {
+		// A pool covering everything gives 100% and leaves the rest unallocated.
+		$this->assertSame( array( 1 => 900 ), OPENBB_Order_Aid::equal_share( 5000, array( 1 => 900 ) ) );
+		$this->assertSame( array( 1 => 500, 2 => 1000 ), OPENBB_Order_Aid::equal_share( 3000, array( 1 => 500, 2 => 1000 ) ) );
+		// 50% of each.
+		$this->assertSame( array( 1 => 250, 2 => 500 ), OPENBB_Order_Aid::equal_share( 750, array( 1 => 500, 2 => 1000 ) ) );
+		// Leftover cents go to the largest remainders; the pool is used exactly.
+		$shares = OPENBB_Order_Aid::equal_share( 100, array( 1 => 100, 2 => 100, 3 => 100 ) );
+		$this->assertSame( array( 1 => 34, 2 => 33, 3 => 33 ), $shares );
+		$shares = OPENBB_Order_Aid::equal_share( 1001, array( 4 => 333, 7 => 1234, 9 => 5 ) );
+		$this->assertSame( 1001, array_sum( $shares ) );
+		foreach ( array( 4 => 333, 7 => 1234, 9 => 5 ) as $key => $amount ) {
+			$this->assertLessThanOrEqual( $amount, $shares[ $key ] );
+		}
+		$this->assertSame( array( 1 => 0 ), OPENBB_Order_Aid::equal_share( 0, array( 1 => 500 ) ) );
+		$this->assertSame( array( 1 => 0 ), OPENBB_Order_Aid::equal_share( 500, array( 1 => 0 ) ) );
+		$this->assertSame( array(), OPENBB_Order_Aid::equal_share( 500, array() ) );
+	}
+
+	private function add_line( int $order_id, int $price, string $type = OPENBB_Order_Line::TYPE_PRODUCT ): void {
+		$line = new OPENBB_Order_Line(
+			array(
+				'order_id'      => $order_id,
+				'line_type'     => $type,
+				'product_name'  => 'Item',
+				'unit_price'    => $price,
+				'qty_requested' => 1,
+			)
+		);
+		$this->assertTrue( $line->save() );
+	}
+
+	public function test_distribution_applies_one_percentage_to_approved_open_orders_and_is_rerunnable(): void {
+		global $wpdb;
+		$wpdb->update( $wpdb->openbb_orders, array( 'aid_status' => 'approved', 'donation' => 0, 'container_credit' => 0 ), array( 'id' => $this->order_id ) );
+		$this->add_line( $this->order_id, 1000 );
+		$this->add_line( $this->order_id, 300, OPENBB_Order_Line::TYPE_MEMBERSHIP_FEE );
+		$second = $this->make_request( $this->cycle_id, $this->make_user( 'member' ) );
+		$wpdb->update( $wpdb->openbb_orders, array( 'aid_status' => 'approved', 'donation' => 0, 'container_credit' => 0 ), array( 'id' => $second ) );
+		$this->add_line( $second, 3000 );
+		$donor = $this->make_order( $this->cycle_id, $this->make_user( 'member' ) );
+		$wpdb->update( $wpdb->openbb_orders, array( 'donation' => 2000 ), array( 'id' => $donor ) );
+
+		$preview = $this->api( 'GET', "/cycles/{$this->cycle_id}/aid/summary" )->get_data()['distribution'];
+		$this->assertSame( 2000, $preview['pool'] );
+		$this->assertSame( 4000, $preview['eligible'] );
+		$this->assertSame( 50.0, $preview['percent'] );
+		$this->assertSame( 0, OPENBB_Orders::get( $second )->aid_approved, 'Previewing must not allocate.' );
+
+		$this->assertSame( 400, $this->api( 'POST', "/cycles/{$this->cycle_id}/aid/distribute", array( 'confirmed' => false ) )->get_status() );
+		$response = $this->api( 'POST', "/cycles/{$this->cycle_id}/aid/distribute", array( 'confirmed' => true ) );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 2000, $response->get_data()['allocated'] );
+		$this->assertSame( 0, $response->get_data()['available'] );
+		$first = OPENBB_Orders::get( $this->order_id );
+		$this->assertSame( 500, $first->aid_approved );
+		// Goods 1000 - 500 aid, plus the uncovered membership fee.
+		$this->assertSame( 800, $first->total );
+		$this->assertSame( 1500, OPENBB_Orders::get( $second )->aid_approved );
+		$this->assertSame( 1500, OPENBB_Orders::get( $second )->total );
+
+		// Rerunning after more donations raises everyone to the new common percentage, capped at 100%.
+		$wpdb->update( $wpdb->openbb_orders, array( 'donation' => 10000 ), array( 'id' => $donor ) );
+		$this->assertSame( 200, $this->api( 'POST', "/cycles/{$this->cycle_id}/aid/distribute", array( 'confirmed' => true ) )->get_status() );
+		$this->assertSame( 1000, OPENBB_Orders::get( $this->order_id )->aid_approved );
+		$this->assertSame( 300, OPENBB_Orders::get( $this->order_id )->total );
+		$this->assertSame( 3000, OPENBB_Orders::get( $second )->aid_approved );
+		$this->assertSame( 0, OPENBB_Orders::get( $second )->total );
+
+		wp_set_current_user( $this->make_user( 'member' ) );
+		$this->assertSame( 403, $this->api( 'POST', "/cycles/{$this->cycle_id}/aid/distribute", array( 'confirmed' => true ) )->get_status() );
+		wp_set_current_user( $this->reviewer );
+		$wpdb->update( $wpdb->openbb_cycles, array( 'status' => 'complete' ), array( 'id' => $this->cycle_id ) );
+		$this->assertSame( 409, $this->api( 'POST', "/cycles/{$this->cycle_id}/aid/distribute", array( 'confirmed' => true ) )->get_status() );
 	}
 
 	public function test_members_non_reviewers_and_request_owners_cannot_decide(): void {

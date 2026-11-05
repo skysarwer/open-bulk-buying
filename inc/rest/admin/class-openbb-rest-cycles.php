@@ -187,6 +187,21 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 		);
 		register_rest_route(
 			self::API_NAMESPACE,
+			'/cycles/(?P<id>\d+)/aid/distribute',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'distribute_aid' ),
+				'permission_callback' => static function () {
+					return self::authorize( 'openbb_decide_aid' );
+				},
+				'args'                => array_merge(
+					self::id_arg(),
+					array( 'confirmed' => array( 'type' => 'boolean', 'required' => true ) )
+				),
+			)
+		);
+		register_rest_route(
+			self::API_NAMESPACE,
 			'/cycles/(?P<id>\d+)/aid/(?P<order_id>\d+)',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -260,7 +275,43 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 			return self::not_found( __( 'Cycle not found.', 'open-bulk-buying' ) );
 		}
 		$summary = OPENBB_Order_Aid::cycle_summary( $cycle->id );
-		return is_wp_error( $summary ) ? $summary : rest_ensure_response( $summary );
+		if ( is_wp_error( $summary ) ) {
+			return $summary;
+		}
+		$plan = OPENBB_Order_Aid::plan( $cycle->id, $summary );
+		if ( is_wp_error( $plan ) ) {
+			return $plan;
+		}
+		$summary['distribution'] = self::aid_plan_summary( $plan, $cycle );
+		return rest_ensure_response( $summary );
+	}
+
+	public function distribute_aid( WP_REST_Request $request ) {
+		if ( true !== $request['confirmed'] ) {
+			return new WP_Error( 'openbb_confirmation_required', __( 'Confirm the aid distribution before continuing.', 'open-bulk-buying' ), array( 'status' => 400 ) );
+		}
+		$plan = OPENBB_Order_Aid::distribute( (int) $request['id'], get_current_user_id() );
+		if ( is_wp_error( $plan ) ) {
+			return $plan;
+		}
+		$summary = OPENBB_Order_Aid::cycle_summary( (int) $request['id'] );
+		if ( is_wp_error( $summary ) ) {
+			return $summary;
+		}
+		$summary['distribution']   = self::aid_plan_summary( $plan, OPENBB_Cycles::get( (int) $request['id'] ) );
+		$summary['changed_orders'] = $plan['changed'];
+		return rest_ensure_response( $summary );
+	}
+
+	private static function aid_plan_summary( array $plan, ?OPENBB_Cycle $cycle ): array {
+		return array(
+			'pool'           => $plan['pool'],
+			'eligible'       => $plan['eligible'],
+			'recipients'     => $plan['recipients'],
+			'percent'        => $plan['percent'],
+			'allocated'      => $plan['allocated'],
+			'can_distribute' => $cycle && OPENBB_Cycle::STATUS_COMPLETE !== $cycle->status && current_user_can( 'openbb_decide_aid' ),
+		);
 	}
 
 	public function decide_aid( WP_REST_Request $request ) {
@@ -287,6 +338,7 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 			'aid_status_label' => OPENBB_Order::aid_status_labels()[ $order->aid_status ] ?? $order->aid_status,
 			'aid_reason'       => $order->aid_reason,
 			'aid_decided_at'   => self::to_local_datetime( $order->aid_decided_at ),
+			'aid_approved'     => $order->aid_approved,
 			'revision'         => $order->revision,
 			'can_decide'       => current_user_can( 'openbb_decide_order_aid', $order->id ) && OPENBB_Order_Aid::can_decide( $order, $cycle ),
 		);
