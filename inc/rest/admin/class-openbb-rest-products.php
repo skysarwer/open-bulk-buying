@@ -267,8 +267,15 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 			'paged'          => (int) $request['page'],
 			'order'          => strtoupper( $request['order'] ),
 			'orderby'        => $request['orderby'],
-			's'              => $request['search'],
+			's'              => '',
 		);
+		$search = trim( (string) $request['search'] );
+		if ( '' !== $search ) {
+			$args['openbb_localized_search'] = array(
+				'language' => openbb_current_language(),
+				'terms'    => preg_split( '/\s+/', $search ),
+			);
+		}
 		if ( 'price' === $request['orderby'] ) {
 			$args['orderby']  = 'meta_value_num';
 			$args['meta_key'] = OPENBB_META_PREFIX . 'price';
@@ -315,7 +322,55 @@ class OPENBB_REST_Products extends OPENBB_REST_Controller {
 			$args['tax_query'] = $tax_query;
 		}
 
-		$query    = new WP_Query( $args );
+		$localized_search = static function ( string $where, WP_Query $query ): string {
+			$search = $query->get( 'openbb_localized_search' );
+			if ( ! is_array( $search ) || empty( $search['language'] ) || empty( $search['terms'] ) ) {
+				return $where;
+			}
+
+			global $wpdb;
+
+			$language       = sanitize_key( $search['language'] );
+			$language_key   = 's:' . strlen( $language ) . ':"' . $language . '";s:';
+			$key_pattern    = '%' . $wpdb->esc_like( $language_key ) . '%';
+			$empty_pattern  = '%' . $wpdb->esc_like( $language_key . '0:"";' ) . '%';
+			$meta_key       = OPENBB_META_PREFIX . 'name';
+			$posts_table    = $wpdb->posts;
+			$postmeta_table = $wpdb->postmeta;
+
+			foreach ( $search['terms'] as $term ) {
+				$term = (string) $term;
+				if ( '' === $term ) {
+					continue;
+				}
+				$translated_pattern = '%' . $wpdb->esc_like( $language_key ) . '%:"%' . $wpdb->esc_like( $term ) . '%"%';
+				$translated_match  = $wpdb->prepare(
+					"EXISTS (SELECT 1 FROM {$postmeta_table} AS openbb_name_search WHERE openbb_name_search.post_id = {$posts_table}.ID AND openbb_name_search.meta_key = %s AND openbb_name_search.meta_value LIKE %s)",
+					$meta_key,
+					$translated_pattern
+				);
+				$has_translation    = $wpdb->prepare(
+					"EXISTS (SELECT 1 FROM {$postmeta_table} AS openbb_translation_check WHERE openbb_translation_check.post_id = {$posts_table}.ID AND openbb_translation_check.meta_key = %s AND openbb_translation_check.meta_value LIKE %s AND openbb_translation_check.meta_value NOT LIKE %s)",
+					$meta_key,
+					$key_pattern,
+					$empty_pattern
+				);
+				$fallback_match    = $wpdb->prepare(
+					"({$posts_table}.post_title LIKE %s AND NOT {$has_translation})",
+					'%' . $wpdb->esc_like( $term ) . '%'
+				);
+
+				$where .= " AND ({$translated_match} OR {$fallback_match})";
+			}
+
+			return $where;
+		};
+		add_filter( 'posts_where', $localized_search, 10, 2 );
+		try {
+			$query = new WP_Query( $args );
+		} finally {
+			remove_filter( 'posts_where', $localized_search, 10 );
+		}
 		$products = array_filter( array_map( array( 'OPENBB_Product', 'get' ), wp_list_pluck( $query->posts, 'ID' ) ) );
 
 		return self::paginated( $this->prepare_products( $products ), (int) $query->found_posts, $per_page );

@@ -72,6 +72,7 @@ function buildFields( isCategory ) {
 			id: 'name',
 			label: localizedFieldLabel( __( 'Name', 'open-bulk-buying' ) ),
 			type: 'text',
+			getValue: ( { item } ) => localizedRecordField( item, 'name' ),
 			render: ( { item } ) => localizedRecordField( item, 'name' ),
 			enableHiding: false,
 			isValid: { required: true },

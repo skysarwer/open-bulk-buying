@@ -140,6 +140,46 @@ class Test_OPENBB_REST_Admin extends OPENBB_TestCase {
 		$this->assertSame( 403, $this->api( 'DELETE', "/product-terms/categories/{$category['id']}" )->get_status() );
 	}
 
+	public function test_product_search_uses_current_name_translation_and_default_fallback(): void {
+		add_filter(
+			'openbb_languages',
+			static function () {
+				return array( 'en', 'fr' );
+			}
+		);
+		add_filter(
+			'wpml_default_language',
+			static function () {
+				return 'en';
+			}
+		);
+		add_filter(
+			'wpml_current_language',
+			static function () {
+				return 'fr';
+			}
+		);
+
+		$translated = $this->api(
+			'POST',
+			'/products',
+			array(
+				'name'    => 'Apples',
+				'name_fr' => 'Pommes',
+			)
+		)->get_data();
+		$fallback = $this->api( 'POST', '/products', array( 'name' => 'Oranges' ) )->get_data();
+
+		$search = $this->api( 'GET', '/products', array( 'search' => 'Pommes' ) );
+		$this->assertSame( array( $translated['id'] ), wp_list_pluck( $search->get_data(), 'id' ) );
+
+		$search = $this->api( 'GET', '/products', array( 'search' => 'Apples' ) );
+		$this->assertSame( array(), wp_list_pluck( $search->get_data(), 'id' ) );
+
+		$search = $this->api( 'GET', '/products', array( 'search' => 'Oranges' ) );
+		$this->assertSame( array( $fallback['id'] ), wp_list_pluck( $search->get_data(), 'id' ) );
+	}
+
 	private function make_open_cycle(): int {
 		$cycle = new OPENBB_Cycle(
 			array(
