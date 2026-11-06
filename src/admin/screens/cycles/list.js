@@ -1,6 +1,7 @@
-import { Button, ToggleControl } from '@wordpress/components';
+import { Button, Notice, ToggleControl } from '@wordpress/components';
 import { useCallback, useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
+import { dateI18n, getSettings } from '@wordpress/date';
 import { copy, pencil, plus, trash } from '@wordpress/icons';
 import { DataViews } from '@wordpress/dataviews/wp';
 
@@ -85,6 +86,62 @@ const dateField = ( id, label ) => ( {
 	enableSorting: id === 'opens_at',
 } );
 
+const formatDateTime = ( value ) =>
+	value ? dateI18n( getSettings().formats.datetime, value ) : '';
+
+/**
+ * A reminder that the cycle's dates say it should have moved on, or '' when on schedule.
+ * Stages never change on their own; staff move them from the cycle details.
+ *
+ * @param {Object} cycle REST cycle.
+ * @return {string} Reminder text.
+ */
+function stageReminder( cycle ) {
+	switch ( cycle?.due_stage ) {
+		case 'ordering':
+			return sprintf(
+				/* translators: %s: date and time. */
+				__( 'Ordering was scheduled to open on %s. Move this cycle to Ordering when it is ready for members.', 'open-bulk-buying' ),
+				formatDateTime( cycle.opens_at )
+			);
+		case 'processing':
+			return sprintf(
+				/* translators: %s: date and time. */
+				__( 'Ordering closed on %s. Move this cycle to Processing to start preparing orders.', 'open-bulk-buying' ),
+				formatDateTime( cycle.closes_at )
+			);
+		case 'distribution':
+			return sprintf(
+				/* translators: %s: date and time. */
+				__( 'Pickup started on %s. Move this cycle to Distribution when orders are ready to hand out.', 'open-bulk-buying' ),
+				formatDateTime( cycle.pickup_opens_at )
+			);
+		case 'complete':
+			return sprintf(
+				/* translators: %s: date and time. */
+				__( 'Pickup ended on %s. Move this cycle to Complete once every order is settled; this locks its orders.', 'open-bulk-buying' ),
+				formatDateTime( cycle.pickup_closes_at )
+			);
+		default:
+			return '';
+	}
+}
+
+/**
+ * The stage reminder as a notice, shared by the cycle page and the details panel.
+ *
+ * @param {Object} props
+ * @param {Object} props.cycle REST cycle.
+ */
+export function StageReminder( { cycle } ) {
+	const message = stageReminder( cycle );
+	return message ? (
+		<Notice status="warning" isDismissible={ false }>
+			{ message }
+		</Notice>
+	) : null;
+}
+
 const cycleFields = [
 	{
 		id: 'name',
@@ -101,11 +158,22 @@ const cycleFields = [
 		Edit: 'select',
 		elements: toElements( config.cycleStatuses ),
 		render: ( { item } ) => (
-			<span
-				className={ `openbb-badge openbb-badge--cycle-${ item.status }` }
-			>
-				{ config.cycleStatuses[ item.status ] || item.status }
-			</span>
+			<>
+				<span
+					className={ `openbb-badge openbb-badge--cycle-${ item.status }` }
+				>
+					{ config.cycleStatuses[ item.status ] || item.status }
+				</span>
+				{ item.due_stage && (
+					<div className="openbb-muted" title={ stageReminder( item ) }>
+						{ sprintf(
+							/* translators: %s: cycle stage name. */
+							__( 'Due: %s', 'open-bulk-buying' ),
+							config.cycleStatuses[ item.due_stage ] || item.due_stage
+						) }
+					</div>
+				) }
+			</>
 		),
 		filterBy: { operators: [ 'isAny' ], isPrimary: true },
 		description: __(
@@ -428,6 +496,7 @@ function CyclePanel( { cycle, onClose, onSaved } ) {
 					{ __( 'Manage cycle', 'open-bulk-buying' ) }
 				</Button>
 			) }
+			<StageReminder cycle={ cycle } />
 			{ can( 'openbb_manage_cycles' ) ? (
 				<CycleDetails
 					cycle={ cycle }
@@ -464,23 +533,36 @@ export default function CyclesList() {
 		[ guard, panelKey ]
 	);
 
+	const manageCycle = useCallback(
+		( cycle ) =>
+			guard( () =>
+				navigate( `${ config.urls.cycles }&cycle=${ cycle.id }` )
+			),
+		[ guard ]
+	);
+
 	const actions = useMemo(
 		() => [
-			{
-				id: 'manage',
-				label: __( 'Manage', 'open-bulk-buying' ),
-				isPrimary: true,
-				callback: ( [ item ] ) =>
-					navigate( `${ config.urls.cycles }&cycle=${ item.id }` ),
-			},
 			...( canManage
 				? [
 						{
 							id: 'edit',
 							label: __( 'Edit details', 'open-bulk-buying' ),
 							icon: pencil,
+							isPrimary: true,
 							callback: ( [ item ] ) => openCycle( item ),
 						},
+				  ]
+				: [] ),
+			{
+				id: 'manage',
+				label: __( 'Manage', 'open-bulk-buying' ),
+				// Without Edit details, Manage stays the visible row action.
+				isPrimary: ! canManage,
+				callback: ( [ item ] ) => manageCycle( item ),
+			},
+			...( canManage
+				? [
 						{
 							id: 'duplicate',
 							label: __( 'Duplicate', 'open-bulk-buying' ),
@@ -568,7 +650,7 @@ export default function CyclesList() {
 				  ]
 				: [] ),
 		],
-		[ canDelete, canManage, list, notify, openCycle ]
+		[ canDelete, canManage, list, manageCycle, notify, openCycle ]
 	);
 
 	return (
@@ -635,7 +717,7 @@ export default function CyclesList() {
 						openCycle( item );
 					}
 				} }
-				onClickItem={ openCycle }
+				onClickItem={ manageCycle }
 				isItemClickable={ () => true }
 				searchLabel={ __( 'Search cycles', 'open-bulk-buying' ) }
 			/>

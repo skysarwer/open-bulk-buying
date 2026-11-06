@@ -314,9 +314,27 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 			.map( ( [ , value ] ) => ( {
 				value,
 				label: config.orderStatuses[ value ] || value,
-				disabled: changed || noteChanged,
 			} ) ),
 	];
+	const hasEdits = !! ( changed || noteChanged );
+	const editsBlocked = problems.length > 0 || ( needsReason && ! reason.trim() );
+	// Pending edits change the total; the confirmation quotes what will be saved.
+	const amountDue = changed ? formatMoney( total ) : order.total_formatted;
+	const reasonField = needsReason && (
+		<TextareaControl
+			__nextHasNoMarginBottom
+			className={ reason.trim() ? undefined : 'has-error' }
+			label={ __( 'Reason for the change (required)', 'open-bulk-buying' ) }
+			help={
+				reason.trim()
+					? __( 'Added to the staff note with your name and the date.', 'open-bulk-buying' )
+					: __( 'Explain why this order is being changed to save it. The reason is added to the staff note with your name and the date.', 'open-bulk-buying' )
+			}
+			value={ reason }
+			onChange={ setReason }
+			rows={ 2 }
+		/>
+	);
 
 	const updateLine = ( key, changes ) =>
 		setLines( ( prev ) =>
@@ -329,9 +347,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 				: prev.filter( ( item ) => item.key !== line.key )
 		);
 
-	const save = async () => {
-		setIsBusy( true );
-		setError( null );
+	const persist = () => {
 		const data = {
 			expected_updated_at: order.updated_at || '',
 		};
@@ -352,22 +368,32 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 		if ( needsReason ) {
 			data.reason = reason;
 		}
+		return request( `/orders/${ order.id }`, { method: 'PUT', data } );
+	};
+
+	const showSaveError = ( err ) => {
+		setError( err );
+		// Show the server's current limit on the offending product.
+		if ( err.code === 'openbb_insufficient_stock' && err.data.product_id ) {
+			setLines( ( prev ) =>
+				prev.map( ( line ) =>
+					line.product_id === err.data.product_id
+						? { ...line, max_qty: err.data.max_qty }
+						: line
+				)
+			);
+		}
+	};
+
+	const save = async () => {
+		setIsBusy( true );
+		setError( null );
 		try {
-			const saved = await request( `/orders/${ order.id }`, { method: 'PUT', data } );
+			const saved = await persist();
 			load( saved );
 			onSaved( saved );
 		} catch ( err ) {
-			setError( err );
-			// Show the server's current limit on the offending product.
-			if ( err.code === 'openbb_insufficient_stock' && err.data.product_id ) {
-				setLines( ( prev ) =>
-					prev.map( ( line ) =>
-						line.product_id === err.data.product_id
-							? { ...line, max_qty: err.data.max_qty }
-							: line
-					)
-				);
-			}
+			showSaveError( err );
 		}
 		setIsBusy( false );
 	};
@@ -379,6 +405,18 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 		setIsBusy( true );
 		setError( null );
 		const isMembershipReview = [ 'confirm-membership-payment', 'reject-membership-payment' ].includes( confirmation );
+		// Prepaid and Fulfilled save any pending edits first, so staff can do both in one step.
+		let current = order;
+		if ( CONFIRMATION_TARGETS[ confirmation ] && hasEdits ) {
+			try {
+				current = await persist();
+			} catch ( err ) {
+				showSaveError( err );
+				setIsBusy( false );
+				return;
+			}
+			onSaved( current );
+		}
 		try {
 			const saved = await request( `/orders/${ order.id }/${ isMembershipReview ? 'membership-payment' : confirmation }`, {
 				method: 'POST',
@@ -389,14 +427,18 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 					  }
 					: {
 							confirmed: true,
-							expected_updated_at: order.updated_at,
-							expected_revision: order.revision,
+							expected_updated_at: current.updated_at,
+							expected_revision: current.revision,
 							...( confirmation === 'reopen' ? { reason } : {} ),
 					  },
 			} );
 			load( saved );
 			onSaved( saved );
 		} catch ( err ) {
+			// The edits were saved even though the confirmation failed.
+			if ( current !== order ) {
+				load( current );
+			}
 			setError( err );
 		}
 		setIsBusy( false );
@@ -644,8 +686,8 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 							value={ CONFIRMATION_TARGETS[ confirmation ] || status }
 							options={ statusOptions }
 							help={
-								canSettle && ( changed || noteChanged )
-									? __( 'Save your changes before marking the order prepaid or fulfilled.', 'open-bulk-buying' )
+								canSettle && hasEdits
+									? __( 'Marking the order prepaid or fulfilled saves your changes first.', 'open-bulk-buying' )
 									: undefined
 							}
 							onChange={ ( value ) => {
@@ -688,17 +730,6 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 						<strong>{ __( 'Staff note', 'open-bulk-buying' ) }</strong>
 						<p className="openbb-pre">{ order.staff_note }</p>
 					</div>
-				) }
-
-				{ needsReason && (
-					<TextareaControl
-						__nextHasNoMarginBottom
-						label={ __( 'Reason for the change (required)', 'open-bulk-buying' ) }
-						help={ __( 'Added to the staff note with your name and the date.', 'open-bulk-buying' ) }
-						value={ reason }
-						onChange={ setReason }
-						rows={ 2 }
-					/>
 				) }
 
 				{ problems.length > 0 && (
@@ -762,6 +793,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 						{ ( changed || noteChanged ) && order.can_print && (
 							<p>{ __( 'Save your changes before printing the slip.', 'open-bulk-buying' ) }</p>
 						) }
+						{ CONFIRMATION_TARGETS[ confirmation ] && reasonField }
 						{ CONFIRMATION_TARGETS[ confirmation ] && (
 							<Notice status="warning" isDismissible={ false }>
 								<p>
@@ -771,20 +803,24 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 													'Confirm that the full amount due (%s) is settled. Stock will remain reserved; no goods are handed over.',
 													'open-bulk-buying'
 												),
-												order.total_formatted
+												amountDue
 										  )
 										: sprintf(
 												__(
 													'Confirm that the full amount due (%s) is settled and the listed quantities have been handed over. This deducts stock and cannot be undone here.',
 													'open-bulk-buying'
 												),
-												order.total_formatted
+												amountDue
 										  ) }
 								</p>
+								{ hasEdits && (
+									<p>{ __( 'Your unsaved changes will be saved first.', 'open-bulk-buying' ) }</p>
+								) }
 								<Button
 									variant="primary"
 									isBusy={ isBusy }
-									disabled={ isBusy || changed || noteChanged }
+									disabled={ isBusy || ( hasEdits && editsBlocked ) }
+									accessibleWhenDisabled
 									onClick={ confirmOrder }
 								>
 									{ __( 'Confirm', 'open-bulk-buying' ) }
@@ -800,6 +836,8 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 						) }
 					</VStack>
 				) }
+
+				{ ! CONFIRMATION_TARGETS[ confirmation ] && reasonField }
 
 				<HStack justify="flex-end" className="openbb-form-actions">
 					<Button

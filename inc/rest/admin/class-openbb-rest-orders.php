@@ -633,8 +633,8 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				'reason_required_statuses' => array_values(
 					array_filter(
 						OPENBB_Order_Policy::EDITABLE_STATUSES,
-						static function ( string $status ) use ( $order ): bool {
-							return OPENBB_Order_Policy::needs_reason( $order, $status );
+						static function ( string $status ) use ( $order, $cycle ): bool {
+							return OPENBB_Order_Policy::needs_reason( $order, $status, $cycle );
 						}
 					)
 				),

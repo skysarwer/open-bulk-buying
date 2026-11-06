@@ -119,7 +119,15 @@ when updating the PO.
    and profile information.
 5. **Manage orders.** Use **Co-op > Orders** to review, create or edit orders.
    When changing a submitted order or cancelling it, staff are asked to provide
-   a reason.
+   a reason, entered just above **Save order**. No reason is needed at pickup:
+   while the cycle is in distribution, or while the current time is inside the
+   cycle's pickup window. Handoff corrections can then be saved quickly.
+   Choosing **Prepaid** or **Fulfilled** with unsaved edits saves them first,
+   then records the payment or handoff in the same step.
+6. **Move cycles through their stages.** Stages change only when staff change
+   them. When a cycle's dates have passed (ordering opened or closed, pickup
+   started or ended), the Cycles list shows the stage that is due and the
+   cycle's page shows a reminder.
 
 ### Order emails
 

@@ -674,6 +674,7 @@ class OPENBB_REST_Cycles extends OPENBB_REST_Controller {
 					'status'           => $cycle->status,
 					'status_label'     => $labels[ $cycle->status ] ?? $cycle->status,
 					'accepts_orders'   => $cycle->accepts_orders(),
+					'due_stage'        => $cycle->due_stage(),
 					'opens_at'         => self::to_local_datetime( $cycle->opens_at ),
 					'closes_at'        => self::to_local_datetime( $cycle->closes_at ),
 					'pickup_opens_at'  => self::to_local_datetime( $cycle->pickup_opens_at ),

@@ -146,6 +146,22 @@ class Test_OPENBB_Services extends OPENBB_TestCase {
 		$this->assertSame( 100, (int) $result->donation );
 	}
 
+	public function test_order_editor_does_not_require_a_reason_during_distribution(): void {
+		$product  = $this->make_product( 5 );
+		$cycle_id = $this->make_cycle( OPENBB_Cycle::STATUS_ORDERING );
+		$order    = $this->submit( $this->start_order( $cycle_id ), $product->id, 2 );
+		$this->assertInstanceOf( 'OPENBB_Order', $order );
+		$cycle         = OPENBB_Cycles::get( $cycle_id );
+		$cycle->status = OPENBB_Cycle::STATUS_DISTRIBUTION;
+		$this->assertTrue( $cycle->save() );
+		$note = $order->staff_note;
+
+		$result = OPENBB_Order_Editor::apply( OPENBB_Orders::get( $order->id ), array( 'donation' => 100 ), $this->actor );
+		$this->assertInstanceOf( 'OPENBB_Order', $result );
+		$this->assertSame( 100, (int) $result->donation );
+		$this->assertSame( $note, $result->staff_note );
+	}
+
 	public function test_order_editor_rejects_stale_edits(): void {
 		$cycle_id = $this->make_cycle( OPENBB_Cycle::STATUS_ORDERING );
 		$order    = OPENBB_Order_Editor::apply( $this->start_order( $cycle_id ), array(), $this->actor );

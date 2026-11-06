@@ -6,7 +6,7 @@ import { ErrorNotice, Loading, Page } from '../../components';
 import { useNotify, useRecord } from '../../hooks';
 import { Link, navigate, useSearch } from '../../router';
 import { can, config } from '../../utils/config';
-import { CycleDetails, CycleSummary } from './list';
+import { CycleDetails, CycleSummary, StageReminder } from './list';
 import CycleOrders from './orders';
 import FinancialAid from './financial-aid';
 import Preparation from './preparation';
@@ -81,6 +81,7 @@ export default function CycleWorkspace( { cycleId } ) {
 			) }
 			<ErrorNotice error={ error } />
 			{ isLoading && <Loading /> }
+			<StageReminder cycle={ cycle } />
 			{ cycle && (
 				<>
 					<nav

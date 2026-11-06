@@ -262,6 +262,39 @@ class OPENBB_Cycle extends OPENBB_Entity {
 			&& $timestamp < strtotime( $this->closes_at . ' UTC' );
 	}
 
+	/**
+	 * Whether $timestamp (default: now) falls within the scheduled pickup, whatever the stage.
+	 */
+	public function in_pickup_window( ?int $timestamp = null ): bool {
+		if ( ! $this->pickup_opens_at || ! $this->pickup_closes_at ) {
+			return false;
+		}
+
+		$timestamp = $timestamp ?? time();
+
+		return $timestamp >= strtotime( $this->pickup_opens_at . ' UTC' )
+			&& $timestamp < strtotime( $this->pickup_closes_at . ' UTC' );
+	}
+
+	/**
+	 * The stage the cycle's dates say it should have reached by $timestamp (default: now),
+	 * or '' if it is on schedule. Stages are only ever changed by staff; this is a reminder.
+	 */
+	public function due_stage( ?int $timestamp = null ): string {
+		$next = array(
+			self::STATUS_SETUP        => array( 'opens_at', self::STATUS_ORDERING ),
+			self::STATUS_ORDERING     => array( 'closes_at', self::STATUS_PROCESSING ),
+			self::STATUS_PROCESSING   => array( 'pickup_opens_at', self::STATUS_DISTRIBUTION ),
+			self::STATUS_DISTRIBUTION => array( 'pickup_closes_at', self::STATUS_COMPLETE ),
+		);
+		if ( ! isset( $next[ $this->status ] ) ) {
+			return '';
+		}
+		list( $field, $stage ) = $next[ $this->status ];
+
+		return $this->$field && ( $timestamp ?? time() ) >= strtotime( $this->$field . ' UTC' ) ? $stage : '';
+	}
+
 	public function get_pickup_instructions( ?string $language = null ): string {
 		return openbb_localized( $this->pickup_instructions, $language );
 	}

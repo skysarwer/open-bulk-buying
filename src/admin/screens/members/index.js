@@ -103,7 +103,8 @@ function AddMemberPanel( { onClose, onAdded } ) {
 	const [ search, setSearch ] = useState( '' );
 	const [ options, setOptions ] = useState( [] );
 	const [ userId, setUserId ] = useState( null );
-	const [ account, setAccount ] = useState( {} );
+	// "Site default" is ''; leaving it undefined fails the select's elements validation.
+	const [ account, setAccount ] = useState( { language: '' } );
 	const [ sendEmail, setSendEmail ] = useState( true );
 	const [ status, setStatus ] = useState( 'active' );
 	const [ roles, setRoles ] = useState( [] );

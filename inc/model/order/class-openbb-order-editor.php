@@ -174,7 +174,8 @@ class OPENBB_Order_Editor {
 		$new_status = isset( $changes['status'] ) ? (string) $changes['status'] : $old_status;
 		$has_lines  = isset( $changes['lines'] );
 
-		$valid = OPENBB_Order_Policy::validate_edit( $order, OPENBB_Cycles::get( $order->cycle_id ), $changes );
+		$cycle = OPENBB_Cycles::get( $order->cycle_id );
+		$valid = OPENBB_Order_Policy::validate_edit( $order, $cycle, $changes );
 		if ( is_wp_error( $valid ) ) {
 			return $valid;
 		}
@@ -237,7 +238,7 @@ class OPENBB_Order_Editor {
 			|| $new_status !== $old_status
 			|| $order->donation !== $before->donation;
 		$reason  = trim( (string) ( $changes['reason'] ?? '' ) );
-		if ( ! $by_member && ! $is_new && $changed && OPENBB_Order_Policy::needs_reason( $before, $new_status ) ) {
+		if ( ! $by_member && ! $is_new && $changed && OPENBB_Order_Policy::needs_reason( $before, $new_status, $cycle ) ) {
 			if ( '' === $reason ) {
 				return self::invalid( __( 'Explain why this order is being changed.', 'open-bulk-buying' ), 'openbb_reason_required' );
 			}

@@ -64,6 +64,7 @@ class Test_OPENBB_Cycle_Aid extends OPENBB_TestCase {
 		$this->assertFalse( current_user_can( 'openbb_manage_cycles' ) );
 		$this->assertSame( 200, $this->api( 'GET', '/cycles' )->get_status() );
 		$this->assertSame( 200, $this->api( 'GET', "/cycles/{$this->cycle_id}" )->get_status() );
+		$this->assertArrayHasKey( 'due_stage', $this->api( 'GET', "/cycles/{$this->cycle_id}" )->get_data() );
 		$this->assertSame( 403, $this->api( 'PUT', "/cycles/{$this->cycle_id}", array( 'name' => 'Changed' ) )->get_status() );
 		$this->assertSame( 403, $this->api( 'GET', '/orders' )->get_status() );
 		$list = $this->api( 'GET', "/cycles/{$this->cycle_id}/aid" );

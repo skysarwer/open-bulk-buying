@@ -163,7 +163,7 @@ class Test_OPENBB_Order_Emails extends OPENBB_TestCase {
 	public function test_rejected_and_rolled_back_writes_send_nothing(): void {
 		global $wpdb;
 		$order = $this->create_order();
-		$this->assertWPError( OPENBB_Order_Editor::apply( $order, array( 'donation' => 100 ), $this->member ) );
+		$this->assertWPError( OPENBB_Order_Editor::apply( $order, array( 'status' => 'draft', 'reason' => 'Not allowed' ), $this->member ) );
 		$this->assertWPError( OPENBB_Order_Editor::apply( $order, array( 'expected_revision' => $order->revision - 1, 'donation' => 100, 'reason' => 'Stale edit' ), $this->member ) );
 		$fail = static function ( $query ) use ( $wpdb ) {
 			return 0 === strpos( $query, "INSERT INTO `{$wpdb->openbb_order_events}`" ) ? 'INVALID OPENBB EMAIL TEST WRITE' : $query;

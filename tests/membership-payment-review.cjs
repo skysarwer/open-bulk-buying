@@ -69,6 +69,9 @@ async function editor( overrides = {}, failure = null ) {
 						if ( failure ) {
 							throw failure;
 						}
+						if ( options.method === 'PUT' ) {
+							return { ...order, ...options.data, revision: ( order.revision || 0 ) + 1, updated_at: 'after-save' };
+						}
 						return { ...order, status: options.data.reject ? 'cancelled' : 'fulfilled', can_review_membership_payment: false };
 					} };
 				default:
@@ -181,5 +184,48 @@ test( 'cancelling a dropdown settlement restores the saved status', async () => 
 	select().props.onChange( 'fulfilled' );
 	buttons( view.render(), 'Cancel' )[ 0 ].props.onClick();
 	assert.equal( select().props.value, 'submitted' );
+	assert.equal( view.requests.length, 1 );
+} );
+
+test( 'fulfilling with unsaved edits saves them first, then confirms against the saved revision', async () => {
+	const view = await editor( {
+		can_review_membership_payment: false,
+		can_edit: true,
+		can_fulfill: true,
+		editable_statuses: [ 'submitted' ],
+		updated_at: '2026-11-01T10:00:00',
+		revision: 3,
+	} );
+	nodes( view.render(), ( node ) => node.type === 'TextareaControl' && node.props.label === 'Staff note' )[ 0 ].props.onChange( 'Handed over at the door' );
+	const select = nodes( view.render(), ( node ) => node.type === 'SelectControl' && node.props.label === 'Status' )[ 0 ];
+	assert.ok( select.props.options.every( ( option ) => ! option.disabled ), 'Settlement stays available with unsaved edits.' );
+	select.props.onChange( 'fulfilled' );
+	const confirm = buttons( view.render(), 'Confirm' )[ 0 ];
+	assert.equal( confirm.props.disabled, false );
+	await confirm.props.onClick();
+	assert.equal( view.requests[ 1 ].options.method, 'PUT' );
+	assert.equal( view.requests[ 1 ].options.data.staff_note, 'Handed over at the door' );
+	assert.equal( view.requests[ 2 ].route, '/orders/42/fulfill' );
+	assert.equal( view.requests[ 2 ].options.data.expected_revision, 4 );
+	assert.equal( view.requests[ 2 ].options.data.expected_updated_at, 'after-save' );
+} );
+
+test( 'settling with edits that need a reason waits for the reason', async () => {
+	const view = await editor( {
+		can_review_membership_payment: false,
+		can_edit: true,
+		is_locked: false,
+		can_edit_amounts: true,
+		can_fulfill: true,
+		editable_statuses: [ 'submitted' ],
+		reason_required_statuses: [ 'submitted' ],
+	} );
+	nodes( view.render(), ( node ) => node.type === '__experimentalNumberControl' && node.props.label === 'Donation' )[ 0 ].props.onChange( '5' );
+	nodes( view.render(), ( node ) => node.type === 'SelectControl' && node.props.label === 'Status' )[ 0 ].props.onChange( 'fulfilled' );
+	assert.equal( buttons( view.render(), 'Confirm' )[ 0 ].props.disabled, true );
+	const reason = nodes( view.render(), ( node ) => node.type === 'TextareaControl' && node.props.label === 'Reason for the change (required)' );
+	assert.equal( reason.length, 1, 'The reason field is shown once, beside the confirmation.' );
+	reason[ 0 ].props.onChange( 'Member added a donation' );
+	assert.equal( buttons( view.render(), 'Confirm' )[ 0 ].props.disabled, false );
 	assert.equal( view.requests.length, 1 );
 } );

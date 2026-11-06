@@ -96,7 +96,14 @@ class OPENBB_Order_Policy {
 		return true;
 	}
 
-	public static function needs_reason( OPENBB_Order $order, string $new_status ): bool {
+	/**
+	 * Staff explain changes to committed orders, except at pickup (the cycle is in
+	 * distribution or its pickup window is open), when quick handoff corrections are expected.
+	 */
+	public static function needs_reason( OPENBB_Order $order, string $new_status, ?OPENBB_Cycle $cycle = null ): bool {
+		if ( $cycle && ( OPENBB_Cycle::STATUS_DISTRIBUTION === $cycle->status || $cycle->in_pickup_window() ) ) {
+			return false;
+		}
 		return OPENBB_Order::STATUS_DRAFT !== $order->status || OPENBB_Order::STATUS_CANCELLED === $new_status;
 	}
 
