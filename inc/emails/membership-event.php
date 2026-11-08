@@ -45,6 +45,10 @@ if ( $confirmed ) {
 if ( '' !== trim( $order->member_note ) ) {
 	$details[ __( 'Reference', 'open-bulk-buying' ) ] = $order->member_note;
 }
+$staff_note = OPENBB_Order_Emails::staff_note( $order );
+if ( '' !== $staff_note ) {
+	$details[ __( 'Staff note', 'open-bulk-buying' ) ] = $staff_note;
+}
 $cell = 'border-bottom:1px solid #dddddd;padding:10px;text-align:left;vertical-align:top;';
 
 ob_start();

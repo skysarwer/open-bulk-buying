@@ -719,7 +719,14 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 					<TextareaControl
 						__nextHasNoMarginBottom
 						label={ __( 'Staff note', 'open-bulk-buying' ) }
-						help={ __( 'Only visible to staff.', 'open-bulk-buying' ) }
+						help={
+							config.emailStaffNote
+								? __(
+										'Visible to staff and included in emails to the member.',
+										'open-bulk-buying'
+								  )
+								: __( 'Only visible to staff.', 'open-bulk-buying' )
+						}
 						value={ staffNote }
 						onChange={ setStaffNote }
 						rows={ 3 }

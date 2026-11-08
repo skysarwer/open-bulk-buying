@@ -48,7 +48,7 @@ class Test_OPENBB_Order_Emails extends OPENBB_TestCase {
 					array( 'product_id' => $this->products[0]->id, 'qty' => 2 ),
 					array( 'product_id' => $this->products[1]->id, 'qty' => 1 ),
 				),
-				'staff_note' => 'Private staff note',
+				'staff_note' => 'Visible <b>staff</b> note',
 				'aid_reason' => 'Private financial explanation',
 			),
 			$this->member,
@@ -71,6 +71,39 @@ class Test_OPENBB_Order_Emails extends OPENBB_TestCase {
 		$this->assertStringNotContainsString( '<img', $mail['message'] );
 		$this->assertStringNotContainsString( '<script', $mail['message'] );
 		$this->assertStringNotContainsString( 'Private', $mail['message'] );
+		$this->assertStringContainsString( '>Staff note<', $mail['message'] );
+		$this->assertStringContainsString( 'Visible &lt;b&gt;staff&lt;/b&gt; note', $mail['message'] );
+	}
+
+	public function test_staff_note_is_omitted_when_disabled_or_empty(): void {
+		update_option( OPENBB_Settings::GENERAL_OPTION, array( 'email_staff_note' => false ) );
+		$order = $this->create_order();
+		$this->assertCount( 1, $this->mail );
+		$this->assertStringNotContainsString( 'Staff note', $this->mail[0]['message'] );
+		$this->assertStringNotContainsString( 'Visible', $this->mail[0]['message'] );
+		$saved = OPENBB_Order_Editor::apply( $order, array( 'status' => 'cancelled' ), $this->member );
+		$this->assertInstanceOf( OPENBB_Order::class, $saved );
+		$this->assertCount( 2, $this->mail );
+		$this->assertStringNotContainsString( 'Visible', $this->mail[1]['message'] );
+
+		delete_option( OPENBB_Settings::GENERAL_OPTION );
+		$saved->staff_note = " \n ";
+		$mail = OPENBB_Emails::render( 'order-event', array( 'order' => $saved, 'event' => 'cancelled', 'changes' => array() ) );
+		$this->assertStringNotContainsString( 'Staff note', $mail['message'] );
+	}
+
+	public function test_membership_emails_show_staff_note_only_when_enabled_and_present(): void {
+		$this->configure_membership_fee();
+		$claim = OPENBB_Membership_Fees::claim( $this->member, 'Reference' );
+		$this->assertInstanceOf( OPENBB_Order::class, $claim );
+		$this->assertStringNotContainsString( '>Staff note<', $this->mail[0]['message'] );
+		$claim->staff_note = 'Bank transfer not found';
+		$data = array( 'order' => $claim, 'event' => 'cancelled', 'changes' => array() );
+		$mail = OPENBB_Emails::render( 'order-event', $data );
+		$this->assertStringContainsString( '>Staff note<', $mail['message'] );
+		$this->assertStringContainsString( 'Bank transfer not found', $mail['message'] );
+		update_option( OPENBB_Settings::GENERAL_OPTION, array_merge( OPENBB_Settings::get_general(), array( 'email_staff_note' => false ) ) );
+		$this->assertStringNotContainsString( 'Bank transfer not found', OPENBB_Emails::render( 'order-event', $data )['message'] );
 	}
 
 	public function test_member_submission_sends_once_but_drafts_and_unchanged_saves_are_silent(): void {
@@ -106,7 +139,7 @@ class Test_OPENBB_Order_Emails extends OPENBB_TestCase {
 		$this->assertCount( 2, $this->mail );
 		$mail = $this->mail[1];
 		$this->assertStringContainsString( 'Order updated', $mail['subject'] );
-		foreach ( array( 'Before', 'After', '2 x', '3 x', 'Added beans', 'Donation', 'Container credit', 'Total' ) as $text ) {
+		foreach ( array( 'Before', 'After', '2 x', '3 x', 'Added beans', 'Donation', 'Container credit', 'Total', '>Staff note<', 'Visible &lt;b&gt;staff' ) as $text ) {
 			$this->assertStringContainsString( $text, $mail['message'] );
 		}
 		$this->assertStringNotContainsString( 'Unchanged carrots', $mail['message'] );

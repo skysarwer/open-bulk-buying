@@ -78,6 +78,11 @@ ob_start();
 	</tfoot>
 <?php endif; ?>
 </table>
+<?php $staff_note = OPENBB_Order_Emails::staff_note( $order ); ?>
+<?php if ( '' !== $staff_note ) : ?>
+<h2><?php echo esc_html( __( 'Staff note', 'open-bulk-buying' ) ); ?></h2>
+<p><?php echo nl2br( esc_html( $staff_note ) ); ?></p>
+<?php endif; ?>
 <?php if ( '' !== $signature ) : ?>
 <p><?php echo nl2br( esc_html( $signature ) ); ?></p>
 <?php endif; ?>

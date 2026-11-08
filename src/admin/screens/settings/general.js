@@ -52,7 +52,8 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 		draft.membership_fee_order_interval !==
 			String( settings.membership_fee_order_interval ) ||
 		draft.default_prep_method !== settings.default_prep_method ||
-		draft.document_paper_size !== settings.document_paper_size;
+		draft.document_paper_size !== settings.document_paper_size ||
+		draft.email_staff_note !== settings.email_staff_note;
 	useUnsavedChanges( isDirty );
 
 	const change = ( key ) => ( value ) =>
@@ -327,6 +328,29 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 							( [ value, label ] ) => ( { value, label } )
 						) }
 						onChange={ change( 'default_prep_method' ) }
+						disabled={ isBusy }
+					/>
+				</Section>
+				<Section title={ __( 'Order emails', 'open-bulk-buying' ) }>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __(
+							'Include staff note in order receipts',
+							'open-bulk-buying'
+						) }
+						help={
+							draft.email_staff_note
+								? __(
+										'Order and membership payment emails show the order’s staff note, including recorded change reasons, when it is not empty.',
+										'open-bulk-buying'
+								  )
+								: __(
+										'Staff notes stay internal and are never emailed to members.',
+										'open-bulk-buying'
+								  )
+						}
+						checked={ draft.email_staff_note }
+						onChange={ change( 'email_staff_note' ) }
 						disabled={ isBusy }
 					/>
 				</Section>

@@ -31,6 +31,7 @@ final class OPENBB_Settings {
 				'membership_fee_order_interval' => 1,
 				'default_prep_method'           => 'station',
 				'document_paper_size'           => self::default_paper_size(),
+				'email_staff_note'              => true,
 			),
 			$settings
 		);
