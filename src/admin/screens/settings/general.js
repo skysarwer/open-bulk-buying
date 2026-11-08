@@ -129,6 +129,92 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 						onChange={ change( 'allow_login_codes' ) }
 						disabled={ isBusy }
 					/>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __(
+							'Require member approval',
+							'open-bulk-buying'
+						) }
+						help={
+							draft.require_member_approval
+								? __(
+										'After signup, new members remain Applicants until staff approve them.',
+										'open-bulk-buying'
+								  )
+								: __(
+										'After signup, new members are automatically approved as Members.',
+										'open-bulk-buying'
+								  )
+						}
+						checked={ draft.require_member_approval }
+						onChange={ change( 'require_member_approval' ) }
+						disabled={ isBusy }
+					/>
+				</Section>
+				<Section title={ __( 'Membership fees', 'open-bulk-buying' ) }>
+					<SelectControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						label={ __( 'Fee frequency', 'open-bulk-buying' ) }
+						value={ draft.membership_fee_type }
+						options={ [
+							{
+								label: __( 'One time', 'open-bulk-buying' ),
+								value: 'one_time',
+							},
+							{
+								label: __( 'Recurring', 'open-bulk-buying' ),
+								value: 'recurring',
+							},
+						] }
+						onChange={ change( 'membership_fee_type' ) }
+						disabled={ isBusy }
+					/>
+					<TextControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						label={ sprintf(
+							/* translators: %s: ISO currency code. */
+							__( 'Fee amount (%s)', 'open-bulk-buying' ),
+							config.currency
+						) }
+						help={ __(
+							'Set to 0 for no membership fee.',
+							'open-bulk-buying'
+						) }
+						type="number"
+						min="0"
+						step={ 1 / minorFactor() }
+						required
+						value={ draft.membership_fee_amount }
+						onChange={ change( 'membership_fee_amount' ) }
+						disabled={ isBusy }
+					/>
+					{ draft.membership_fee_type === 'recurring' && (
+						<TextControl
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+							label={ __(
+								'Charge every X orders',
+								'open-bulk-buying'
+							) }
+							help={ __(
+								'Number of orders between membership fees.',
+								'open-bulk-buying'
+							) }
+							type="number"
+							min="1"
+							step="1"
+							required
+							value={ draft.membership_fee_order_interval }
+							onChange={ change(
+								'membership_fee_order_interval'
+							) }
+							disabled={ isBusy }
+						/>
+					) }
+				</Section>
+				<Section title={ __( 'Bot Protection', 'open-bulk-buying' ) }>
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
@@ -220,92 +306,8 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 							/>
 						</>
 					) }
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __(
-							'Require member approval',
-							'open-bulk-buying'
-						) }
-						help={
-							draft.require_member_approval
-								? __(
-										'After signup, new members remain Applicants until staff approve them.',
-										'open-bulk-buying'
-								  )
-								: __(
-										'After signup, new members are automatically approved as Members.',
-										'open-bulk-buying'
-								  )
-						}
-						checked={ draft.require_member_approval }
-						onChange={ change( 'require_member_approval' ) }
-						disabled={ isBusy }
-					/>
 				</Section>
-				<Section title={ __( 'Membership fees', 'open-bulk-buying' ) }>
-					<SelectControl
-						__next40pxDefaultSize
-						__nextHasNoMarginBottom
-						label={ __( 'Fee frequency', 'open-bulk-buying' ) }
-						value={ draft.membership_fee_type }
-						options={ [
-							{
-								label: __( 'One time', 'open-bulk-buying' ),
-								value: 'one_time',
-							},
-							{
-								label: __( 'Recurring', 'open-bulk-buying' ),
-								value: 'recurring',
-							},
-						] }
-						onChange={ change( 'membership_fee_type' ) }
-						disabled={ isBusy }
-					/>
-					<TextControl
-						__next40pxDefaultSize
-						__nextHasNoMarginBottom
-						label={ sprintf(
-							/* translators: %s: ISO currency code. */
-							__( 'Fee amount (%s)', 'open-bulk-buying' ),
-							config.currency
-						) }
-						help={ __(
-							'Set to 0 for no membership fee.',
-							'open-bulk-buying'
-						) }
-						type="number"
-						min="0"
-						step={ 1 / minorFactor() }
-						required
-						value={ draft.membership_fee_amount }
-						onChange={ change( 'membership_fee_amount' ) }
-						disabled={ isBusy }
-					/>
-					{ draft.membership_fee_type === 'recurring' && (
-						<TextControl
-							__next40pxDefaultSize
-							__nextHasNoMarginBottom
-							label={ __(
-								'Charge every X orders',
-								'open-bulk-buying'
-							) }
-							help={ __(
-								'Number of orders between membership fees.',
-								'open-bulk-buying'
-							) }
-							type="number"
-							min="1"
-							step="1"
-							required
-							value={ draft.membership_fee_order_interval }
-							onChange={ change(
-								'membership_fee_order_interval'
-							) }
-							disabled={ isBusy }
-						/>
-					) }
-				</Section>
-				<Section title={ __( 'Order preparation', 'open-bulk-buying' ) }>
+				{/*<Section title={ __( 'Order preparation', 'open-bulk-buying' ) }>
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
@@ -324,7 +326,7 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 						onChange={ change( 'default_prep_method' ) }
 						disabled={ isBusy }
 					/>
-				</Section>
+				</Section> */}
 				<Section title={ __( 'Order emails', 'open-bulk-buying' ) }>
 					<ToggleControl
 						__nextHasNoMarginBottom
