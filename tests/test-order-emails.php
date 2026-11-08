@@ -139,7 +139,7 @@ class Test_OPENBB_Order_Emails extends OPENBB_TestCase {
 		$this->assertCount( 2, $this->mail );
 		$mail = $this->mail[1];
 		$this->assertStringContainsString( 'Order updated', $mail['subject'] );
-		foreach ( array( '2 x', '3 x', 'Unchanged carrots', 'Donation', 'Container credit', 'Total', '>Staff note<', 'Visible &lt;b&gt;staff' ) as $text ) {
+		foreach ( array( '2 x', '3 x', 'Unchanged carrots', 'Added beans', 'Donation', 'Container credit', 'Total', '>Staff note<', 'Visible &lt;b&gt;staff' ) as $text ) {
 			$this->assertStringContainsString( $text, $mail['message'] );
 		}
 		$this->assertStringContainsString( '<b>Apples alert(1)</b> changed from <b>2 x', $mail['message'] );
