@@ -89,7 +89,7 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 					error={ error }
 					onDismiss={ () => setError( null ) }
 				/>
-				<Section title={ __( 'Signups', 'open-bulk-buying' ) }>
+				<Section title={ __( 'Signups & Login', 'open-bulk-buying' ) }>
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={ __( 'Allow signups', 'open-bulk-buying' ) }
@@ -108,8 +108,6 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 						onChange={ change( 'allow_signups' ) }
 						disabled={ isBusy }
 					/>
-				</Section>
-				<Section title={ __( 'Login', 'open-bulk-buying' ) }>
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={ __(
@@ -131,8 +129,6 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 						onChange={ change( 'allow_login_codes' ) }
 						disabled={ isBusy }
 					/>
-				</Section>
-				<Section title={ __( 'Bot protection', 'open-bulk-buying' ) }>
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
@@ -224,8 +220,6 @@ function GeneralForm( { settings, captcha, onSaved } ) {
 							/>
 						</>
 					) }
-				</Section>
-				<Section title={ __( 'Member approval', 'open-bulk-buying' ) }>
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={ __(
