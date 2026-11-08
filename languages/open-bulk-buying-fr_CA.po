@@ -738,6 +738,24 @@ msgstr "Commande créée"
 msgid "Order updated"
 msgstr "Commande modifiée"
 
+#. translators: 1: change name, 2: added value. Values are bold.
+#: inc/emails/order-event.php:47
+#, php-format
+msgid "%1$s added: %2$s."
+msgstr "%1$s ajouté : %2$s."
+
+#. translators: 1: change name, 2: removed value. Values are bold.
+#: inc/emails/order-event.php:50
+#, php-format
+msgid "%1$s removed: %2$s."
+msgstr "%1$s retiré : %2$s."
+
+#. translators: 1: change name, 2: old value, 3: new value. Values are bold.
+#: inc/emails/order-event.php:53
+#, php-format
+msgid "%1$s changed from %2$s to %3$s."
+msgstr "%1$s est passé de %2$s à %3$s."
+
 #: inc/emails/order-event.php:19
 msgid "Order marked as prepaid"
 msgstr "Commande marquée comme payée d’avance"
@@ -5335,3 +5353,23 @@ msgstr "Enregistrez vos modifications avant de vérifier le paiement."
 #, js-format
 msgid "Confirm that the membership payment (%s) has been received. This marks the fee paid without handing over goods or approving membership."
 msgstr "Confirmez que le paiement de l’adhésion (%s) a été reçu. Les frais seront marqués comme payés, sans remise de produits ni approbation de l’adhésion."
+
+#: src/admin/screens/orders/editor.js:723
+msgid "Visible to staff and included in emails to the member."
+msgstr "Visible par le personnel et incluse dans les courriels envoyés au membre."
+
+#: src/admin/screens/settings/general.js:358
+msgid "Order emails"
+msgstr "Courriels de commande"
+
+#: src/admin/screens/settings/general.js:362
+msgid "Include staff note in order receipts"
+msgstr "Inclure la note du personnel dans les reçus de commande"
+
+#: src/admin/screens/settings/general.js:368
+msgid "Order and membership payment emails show the order’s staff note, including recorded change reasons, when it is not empty."
+msgstr "Les courriels de commande et de paiement des frais d’adhésion affichent la note du personnel de la commande, y compris les raisons de modification consignées, lorsqu’elle n’est pas vide."
+
+#: src/admin/screens/settings/general.js:372
+msgid "Staff notes stay internal and are never emailed to members."
+msgstr "Les notes du personnel restent internes et ne sont jamais envoyées aux membres par courriel."

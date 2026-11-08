@@ -17,6 +17,7 @@ require_once __DIR__ . '/../inc/model/order/class-openbb-order.php';
 require_once __DIR__ . '/../inc/model/order/class-openbb-order-line.php';
 require_once __DIR__ . '/../inc/emails/class-openbb-emails.php';
 require_once __DIR__ . '/../inc/emails/class-openbb-order-emails.php';
+require_once __DIR__ . '/../inc/class-openbb-settings.php';
 
 $catalog = new MO();
 if ( ! $catalog->import_from_file( __DIR__ . '/../languages/open-bulk-buying-fr_CA.mo' ) ) {
@@ -26,6 +27,8 @@ $locale = 'en_US';
 $locales = array();
 $mail = array();
 $signature_override = null;
+// Staff notes hidden for the main checks; enabled explicitly below.
+$general_settings = array( 'email_staff_note' => false );
 
 function apply_filters( $name, $value ) {
 	global $signature_override;
@@ -56,7 +59,11 @@ function esc_html( $value ) { return htmlspecialchars( $value, ENT_QUOTES, 'UTF-
 function esc_attr( $value ) { return esc_html( $value ); }
 function is_email( $value ) { return filter_var( $value, FILTER_VALIDATE_EMAIL ); }
 function wp_mail( $to, $subject, $message, $headers ) { global $mail; $mail[] = compact( 'to', 'subject', 'message', 'headers' ); return true; }
-function get_option( $name ) { return 'date_format' === $name ? 'Y-m-d' : 'H:i'; }
+function get_option( $name, $default = false ) {
+	global $general_settings;
+	if ( 'openbb_general_settings' === $name ) { return $general_settings; }
+	return 'date_format' === $name ? 'Y-m-d' : 'H:i';
+}
 function get_date_from_gmt( $value, $format ) { return ( new DateTimeImmutable( $value, new DateTimeZone( 'UTC' ) ) )->setTimezone( new DateTimeZone( 'America/Toronto' ) )->format( $format ); }
 function openbb_format_money( $amount, $currency ) { return $currency . ' ' . number_format( $amount / ( 'JPY' === $currency ? 1 : 100 ), 'JPY' === $currency ? 0 : 2 ); }
 function number_format_i18n( $amount, $decimals ) { return number_format( $amount, $decimals ); }
@@ -166,6 +173,19 @@ $render = OPENBB_Emails::render( 'order-event', array( 'order' => $groceries, 'e
 foreach ( array( 'Order updated', '>Before<', '>After<', 'Before apples', 'After apples' ) as $expected ) {
 	check( contains( $render['subject'] . $render['message'], $expected ), 'Grocery update diff lost content: ' . $expected );
 }
+check( ! contains( $render['message'], 'Staff note' ), 'Disabled staff notes must not be emailed.' );
+$general_settings = array();
+foreach ( array( 'membership' => $paid, 'grocery' => $groceries ) as $kind => $noted ) {
+	$noted = clone $noted;
+	$noted->staff_note = "PRIVATE STAFF NOTE <b>\nSecond";
+	$render = OPENBB_Emails::render( 'order-event', array( 'order' => $noted, 'event' => 'fulfilled', 'changes' => array() ) );
+	check( contains( $render['message'], '>Staff note<' ), "Enabled staff note must be labeled in $kind emails." );
+	check( contains( $render['message'], 'PRIVATE STAFF NOTE &lt;b&gt;<br' ), "Staff note must be escaped with line breaks in $kind emails." );
+	$noted->staff_note = '  ';
+	$render = OPENBB_Emails::render( 'order-event', array( 'order' => $noted, 'event' => 'fulfilled', 'changes' => array() ) );
+	check( ! contains( $render['message'], 'Staff note' ), "Empty staff note must be omitted from $kind emails." );
+}
+$general_settings = array( 'email_staff_note' => false );
 $plain = OPENBB_Emails::render( 'account-exists' );
 check( str_ends_with( $plain['message'], "\n\nThank you!\nFood & Friends" ), 'Plain-text signature must preserve newlines.' );
 $html = OPENBB_Emails::render( 'signup-code', array( 'code' => '123456', 'minutes' => 10 ) );

@@ -269,7 +269,9 @@ class OPENBB_Member_Orders {
 	 */
 	public static function state( ?OPENBB_Order $order, OPENBB_Cycle $cycle ): array {
 		$lines = array();
+		$fee_removed = false;
 		foreach ( $order ? $order->get_lines() : array() as $line ) {
+			$fee_removed = $fee_removed || $line->is_removed_membership_fee();
 			if ( $line->is_membership_fee() || $line->qty_requested <= 0 ) {
 				continue;
 			}
@@ -287,6 +289,9 @@ class OPENBB_Member_Orders {
 		$user_id = $order ? $order->user_id : get_current_user_id();
 		$fee_due = OPENBB_Membership_Fees::due_amount( $user_id, $order ? $order->id : 0 );
 		$fee     = $order && ! self::can_edit( $order, $cycle ) ? $order->membership_fee() : ( $fee_due > 0 ? ( $order && $order->membership_fee() > 0 ? $order->membership_fee() : $fee_due ) : 0 );
+		if ( $fee_removed ) {
+			$fee = 0;
+		}
 		$summary = OPENBB_Membership_Fees::summary( $user_id );
 		return array(
 			'id'            => $order ? $order->id : 0,

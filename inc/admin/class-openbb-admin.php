@@ -215,6 +215,7 @@ class OPENBB_Admin {
 			'cycleStatuses'        => OPENBB_Cycle::status_labels(),
 			'orderStatuses'        => OPENBB_Order::status_labels(),
 			'prepMethods'          => OPENBB_Cycle_Preparation::method_labels(),
+			'emailStaffNote'       => (bool) OPENBB_Settings::get_general()['email_staff_note'],
 			'stockReasons'         => OPENBB_Stock_Move::reason_labels(),
 			'manualStockReasons'   => OPENBB_Stock_Move::MANUAL_REASONS,
 			'caps'                 => $caps,

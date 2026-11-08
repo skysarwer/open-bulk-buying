@@ -78,6 +78,7 @@ class OPENBB_REST_Settings extends OPENBB_REST_Controller {
 									'type' => 'string',
 									'enum' => OPENBB_Documents::PAPER_SIZES,
 								),
+								'email_staff_note'              => array( 'type' => 'boolean' ),
 							),
 						),
 					),

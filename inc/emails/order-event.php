@@ -1,6 +1,6 @@
 <?php
 /**
- * Photo-free order receipt or change-only summary. All stored content is escaped.
+ * Photo-free order receipt with an optional change summary. All stored content is escaped.
  *
  * @package Open_Bulk_Buying
  */
@@ -34,19 +34,29 @@ ob_start();
 <?php echo esc_html( $cycle ? $cycle->name : '' ); ?><br>
 <?php echo esc_html( get_date_from_gmt( $order->updated_at, get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ) ); ?><br>
 <?php echo esc_html( $order->currency ); ?></p>
+<?php if ( 'updated' === $event && $changes ) : ?>
+	<?php foreach ( $changes as list( $label, $from, $to ) ) : ?>
+		<?php
+		$added   = '' === $from;
+		$removed = '' === $to;
+		$label   = '<b>' . nl2br( esc_html( $label ) ) . '</b>';
+		$from    = '<b>' . nl2br( esc_html( $from ) ) . '</b>';
+		$to      = '<b>' . nl2br( esc_html( $to ) ) . '</b>';
+		if ( $added ) {
+			/* translators: 1: change name, 2: added value. Values are bold. */
+			$summary = sprintf( esc_html__( '%1$s added: %2$s.', 'open-bulk-buying' ), $label, $to );
+		} elseif ( $removed ) {
+			/* translators: 1: change name, 2: removed value. Values are bold. */
+			$summary = sprintf( esc_html__( '%1$s removed: %2$s.', 'open-bulk-buying' ), $label, $from );
+		} else {
+			/* translators: 1: change name, 2: old value, 3: new value. Values are bold. */
+			$summary = sprintf( esc_html__( '%1$s changed from %2$s to %3$s.', 'open-bulk-buying' ), $label, $from, $to );
+		}
+		?>
+		<p><?php echo $summary; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Values are escaped above. ?></p>
+	<?php endforeach; ?>
+<?php endif; ?>
 <table style="border-collapse:collapse;width:100%;">
-<?php if ( 'updated' === $event ) : ?>
-	<thead><tr>
-	<?php foreach ( array( __( 'Change', 'open-bulk-buying' ), __( 'Before', 'open-bulk-buying' ), __( 'After', 'open-bulk-buying' ) ) as $label ) : ?>
-		<th scope="col" style="<?php echo esc_attr( $cell ); ?>"><?php echo esc_html( $label ); ?></th>
-	<?php endforeach; ?>
-	</tr></thead>
-	<tbody>
-	<?php foreach ( $changes as $row ) : ?>
-		<tr><?php foreach ( $row as $value ) : ?><td style="<?php echo esc_attr( $cell ); ?>"><?php echo nl2br( esc_html( $value ) ); ?></td><?php endforeach; ?></tr>
-	<?php endforeach; ?>
-	</tbody>
-<?php else : ?>
 	<thead><tr>
 	<?php foreach ( array( __( 'Product', 'open-bulk-buying' ), __( 'Package', 'open-bulk-buying' ), __( 'Quantity', 'open-bulk-buying' ), __( 'Unit price', 'open-bulk-buying' ), __( 'Own container', 'open-bulk-buying' ), __( 'Container credit', 'open-bulk-buying' ), __( 'Line total', 'open-bulk-buying' ) ) as $label ) : ?>
 		<th scope="col" style="<?php echo esc_attr( $cell ); ?>"><?php echo esc_html( $label ); ?></th>
@@ -76,8 +86,12 @@ ob_start();
 		<tr><th colspan="6" scope="row" style="<?php echo esc_attr( $cell ); ?>"><?php echo esc_html( $label ); ?></th><td style="<?php echo esc_attr( $cell ); ?>"><?php echo esc_html( $value ); ?></td></tr>
 	<?php endforeach; ?>
 	</tfoot>
-<?php endif; ?>
 </table>
+<?php $staff_note = OPENBB_Order_Emails::staff_note( $order ); ?>
+<?php if ( '' !== $staff_note ) : ?>
+<h2><?php echo esc_html( __( 'Staff note', 'open-bulk-buying' ) ); ?></h2>
+<p><?php echo nl2br( esc_html( $staff_note ) ); ?></p>
+<?php endif; ?>
 <?php if ( '' !== $signature ) : ?>
 <p><?php echo nl2br( esc_html( $signature ) ); ?></p>
 <?php endif; ?>

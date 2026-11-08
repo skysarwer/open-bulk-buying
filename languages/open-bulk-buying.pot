@@ -894,6 +894,24 @@ msgstr ""
 msgid "Order updated"
 msgstr ""
 
+#. translators: 1: change name, 2: added value. Values are bold.
+#: inc/emails/order-event.php:47
+#, php-format
+msgid "%1$s added: %2$s."
+msgstr ""
+
+#. translators: 1: change name, 2: removed value. Values are bold.
+#: inc/emails/order-event.php:50
+#, php-format
+msgid "%1$s removed: %2$s."
+msgstr ""
+
+#. translators: 1: change name, 2: old value, 3: new value. Values are bold.
+#: inc/emails/order-event.php:53
+#, php-format
+msgid "%1$s changed from %2$s to %3$s."
+msgstr ""
+
 #: inc/emails/order-event.php:19
 msgid "Order marked as prepaid"
 msgstr ""
@@ -5303,4 +5321,24 @@ msgstr ""
 #: src/admin/utils/config.js:81
 #, js-format
 msgid "%1$s (%2$s)"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:723
+msgid "Visible to staff and included in emails to the member."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:358
+msgid "Order emails"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:362
+msgid "Include staff note in order receipts"
+msgstr ""
+
+#: src/admin/screens/settings/general.js:368
+msgid "Order and membership payment emails show the order’s staff note, including recorded change reasons, when it is not empty."
+msgstr ""
+
+#: src/admin/screens/settings/general.js:372
+msgid "Staff notes stay internal and are never emailed to members."
 msgstr ""

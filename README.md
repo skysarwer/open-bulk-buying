@@ -136,11 +136,17 @@ The owning member receives an HTML email when an order is first submitted
 fulfilled. Draft creation/autosaves, unchanged saves, internal staff-note edits
 and repeated payment/fulfillment confirmations do not send emails.
 
-Update emails contain a Before/After table of changed lines and member-visible
-fields only, including changed totals. Other events contain a photo-free table
-of product/package snapshots, quantities, unit prices (including container
-charges), container credits and net line totals, followed by the order totals.
-Internal staff notes and financial-aid explanations are never emailed.
+Update emails summarize changed lines and member-visible fields, including
+changed totals, and show the full current order. Membership-fee changes show only
+the fee amount, without package or container details. All order events contain a
+photo-free table of product/package snapshots, quantities, unit prices
+(including container charges), container credits and net line totals, followed
+by the order totals.
+Internal financial-aid explanations are never emailed. The order's staff note
+(including recorded change reasons) is shown below the table when it is not
+empty, and as a row in membership payment emails. Turn off **Include staff note
+in order receipts** under **Co-op > Settings > General > Order emails** to keep
+staff notes internal; it is on by default.
 Currency and product descriptions come from the order snapshots; email labels
 use the order language when a matching translation is available.
 
@@ -339,6 +345,12 @@ separate, system-managed line on the member's cycle order. Its price is saved
 with the order; later settings changes do not rewrite that price. Fees do not
 reserve stock, need preparation, or receive container credits. Financial aid
 reduces goods only, not membership fees or donations.
+
+Staff with order-editing privileges can **Remove** the membership fee from an
+editable submitted cycle order, following the usual correction/reason rules.
+Removal does not record payment or waive membership:
+if the fee is still due, the member's next order follows the usual fee logic.
+Members cannot remove fees themselves; paid orders remain locked.
 
 The first fee is due before any confirmed membership payment. For recurring
 fees, **paid cycle orders count, including prepaid orders awaiting pickup**.

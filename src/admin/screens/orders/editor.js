@@ -130,7 +130,7 @@ function ProductPicker( { orderId, excluded, onPick } ) {
 	);
 }
 
-function LineRow( { line, isLocked, onChange, onRemove } ) {
+function LineRow( { line, isLocked, canRemoveFee, onChange, onRemove } ) {
 	const qty = Number( line.qty ) || 0;
 	const overLimit = ! line.is_prepared && qty > line.max_qty + EPSILON;
 	const readOnly = isLocked || line.is_prepared || line.line_type === 'membership_fee';
@@ -150,7 +150,7 @@ function LineRow( { line, isLocked, onChange, onRemove } ) {
 				{ readOnly ? (
 					<>
 						{ formatQty( qty ) }
-						{ line.is_prepared && (
+						{ line.is_prepared && line.line_type !== 'membership_fee' && (
 							<div className="openbb-muted">
 								{ /* translators: %s: prepared quantity. */ }
 								{ sprintf( __( 'Prepared: %s', 'open-bulk-buying' ), formatQty( line.qty_final ?? line.qty_prepared ) ) }
@@ -191,7 +191,7 @@ function LineRow( { line, isLocked, onChange, onRemove } ) {
 				{ formatMoney( lineTotal( line ) - lineCredit( line ) ) }
 			</td>
 			<td>
-				{ ! readOnly && (
+				{ ( ! readOnly || ( canRemoveFee && line.line_type === 'membership_fee' && qty > 0 ) ) && (
 					<Button
 						icon={ closeSmall }
 						size="small"
@@ -601,6 +601,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 								key={ line.key }
 								line={ line }
 								isLocked={ isLocked }
+								canRemoveFee={ canEdit && ! isLocked && order.status === 'submitted' }
 								onChange={ ( changes ) => updateLine( line.key, changes ) }
 								onRemove={ () => removeLine( line ) }
 							/>
@@ -719,7 +720,14 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 					<TextareaControl
 						__nextHasNoMarginBottom
 						label={ __( 'Staff note', 'open-bulk-buying' ) }
-						help={ __( 'Only visible to staff.', 'open-bulk-buying' ) }
+						help={
+							config.emailStaffNote
+								? __(
+										'Visible to staff and included in emails to the member.',
+										'open-bulk-buying'
+								  )
+								: __( 'Only visible to staff.', 'open-bulk-buying' )
+						}
 						value={ staffNote }
 						onChange={ setStaffNote }
 						rows={ 3 }

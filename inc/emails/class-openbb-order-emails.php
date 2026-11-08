@@ -55,6 +55,13 @@ final class OPENBB_Order_Emails {
 		}
 	}
 
+	/**
+	 * The staff note to show the member, or '' when it is empty or the setting hides it.
+	 */
+	public static function staff_note( OPENBB_Order $order ): string {
+		return empty( OPENBB_Settings::get_general()['email_staff_note'] ) ? '' : trim( $order->staff_note );
+	}
+
 	/** @return array<string, string> */
 	public static function totals( OPENBB_Order $order ): array {
 		return array(
@@ -67,6 +74,9 @@ final class OPENBB_Order_Emails {
 	}
 
 	private static function line_summary( OPENBB_Order_Line $line, string $currency ): string {
+		if ( $line->is_membership_fee() ) {
+			return openbb_format_money( $line->calculate_total(), $currency );
+		}
 		return implode(
 			'; ',
 			array(

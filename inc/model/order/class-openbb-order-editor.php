@@ -71,6 +71,7 @@ class OPENBB_Order_Editor {
 	 * - status              One of OPENBB_Order_Policy::EDITABLE_STATUSES.
 	 * - lines               The full list of lines: { id?, product_id?, qty, own_container? }.
 	 *                       Existing lines missing from the list are removed.
+	 *                       Staff may remove membership fees from submitted cycle orders.
 	 * - donation            Minor units.
 	 * - staff_note          Replaces the note.
 	 * - member_note         Replaces the member's note.
@@ -183,7 +184,7 @@ class OPENBB_Order_Editor {
 		$lines      = array();
 		$delete_ids = array();
 		if ( $has_lines ) {
-			$planned = self::plan_lines( $order, (array) $changes['lines'], OPENBB_Order::STATUS_DRAFT === $new_status && ! $order->submitted_at );
+			$planned = self::plan_lines( $order, (array) $changes['lines'], OPENBB_Order::STATUS_DRAFT === $new_status && ! $order->submitted_at, ! $by_member && OPENBB_Order::STATUS_SUBMITTED === $old_status );
 			if ( is_wp_error( $planned ) ) {
 				return $planned;
 			}
@@ -306,7 +307,7 @@ class OPENBB_Order_Editor {
 	 *
 	 * @return array{0: OPENBB_Order_Line[], 1: int[]}|WP_Error
 	 */
-	private static function plan_lines( OPENBB_Order $order, array $input, bool $is_draft ) {
+	private static function plan_lines( OPENBB_Order $order, array $input, bool $is_draft, bool $can_remove_fee ) {
 		$existing = array();
 		foreach ( $order->get_lines() as $line ) {
 			$existing[ $line->id ] = $line;
@@ -338,8 +339,11 @@ class OPENBB_Order_Editor {
 				}
 				$keep[ $line_id ] = true;
 				if ( $line->is_membership_fee() ) {
-					if ( abs( $qty - $line->qty_requested ) >= self::EPSILON || $own ) {
+					if ( $own || ( abs( $qty - $line->qty_requested ) >= self::EPSILON && ( ! $can_remove_fee || 0.0 !== $qty ) ) ) {
 						return self::invalid( __( 'Membership fees are managed from the member payment screen.', 'open-bulk-buying' ) );
+					}
+					if ( $can_remove_fee && 0.0 === $qty && $line->qty_requested > 0 ) {
+						unset( $keep[ $line_id ] );
 					}
 					continue;
 				}
@@ -407,7 +411,16 @@ class OPENBB_Order_Editor {
 
 		$delete = array();
 		foreach ( $existing as $line_id => $line ) {
-			if ( isset( $keep[ $line_id ] ) || $line->is_membership_fee() ) {
+			if ( isset( $keep[ $line_id ] ) ) {
+				continue;
+			}
+			if ( $line->is_membership_fee() ) {
+				if ( $can_remove_fee && $line->qty_requested > 0 ) {
+					$line = clone $line;
+					$line->qty_requested = 0.0;
+					$line->qty_final = 0.0;
+					$write[] = $line;
+				}
 				continue;
 			}
 			if ( null !== $line->qty_prepared || null !== $line->qty_final ) {

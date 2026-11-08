@@ -121,11 +121,17 @@ final class OPENBB_Membership_Fees {
 	}
 
 	/**
-	 * Called under the shared lock. Fees are system-managed, not editable basket items.
+	 * Called under the shared lock. Fees are system-managed, except staff removals.
 	 *
 	 * @return array{0: OPENBB_Order_Line[], 1: int[]}
 	 */
 	public static function synchronize( OPENBB_Order $order, array $final, array $writes, array $deletes ): array {
+		foreach ( $final as $line ) {
+			// A final zero records a staff removal, unlike an automatically emptied fee.
+			if ( $line->is_removed_membership_fee() ) {
+				return array( $writes, $deletes );
+			}
+		}
 		$goods = array_filter( $final, static function ( OPENBB_Order_Line $line ): bool {
 			return ! $line->is_membership_fee() && $line->get_quantity() > 0;
 		} );

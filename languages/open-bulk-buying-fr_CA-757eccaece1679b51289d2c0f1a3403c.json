@@ -1756,6 +1756,21 @@
             ],
             "Confirm that the membership payment (%s) has been received. This marks the fee paid without handing over goods or approving membership.": [
                 "Confirmez que le paiement de l\u2019adh\u00e9sion (%s) a \u00e9t\u00e9 re\u00e7u. Les frais seront marqu\u00e9s comme pay\u00e9s, sans remise de produits ni approbation de l\u2019adh\u00e9sion."
+            ],
+            "Visible to staff and included in emails to the member.": [
+                "Visible par le personnel et incluse dans les courriels envoy\u00e9s au membre."
+            ],
+            "Order emails": [
+                "Courriels de commande"
+            ],
+            "Include staff note in order receipts": [
+                "Inclure la note du personnel dans les re\u00e7us de commande"
+            ],
+            "Order and membership payment emails show the order\u2019s staff note, including recorded change reasons, when it is not empty.": [
+                "Les courriels de commande et de paiement des frais d\u2019adh\u00e9sion affichent la note du personnel de la commande, y compris les raisons de modification consign\u00e9es, lorsqu\u2019elle n\u2019est pas vide."
+            ],
+            "Staff notes stay internal and are never emailed to members.": [
+                "Les notes du personnel restent internes et ne sont jamais envoy\u00e9es aux membres par courriel."
             ]
         }
     }

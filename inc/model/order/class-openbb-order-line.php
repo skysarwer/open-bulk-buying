@@ -190,6 +190,10 @@ class OPENBB_Order_Line extends OPENBB_Entity {
 		return self::TYPE_MEMBERSHIP_FEE === $this->line_type;
 	}
 
+	public function is_removed_membership_fee(): bool {
+		return $this->is_membership_fee() && 0.0 === $this->qty_final;
+	}
+
 	/**
 	 * Price plus container charge, per unit, times the latest quantity.
 	 */

@@ -57,7 +57,7 @@ async function editor( overrides = {}, failure = null ) {
 				case '../../utils/config':
 					return { can: () => true, config: { urls: {}, orderStatuses: {} } };
 				case '../../utils/format':
-					return { toMinor: ( value ) => Number( value ) * 100, toMajor: ( value ) => value / 100, formatMoney: String };
+					return { toMinor: ( value ) => Number( value ) * 100, toMajor: ( value ) => value / 100, formatMoney: String, formatQty: String };
 				case '@wordpress/date':
 					return { getSettings: () => ( { formats: {} } ) };
 				case '../../utils/api':
@@ -228,4 +228,45 @@ test( 'settling with edits that need a reason waits for the reason', async () =>
 	reason[ 0 ].props.onChange( 'Member added a donation' );
 	assert.equal( buttons( view.render(), 'Confirm' )[ 0 ].props.disabled, false );
 	assert.equal( view.requests.length, 1 );
+} );
+
+const cycleLines = [
+	{ id: 1, product_id: 5, line_type: 'product', product_name: 'Oats', unit_price: 250, container_charge: 0, qty_requested: 2, qty_prepared: null, qty_final: null, max_qty: 10 },
+	{ id: 2, product_id: 0, line_type: 'membership_fee', product_name: 'Membership fee', unit_price: 1000, container_charge: 0, qty_requested: 1, qty_prepared: null, qty_final: null, max_qty: 1 },
+];
+
+function feeRow( view ) {
+	const row = nodes( view.render(), ( node ) => typeof node.type === 'function' && node.props.line?.line_type === 'membership_fee' )[ 0 ];
+	return row.type( row.props );
+}
+
+test( 'staff can remove a submitted fee without editable fee quantities and save with a reason', async () => {
+	const view = await editor( {
+		can_review_membership_payment: false, can_edit: true, can_edit_lines: true,
+		editable_statuses: [ 'submitted' ], reason_required_statuses: [ 'submitted' ],
+		lines: cycleLines, subtotal: 1500, total: 1500,
+	} );
+	const row = feeRow( view );
+	assert.equal( nodes( row, ( node ) => node.type === '__experimentalNumberControl' ).length, 0 );
+	const remove = nodes( row, ( node ) => node.type === 'Button' && node.props.label === 'Remove' );
+	assert.equal( remove.length, 1 );
+	remove[ 0 ].props.onClick();
+	assert.equal( buttons( view.render(), 'Save order' )[ 0 ].props.disabled, true );
+	nodes( view.render(), ( node ) => node.type === 'TextareaControl' && node.props.label === 'Reason for the change (required)' )[ 0 ].props.onChange( 'Fee was not included.' );
+	assert.equal( buttons( view.render(), 'Save order' )[ 0 ].props.disabled, false );
+	await buttons( view.render(), 'Save order' )[ 0 ].props.onClick();
+	assert.equal( view.requests[ 1 ].options.method, 'PUT' );
+	assert.equal( view.requests[ 1 ].options.data.lines.length, 1 );
+	assert.equal( view.requests[ 1 ].options.data.lines[ 0 ].id, 1 );
+	assert.equal( view.requests[ 1 ].options.data.reason, 'Fee was not included.' );
+} );
+
+test( 'fee removal is not offered on draft, paid or locked orders', async () => {
+	for ( const overrides of [ { status: 'draft' }, { status: 'prepaid' }, { status: 'fulfilled' }, { can_edit_lines: false }, { can_edit: false } ] ) {
+		const view = await editor( {
+			can_review_membership_payment: false, can_edit: true, can_edit_lines: true,
+			editable_statuses: [ 'submitted' ], lines: cycleLines, ...overrides,
+		} );
+		assert.equal( nodes( feeRow( view ), ( node ) => node.type === 'Button' && node.props.label === 'Remove' ).length, 0 );
+	}
 } );

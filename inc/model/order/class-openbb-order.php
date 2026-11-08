@@ -2,7 +2,8 @@
 /**
  * One member's order for one cycle. Amounts are integer minor units (e.g. cents).
  * language is the member's language when the order was submitted; line snapshots use it.
- * member_note is written by and shown to the member; staff_note is internal.
+ * member_note is written by and shown to the member; staff_note is written by staff
+ * and only reaches the member through order emails when the general setting allows.
  *
  * @package Open_Bulk_Buying
  */

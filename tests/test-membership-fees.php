@@ -163,7 +163,126 @@ class Test_OPENBB_Membership_Fees extends OPENBB_TestCase {
 		$fee = array_values( array_filter( $order->get_lines(), static function ( $line ) { return $line->is_membership_fee(); } ) )[0];
 		$this->assertWPError( OPENBB_Order_Editor::apply( $order, array(
 			'lines' => array( array( 'id' => $fee->id, 'qty' => 0 ) ), 'reason' => 'Remove fee',
-		), $this->staff ) );
+		), $this->member, true ) );
+	}
+
+	/** @dataProvider fee_removal_inputs */
+	public function test_staff_can_remove_fee_without_waiving_it_or_readding_it( bool $explicit_zero ): void {
+		global $wpdb;
+		$order = $this->order();
+		$goods = array_values( array_filter( $order->get_lines(), static function ( $line ) { return ! $line->is_membership_fee(); } ) )[0];
+		$fee = array_values( array_filter( $order->get_lines(), static function ( $line ) { return $line->is_membership_fee(); } ) )[0];
+		$input = array( array( 'id' => $goods->id, 'qty' => 2 ) );
+		if ( $explicit_zero ) {
+			$input[] = array( 'id' => $fee->id, 'qty' => 0 );
+		}
+		$removed = OPENBB_Order_Editor::apply( $order, array(
+			'lines' => $input, 'reason' => 'Membership fee was not included in this order.',
+			'expected_revision' => $order->revision,
+		), $this->staff );
+		$this->assertInstanceOf( OPENBB_Order::class, $removed );
+		$this->assertSame( 'submitted', $removed->status );
+		$this->assertSame( 0, $removed->membership_fee() );
+		$this->assertSame( 500, $removed->total );
+		$this->assertNull( $removed->paid_at );
+		$this->assertCount( 2, $removed->get_lines() );
+		$history_fee = array_values( array_filter( $removed->get_lines(), static function ( $line ) { return $line->is_membership_fee(); } ) )[0];
+		$this->assertSame( $fee->id, $history_fee->id );
+		$this->assertSame( 1000, $history_fee->unit_price );
+		$this->assertSame( 0.0, $history_fee->qty_requested );
+		$this->assertSame( 0.0, $history_fee->qty_final );
+		$this->assertSame( 2.0, OPENBB_Inventory::get_reserved( $this->product->id ) );
+		$this->assertSame( 'edited', $wpdb->get_var( $wpdb->prepare(
+			"SELECT event_type FROM {$wpdb->openbb_order_events} WHERE order_id = %d ORDER BY id DESC LIMIT 1", $order->id
+		) ) );
+		$this->assertSame( 'due', OPENBB_Membership_Fees::summary( $this->member )['status'] );
+		$this->assertSame( 1000, OPENBB_Membership_Fees::due_amount( $this->member ) );
+		$cycle = OPENBB_Cycles::get( $removed->cycle_id );
+		$cycle->status = OPENBB_Cycle::STATUS_SETUP;
+		$state = OPENBB_Member_Orders::state( $removed, $cycle );
+		$this->assertTrue( $state['editable'] );
+		$this->assertSame( 0, $state['membership_fee'] );
+		$this->assertSame( 500, $state['total'] );
+
+		$edited = OPENBB_Order_Editor::apply( $removed, array( 'staff_note' => 'Receipt checked.' ), $this->staff );
+		$this->assertInstanceOf( OPENBB_Order::class, $edited );
+		$this->assertSame( 0, $edited->membership_fee() );
+		$edited = OPENBB_Order_Editor::apply( $edited, array(
+			'lines' => array( array( 'id' => $goods->id, 'qty' => 3 ) ),
+		), $this->member, true );
+		$this->assertInstanceOf( OPENBB_Order::class, $edited );
+		$this->assertSame( 0, $edited->membership_fee() );
+		$this->assertSame( 750, $edited->total );
+
+		$paid = OPENBB_Order_Lifecycle::confirm( $edited->id, 'prepay', $this->staff );
+		$this->assertInstanceOf( OPENBB_Order::class, $paid );
+		$this->assertSame( 750, $paid->paid_amount );
+		$this->assertSame( 1000, $this->order()->membership_fee() );
+	}
+
+	public static function fee_removal_inputs(): array {
+		return array( 'omitted fee' => array( false ), 'explicit zero' => array( true ) );
+	}
+
+	public function test_member_omission_keeps_fee_and_staff_cannot_change_it_to_another_quantity(): void {
+		$order = $this->order();
+		$goods = array_values( array_filter( $order->get_lines(), static function ( $line ) { return ! $line->is_membership_fee(); } ) )[0];
+		$fee = array_values( array_filter( $order->get_lines(), static function ( $line ) { return $line->is_membership_fee(); } ) )[0];
+		$edited = OPENBB_Order_Editor::apply( $order, array(
+			'lines' => array( array( 'id' => $goods->id, 'qty' => 3 ) ),
+		), $this->member, true );
+		$this->assertInstanceOf( OPENBB_Order::class, $edited );
+		$this->assertSame( 1000, $edited->membership_fee() );
+		foreach ( array( 0.5, 2 ) as $qty ) {
+			$this->assertWPError( OPENBB_Order_Editor::apply( $edited, array(
+				'lines' => array( array( 'id' => $fee->id, 'qty' => $qty ) ), 'reason' => 'Change fee',
+			), $this->staff ) );
+		}
+	}
+
+	public function test_fee_removal_obeys_reason_and_paid_order_locks(): void {
+		$order = $this->order();
+		$cycle = OPENBB_Cycles::get( $order->cycle_id );
+		$cycle->status = OPENBB_Cycle::STATUS_ORDERING;
+		$cycle->pickup_opens_at = null;
+		$cycle->pickup_closes_at = null;
+		$this->assertTrue( $cycle->save() );
+		$goods = array_values( array_filter( $order->get_lines(), static function ( $line ) { return ! $line->is_membership_fee(); } ) )[0];
+		$changes = array( 'lines' => array( array( 'id' => $goods->id, 'qty' => 2 ) ) );
+		$result = OPENBB_Order_Editor::apply( $order, $changes, $this->staff );
+		$this->assertWPError( $result );
+		$this->assertSame( 'openbb_reason_required', $result->get_error_code() );
+		$this->assertSame( 1000, OPENBB_Orders::get( $order->id )->membership_fee() );
+		$paid = OPENBB_Order_Lifecycle::confirm( $order->id, 'prepay', $this->staff );
+		$this->assertInstanceOf( OPENBB_Order::class, $paid );
+		$changes['reason'] = 'Fee was not included.';
+		$fee = array_values( array_filter( $paid->get_lines(), static function ( $line ) { return $line->is_membership_fee(); } ) )[0];
+		$changes['lines'][] = array( 'id' => $fee->id, 'qty' => 0 );
+		$this->assertWPError( OPENBB_Order_Editor::apply( $paid, $changes, $this->staff ) );
+		$this->assertSame( 1000, OPENBB_Orders::get( $order->id )->membership_fee() );
+	}
+
+	public function test_rest_removal_uses_order_edit_privileges_and_conflict_checks(): void {
+		rest_get_server();
+		$order = $this->order();
+		$goods = array_values( array_filter( $order->get_lines(), static function ( $line ) { return ! $line->is_membership_fee(); } ) )[0];
+		$editor = $this->make_user( 'member' );
+		get_userdata( $editor )->add_cap( 'openbb_edit_orders' );
+		wp_set_current_user( $editor );
+		$this->assertFalse( current_user_can( 'openbb_record_payments' ) );
+		$request = new WP_REST_Request( 'PUT', '/openbb/v1/orders/' . $order->id );
+		$request->set_body_params( array(
+			'lines' => array( array( 'id' => $goods->id, 'qty' => 2 ) ),
+			'reason' => 'Fee was not included.',
+		) );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 0, $response->get_data()['membership_fee'] );
+		$this->assertSame( 500, $response->get_data()['total'] );
+		$request->set_param( 'expected_updated_at', '2000-01-01T00:00:00Z' );
+		$this->assertSame( 409, rest_do_request( $request )->get_status() );
+		wp_set_current_user( $this->member );
+		$this->assertSame( 403, rest_do_request( $request )->get_status() );
 	}
 
 	public function test_aid_does_not_discount_membership_fee_and_price_snapshot_survives_settings_changes(): void {
