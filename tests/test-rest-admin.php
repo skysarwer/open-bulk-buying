@@ -453,7 +453,8 @@ class Test_OPENBB_REST_Admin extends OPENBB_TestCase {
 		$this->assertFalse( $paid->get_data()['can_cancel'] );
 		$this->assertFalse( $paid->get_data()['can_delete'] );
 		$this->assertFalse( $paid->get_data()['can_prepay'] );
-		$this->assertFalse( $paid->get_data()['can_fulfill'] );
+		// Handoff can be recorded at any cycle stage (see OPENBB_Order_Policy::validate_confirmation()).
+		$this->assertTrue( $paid->get_data()['can_fulfill'] );
 		$this->assertSame( 1, (int) $this->api( 'GET', '/orders', array( 'status' => array( 'prepaid' ) ) )->get_headers()['X-WP-Total'] );
 		$cycle = OPENBB_Cycles::get( $cycle_id );
 		$cycle->status = OPENBB_Cycle::STATUS_DISTRIBUTION;

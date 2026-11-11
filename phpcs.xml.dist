@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<ruleset name="Open Bulk Buying">
+	<description>WordPress Coding Standards for the Open Bulk Buying plugin.</description>
+
+	<file>.</file>
+	<exclude-pattern>*/build/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/ref/*</exclude-pattern>
+	<exclude-pattern>*/languages/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg name="parallel" value="8"/>
+	<arg value="sp"/>
+	<arg name="cache" value=".phpcs-cache"/>
+
+	<config name="minimum_wp_version" value="6.6"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<rule ref="WordPress">
+		<!-- Classes live in class-*.php; documented at the class level, not per method. -->
+		<exclude name="Squiz.Commenting.FunctionComment"/>
+		<exclude name="Squiz.Commenting.ClassComment"/>
+		<exclude name="Squiz.Commenting.VariableComment"/>
+		<exclude name="Squiz.Commenting.FileComment"/>
+		<exclude name="Generic.Commenting.DocComment"/>
+		<!-- Column alignment is left to the editor; it produces large, noisy diffs. -->
+		<exclude name="Generic.Formatting.MultipleStatementAlignment"/>
+		<exclude name="WordPress.Arrays.MultipleStatementAlignment"/>
+		<exclude name="WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound"/>
+		<!-- Short array syntax and short ternaries are fine on PHP 7.4+. -->
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+		<exclude name="Universal.Operators.DisallowShortTernary"/>
+		<!-- The plugin owns custom tables; direct $wpdb queries against them are the design. -->
+		<exclude name="WordPress.DB.DirectDatabaseQuery"/>
+	</rule>
+
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<property name="custom_capabilities" type="array">
+				<element value="openbb_manage_products"/>
+				<element value="openbb_manage_inventory"/>
+				<element value="openbb_manage_cycles"/>
+				<element value="openbb_delete_cycles_orders"/>
+				<element value="openbb_view_orders"/>
+				<element value="openbb_edit_orders"/>
+				<element value="openbb_process_orders"/>
+				<element value="openbb_distribute_orders"/>
+				<element value="openbb_record_payments"/>
+				<element value="openbb_view_members"/>
+				<element value="openbb_edit_members"/>
+				<element value="openbb_create_members"/>
+				<element value="openbb_export_data"/>
+				<element value="openbb_view_aid"/>
+				<element value="openbb_decide_aid"/>
+				<element value="openbb_manage_rules"/>
+				<element value="openbb_manage_settings"/>
+				<element value="openbb_manage_profile_fields"/>
+				<element value="openbb_manage_access"/>
+				<!-- Meta capabilities resolved in OPENBB_Access::filter_map_meta_cap(). -->
+				<element value="openbb_access_admin"/>
+				<element value="openbb_access_settings"/>
+				<element value="openbb_place_orders"/>
+				<element value="openbb_edit_order"/>
+				<element value="openbb_view_order_aid"/>
+				<element value="openbb_decide_order_aid"/>
+				<element value="openbb_edit_member"/>
+				<element value="openbb_set_member_roles"/>
+				<element value="openbb_set_member_status"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="open-bulk-buying"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="openbb"/>
+				<element value="OPENBB"/>
+			</property>
+		</properties>
+		<!-- Template and email files are included inside functions; their variables are local. -->
+		<exclude-pattern>*/inc/frontend/templates/*</exclude-pattern>
+		<exclude-pattern>*/inc/documents/templates/*</exclude-pattern>
+		<exclude-pattern>*/inc/emails/*</exclude-pattern>
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+</ruleset>

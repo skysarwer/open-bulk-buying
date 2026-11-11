@@ -15,7 +15,8 @@ Requires WordPress 6.6+ and PHP 7.4+. Licensed GPL-2.0-or-later.
 [For developers](#for-developers)
 
 Detailed guides: [Staff guide](docs/staff-guide.md) ·
-[Developer guide](docs/developer-guide.md) · [Hooks reference](docs/hooks.md)
+[Developer guide](docs/developer-guide.md) · [Testing](docs/testing.md) ·
+[Hooks reference](docs/hooks.md) · [Contributing](CONTRIBUTING.md)
 
 ---
 
@@ -182,18 +183,22 @@ danger zone for wiping co-op data. Back up first.
 | API | REST under `openbb/v1`; `inc/rest/admin/` and `inc/rest/frontend/` |
 | Data | Custom tables (cycles, orders, lines, events, stock moves, rules versions), `openbb_product` post type, per-site user meta for members, options for settings |
 | Access | Capabilities computed from staff roles via `user_has_cap` / `map_meta_cap` |
-| Tests | PHPUnit with the WordPress test library (`tests/`); Node tests for a few UI modules |
+| Tests | PHPUnit with the WordPress test library (`composer test`); Node and Jest tests for a few UI helpers (`npm test`) |
 | i18n | WP-CLI `i18n` + `scripts/compile-translations.js`; catalogues in `languages/` |
 
 ```sh
 npm run start        # watch and rebuild the dashboard
 npm run build
-vendor/bin/phpunit   # needs WP_TESTS_DIR and a disposable test database
+composer test        # PHPUnit; first run .\bin\install-wp-tests.ps1 (or .sh) once
+npm test             # JS tests
+composer lint        # WordPress Coding Standards
 npm run i18n:extract && npm run i18n:update && npm run i18n:compile
 ```
 
-The **[Developer guide](docs/developer-guide.md)** covers repository layout,
-the data model and relationships, architecture conventions (order policy,
-services, controllers), the i18n workflow, testing and releasing, and what is
-not yet implemented. Every `openbb_*` action and filter is listed in the
+Start with **[CONTRIBUTING.md](CONTRIBUTING.md)** for setup and an
+end-to-end feature walkthrough, and **[Testing](docs/testing.md)** for how the
+test suite works. The **[Developer guide](docs/developer-guide.md)** covers
+repository layout, the data model and relationships, architecture conventions
+(order policy, services, controllers), the i18n workflow and releasing. Every
+`openbb_*` action and filter is listed in the
 **[Hooks reference](docs/hooks.md)**.

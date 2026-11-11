@@ -31,8 +31,8 @@ hooks see [hooks.md](hooks.md); for how the plugin behaves see the
 | Persistence | Custom tables (dbDelta), one custom post type, two taxonomies, per-site user meta, options |
 | Documents | HTML print documents (order slips) rendered server-side in `inc/documents/` |
 | Email | Plain PHP templates in `inc/emails/`, sent with `wp_mail()` |
-| Tests | PHPUnit 9 + Yoast polyfills on the WordPress test library; a few Node `.cjs`/`.test.js` unit tests |
-| Tooling | `@wordpress/scripts` lint/format, WP-CLI `i18n`, Composer (dev only) |
+| Tests | PHPUnit 9 + Yoast polyfills on the WordPress test library (`wp-phpunit/wp-phpunit` via Composer); Node `node:test` and Jest for a few UI helpers |
+| Tooling | `@wordpress/scripts` build/lint/format, PHP CodeSniffer + WordPress Coding Standards, WP-CLI `i18n`, GitHub Actions CI |
 
 ---
 
@@ -41,6 +41,9 @@ hooks see [hooks.md](hooks.md); for how the plugin behaves see the
 ```
 open-bulk-buying.php        Bootstrap: table names, requires, hook wiring
 uninstall.php               Removes plugin-owned data
+phpcs.xml.dist              WordPress Coding Standards ruleset
+bin/                        install-wp-tests.sh / .ps1 — test database + config
+.github/workflows/ci.yml    PHPUnit matrix, JS build and tests
 inc/
   class-openbb-installer.php    Schema + versioned upgrades (DB_VERSION)
   class-openbb-settings.php     General settings option and defaults
@@ -71,8 +74,8 @@ src/
   sass/          Frontend stylesheet source
 assets/js/       Interactivity API modules (auth, signup, login, order, captcha, forms)
 languages/       POT, fr_CA PO/MO, JS JSON catalogues
-scripts/         Build helpers (source-map cleanup, translation compiler)
-tests/           PHPUnit bootstrap, base test case, test-*.php, Node tests
+scripts/         Build helpers (source-map cleanup, translation compiler, Node test runner)
+tests/           PHPUnit bootstrap, base test case, test-*.php, wp-tests-config-sample.php, JS tests
 ```
 
 ---
@@ -252,28 +255,36 @@ pass Turnstile.
 
 ## Testing
 
-PHP integration tests use the WordPress test library and need a **separate,
-disposable database**.
+Full guide: [testing.md](testing.md) — mental model, setup, how to read and
+write tests, and which class covers what.
 
 ```sh
-composer install
-# install the WP test library (e.g. with wp scaffold plugin-tests or the
-# install-wp-tests.sh script) and point WP_TESTS_DIR at its tests/phpunit dir
-$env:WP_TESTS_DIR = 'C:\path\to\wordpress-tests-lib'   # PowerShell
-vendor/bin/phpunit                                      # phpunit.xml.dist
-vendor/bin/phpunit -c phpunit-multisite.xml.dist        # multisite
-vendor/bin/phpunit --filter Test_OPENBB_Order_Policy    # one class
+composer install                 # PHPUnit + WordPress test library (vendor/wp-phpunit) + WPCS
+.\bin\install-wp-tests.ps1       # Windows: create the test DB, write tests/wp-tests-config.php
+bin/install-wp-tests.sh          # macOS / Linux
+
+composer test                                        # all PHP tests
+composer test -- --filter Test_OPENBB_Order_Policy   # one class
+composer test:multisite
+npm test                                             # Node + Jest tests
+composer lint                                        # WordPress Coding Standards
 ```
 
-`tests/class-openbb-testcase.php` provides factories for cycles, products,
-members and orders. Tests are organised by concern (`test-order-lifecycle.php`,
-`test-membership-fees.php`, `test-rest-admin.php`, …). The Node tests
-(`tests/*.cjs`, `*.test.js`) cover isolated UI helpers and run with
-`node --test tests/`.
+The test database is **dropped and recreated on every run**. The config
+(`tests/wp-tests-config.php`, gitignored) defaults to borrowing core files from
+the WordPress install the plugin lives in. Setting `WP_TESTS_DIR` to a
+`wordpress-develop` `tests/phpunit` directory overrides the Composer copy.
 
-When changing reservation or status logic, run `test-order-lifecycle`,
-`test-order-policy`, `test-cycle-preparation` and `test-model-persistence`
-together — they assert that SQL and PHP status definitions agree.
+`tests/class-openbb-testcase.php` provides fixtures for users, cycles and
+orders and nests the plugin's transactions as savepoints inside the per-test
+transaction. When changing reservation or status logic, run
+`Order_Lifecycle`, `Order_Policy`, `Cycle_Preparation` and
+`Model_Persistence` together — they assert that SQL and PHP status
+definitions agree.
+
+CI (`.github/workflows/ci.yml`) runs the PHP suite on 7.4 / 8.1 / 8.3 against
+MySQL 8, builds the JS and runs the JS tests. Linters are advisory until the
+existing baseline is clean.
 
 ---
 

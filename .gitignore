@@ -1,5 +1,7 @@
 /ref/
 /vendor/
 /.phpunit.result.cache
+/.phpcs-cache
 /node_modules/
 /build/
+/tests/wp-tests-config.php

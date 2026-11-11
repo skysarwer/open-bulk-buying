@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  php:
+    name: PHP ${{ matrix.php }} tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.1', '8.3']
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: openbb_tests
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli, mbstring, intl
+          coverage: none
+          tools: composer:v2
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Install WordPress test environment
+        run: bash bin/install-wp-tests.sh openbb_tests root root 127.0.0.1 latest true
+
+      - name: PHPUnit
+        run: composer test
+
+      # Lint is advisory until the existing baseline is clean; see docs/testing.md.
+      - name: PHP CodeSniffer
+        if: matrix.php == '8.3'
+        continue-on-error: true
+        run: composer lint -- --report=summary
+
+  js:
+    name: JavaScript build and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Node and Jest tests
+        run: npm test
+
+      # Linters are advisory until the existing baseline is clean.
+      - name: Lint JS
+        continue-on-error: true
+        run: npm run lint:js
+
+      - name: Lint CSS
+        continue-on-error: true
+        run: npm run lint:css

@@ -4,10 +4,28 @@
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"require-dev": {
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0",
 		"phpunit/phpunit": "^9.6",
+		"wp-coding-standards/wpcs": "^3.1",
+		"wp-phpunit/wp-phpunit": "^7.1",
 		"yoast/phpunit-polyfills": "^1.1 || ^2.0 || ^3.0 || ^4.0"
 	},
 	"config": {
-		"sort-packages": true
+		"sort-packages": true,
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"scripts": {
+		"test": "@php vendor/bin/phpunit",
+		"test:multisite": "@php vendor/bin/phpunit -c phpunit-multisite.xml.dist",
+		"lint": "@php vendor/bin/phpcs",
+		"lint:fix": "@php vendor/bin/phpcbf"
+	},
+	"scripts-descriptions": {
+		"test": "Run the PHPUnit suite (append -- --filter Test_OPENBB_Foo for one class).",
+		"test:multisite": "Run the PHPUnit suite against a multisite install.",
+		"lint": "Check PHP against the WordPress Coding Standards.",
+		"lint:fix": "Auto-fix what phpcs can fix."
 	}
 }

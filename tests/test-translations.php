@@ -32,7 +32,8 @@ class Test_OPENBB_Translations extends WP_UnitTestCase {
 		foreach ( $template->entries as $key => $source ) {
 			$entry = $french->entries[ $key ];
 			$this->assertNotContains( 'fuzzy', $entry->flags, $key );
-			$this->assertSame( $source->flags, $entry->flags, $key );
+			// Flag order is insignificant in gettext and varies between tools.
+			$this->assertEqualsCanonicalizing( $source->flags, $entry->flags, $key );
 			$this->assertSame( $source->plural, $entry->plural, $key );
 			$this->assertCount( $source->is_plural ? 2 : 1, $entry->translations, $key );
 

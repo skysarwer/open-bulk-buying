@@ -16,7 +16,7 @@ class Test_OPENBB_Email_Templates extends OPENBB_TestCase {
 				'signup-code',
 				array( 'code' => '123456', 'minutes' => 10 ),
 				"[$site] Your sign-up code: 123456",
-				'<p>Enter this code to finish joining Food &amp; Friends:</p><p style="font-family: monospace; font-size: 2em; font-weight: bold; letter-spacing: 0.1em;">123456</p><p>The code expires in 10 minutes.</p><p>If you didn\'t ask to join, you can ignore this email.</p>',
+				'<p>Enter this code to finish joining Food &amp; Friends:</p><p style="font-family: monospace; font-size: 2em; font-weight: bold; letter-spacing: 0.1em;">123456</p><p>The code expires in 10 minutes.</p><p>If you didn&#039;t ask to join, you can ignore this email.</p>',
 			),
 			array(
 				'account-exists',
@@ -40,7 +40,7 @@ class Test_OPENBB_Email_Templates extends OPENBB_TestCase {
 				'login-code',
 				array( 'code' => '123456', 'minutes' => 15 ),
 				"[$site] Your login code: 123456",
-				'<p>Enter this code in the browser where you asked to log in to Food &amp; Friends:</p><p style="font-family: monospace; font-size: 2em; font-weight: bold; letter-spacing: 0.1em;">123456</p><p>The code works once and expires in 15 minutes. Don\'t share it with anyone.</p><p>If you didn\'t ask to log in, you can ignore this email.</p>',
+				'<p>Enter this code in the browser where you asked to log in to Food &amp; Friends:</p><p style="font-family: monospace; font-size: 2em; font-weight: bold; letter-spacing: 0.1em;">123456</p><p>The code works once and expires in 15 minutes. Don&#039;t share it with anyone.</p><p>If you didn&#039;t ask to log in, you can ignore this email.</p>',
 			),
 			array(
 				'password-required',

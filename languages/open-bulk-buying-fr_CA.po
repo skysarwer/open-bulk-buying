@@ -4838,7 +4838,7 @@ msgstr "Les bordereaux de commande n’ont pas pu être préparés."
 
 #. translators: %d: maximum number of order slips.
 #: inc/documents/class-openbb-order-slip.php:100
-#, php-format,js-format
+#, php-format
 msgid "Print at most %d order slips at a time. Narrow the list and try again."
 msgstr "Imprimez au plus %d bordereaux de commande à la fois. Réduisez la liste et réessayez."
 
