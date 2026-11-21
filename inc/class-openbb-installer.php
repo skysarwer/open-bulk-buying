@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class OPENBB_Installer {
 
-	const DB_VERSION        = '5';
+	const DB_VERSION        = '7';
 	const DB_VERSION_OPTION = 'openbb_db_version';
 
 	public static function maybe_upgrade(): void {
@@ -79,9 +79,62 @@ class OPENBB_Installer {
 		if ( ! $cycle_column || 'YES' !== $cycle_column->Null ) {
 			return false;
 		}
+		if ( ! $wpdb->get_var( "SHOW COLUMNS FROM {$wpdb->openbb_orders} LIKE 'extra_container_credit'" ) ) {
+			return false;
+		}
+		if ( version_compare( (string) get_option( self::DB_VERSION_OPTION, '0' ), '7', '<' )
+			&& ! self::cap_existing_food_aid() ) {
+			return false;
+		}
 		update_option( self::DB_VERSION_OPTION, self::DB_VERSION, true );
 
 		return true;
+	}
+
+	/** Retain unpaid grants up to the food value; never rewrite settled orders. */
+	public static function cap_existing_food_aid(): bool {
+		global $wpdb;
+
+		if ( ! OPENBB_Inventory::lock() ) {
+			return false;
+		}
+		try {
+			$ids = $wpdb->get_col(
+				"SELECT id FROM {$wpdb->openbb_orders}
+				WHERE status IN ('draft', 'submitted') AND paid_at IS NULL AND collected_at IS NULL AND aid_approved > 0"
+			);
+			if ( $wpdb->last_error || false === $wpdb->query( 'START TRANSACTION' ) ) {
+				return false;
+			}
+			foreach ( $ids as $id ) {
+				$order = OPENBB_Orders::get( (int) $id );
+				if ( ! $order ) {
+					$wpdb->query( 'ROLLBACK' );
+					return false;
+				}
+				$aid   = $order->aid_approved;
+				$total = $order->total;
+				$order->recalculate_totals();
+				if ( $wpdb->last_error ) {
+					$wpdb->query( 'ROLLBACK' );
+					return false;
+				}
+				if ( $aid === $order->aid_approved && $total === $order->total ) {
+					continue;
+				}
+				if ( ! $order->save() ) {
+					$wpdb->query( 'ROLLBACK' );
+					return false;
+				}
+			}
+			if ( false === $wpdb->query( 'COMMIT' ) ) {
+				$wpdb->query( 'ROLLBACK' );
+				return false;
+			}
+			return true;
+		} finally {
+			OPENBB_Inventory::unlock();
+		}
 	}
 
 	/**

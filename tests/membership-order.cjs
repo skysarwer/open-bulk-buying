@@ -21,6 +21,7 @@ function basket( overrides = {} ) {
 		membershipFee: 1000,
 		donation: 200,
 		aidApproved: 0,
+		extraCredit: 0,
 		currency: 'CAD',
 		digits: 2,
 		locale: 'en-CA',
@@ -52,8 +53,13 @@ test( 'membership fee is included exactly once in basket total', () => {
 	assert.equal( state.count, 2, 'The fee is not a product quantity.' );
 } );
 
-test( 'aid cannot discount membership fees or donations', () => {
-	assert.equal( basket( { aidApproved: 10000 } ).totalText, '$12.00' );
+test( 'aid cannot discount containers, membership fees or donations', () => {
+	const state = basket( { aidApproved: 10000 } );
+	assert.equal( state.aidText, '-$5.00' );
+	assert.equal( state.totalText, '$14.00' );
+	state.extraCredit = 200;
+	assert.equal( state.totalText, '$12.00' );
+	assert.equal( state.aidText, '-$5.00', 'Waiving containers does not change food aid.' );
 } );
 
 test( 'pending or already settled fee is not included again', () => {
@@ -71,4 +77,20 @@ test( 'empty basket does not charge a membership fee', () => {
 test( 'container credits reduce goods, not membership fee', () => {
 	const state = basket( { items: [ { id: 1, qty: 2, own: true } ] } );
 	assert.equal( state.totalText, '$17.00' );
+} );
+
+test( 'extra container credit shows the amount actually taken off remaining goods', () => {
+	const state = basket( { items: [ { id: 1, qty: 2, own: true } ], aidApproved: 100, extraCredit: 350 } );
+	assert.equal( state.creditText, '-$2.00' );
+	assert.equal( state.extraCreditText, '-$3.50' );
+	assert.equal( state.totalText, '$12.50' );
+	state.items[ 0 ].qty = 1;
+	assert.equal( state.extraCreditText, '-$1.50' );
+	assert.equal( state.totalText, '$12.00' );
+} );
+
+test( 'previously settled aid is not rewritten by the food-only rule', () => {
+	const state = basket( { status: 'prepaid', aidApproved: 700 } );
+	assert.equal( state.aidText, '-$7.00' );
+	assert.equal( state.totalText, '$12.00' );
 } );

@@ -725,6 +725,28 @@ msgstr ""
 msgid "Container credit"
 msgstr ""
 
+#: inc/documents/class-openbb-order-slip.php:169
+#: inc/emails/class-openbb-order-emails.php:73
+#: inc/frontend/templates/order-cancelled.php:45
+#: inc/frontend/templates/order-totals.php:32
+#: src/admin/screens/orders/editor.js:642
+#: src/admin/screens/orders/editor.js:727
+msgid "Extra container credit"
+msgstr ""
+
+#: src/admin/screens/orders/editor.js:728
+msgid "Credit returned containers or waive container charges. Membership fees and donations cannot be reduced."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:222
+msgid "Only staff can set the extra container credit."
+msgstr ""
+
+#: inc/model/order/class-openbb-order-editor.php:226
+#: src/admin/screens/orders/editor.js:259
+msgid "Enter a non-negative extra container credit."
+msgstr ""
+
 #: inc/emails/class-openbb-order-emails.php:63
 #: inc/frontend/templates/order-totals.php:28
 #: src/admin/screens/orders/editor.js:570
@@ -1241,7 +1263,19 @@ msgid "I would like to request financial aid for this order"
 msgstr ""
 
 #: inc/frontend/class-openbb-order-form-view.php:488
-msgid "Requests are confidential. The amount depends on the donations available and is taken off your total if approved. We may ask you to verify your financial situation."
+msgid "Requests are confidential. Aid depends on available donations and covers food only, not container charges, membership fees or donations. We may ask you to verify your financial situation."
+msgstr ""
+
+#. translators: 1: percentage, 2: number of orders, 3: amount distributed, 4: eligible food total.
+#: src/admin/screens/cycles/financial-aid.js:269
+#, js-format
+msgid "Each approved, unpaid order gets %1$s%% off its food (%2$d orders, %3$s of %4$s). Containers, membership fees and donations are never covered."
+msgstr ""
+
+#. translators: 1: percentage, 2: number of orders.
+#: src/admin/screens/cycles/financial-aid.js:301
+#, js-format
+msgid "Apply a %1$s%% discount to the food on %2$d approved, unpaid orders? Their totals will change. You can run this again if food quantities, donations or approvals change; paid and fulfilled orders keep the aid they already received."
 msgstr ""
 
 #: inc/frontend/class-openbb-order-form-view.php:495

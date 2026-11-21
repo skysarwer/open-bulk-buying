@@ -19,6 +19,7 @@ async function editor( overrides = {}, failure = null ) {
 		id: 42, member: { id: 7, name: 'Applicant' }, status: 'submitted',
 		status_label: 'Submitted', donation: 0, staff_note: '', lines: [],
 		subtotal: 2500, container_credit: 0, total: 2500, total_formatted: '$25.00',
+		extra_container_credit: 0, applied_extra_container_credit: 0,
 		is_locked: true, reason_required_statuses: [], can_review_membership_payment: true,
 		...overrides,
 	};
@@ -57,7 +58,7 @@ async function editor( overrides = {}, failure = null ) {
 				case '../../utils/config':
 					return { can: () => true, config: { urls: {}, orderStatuses: {} } };
 				case '../../utils/format':
-					return { toMinor: ( value ) => Number( value ) * 100, toMajor: ( value ) => value / 100, formatMoney: String, formatQty: String };
+					return { toMinor: ( value ) => Number( value ) * 100, toMajor: ( value ) => value / 100, minorFactor: () => 100, formatMoney: String, formatQty: String };
 				case '@wordpress/date':
 					return { getSettings: () => ( { formats: {} } ) };
 				case '../../utils/api':
@@ -234,6 +235,25 @@ const cycleLines = [
 	{ id: 1, product_id: 5, line_type: 'product', product_name: 'Oats', unit_price: 250, container_charge: 0, qty_requested: 2, qty_prepared: null, qty_final: null, max_qty: 10 },
 	{ id: 2, product_id: 0, line_type: 'membership_fee', product_name: 'Membership fee', unit_price: 1000, container_charge: 0, qty_requested: 1, qty_prepared: null, qty_final: null, max_qty: 1 },
 ];
+
+test( 'food-only aid previews leave container fees payable for either aid visibility permission', async () => {
+	for ( const aidFields of [ {}, { aid_approved: 500 } ] ) {
+		const view = await editor( {
+			can_review_membership_payment: false, can_edit: true, can_edit_lines: true,
+			can_edit_amounts: true, is_locked: false, editable_statuses: [ 'submitted' ],
+			lines: [ { ...cycleLines[ 0 ], container_charge: 100 } ],
+			subtotal: 700, total: 200, ...aidFields,
+		} );
+		const field = nodes( view.render(), ( node ) => node.props.label === 'Extra container credit' )[ 0 ];
+		field.props.onChange( '2' );
+		const rows = nodes( view.render(), ( node ) => node.type === 'tr' );
+		const totalRow = rows.find( ( row ) => nodes( row, ( node ) => node.type === 'th' && node.props.children.includes( 'Estimated total' ) ).length );
+		assert.equal( nodes( totalRow, ( node ) => node.type === 'strong' )[ 0 ].props.children[ 0 ], '0' );
+		await buttons( view.render(), 'Save order' )[ 0 ].props.onClick();
+		assert.equal( view.requests[ 1 ].options.data.extra_container_credit, 200 );
+		assert.equal( view.requests[ 1 ].options.data.aid_approved, undefined );
+	}
+} );
 
 function feeRow( view ) {
 	const row = nodes( view.render(), ( node ) => typeof node.type === 'function' && node.props.line?.line_type === 'membership_fee' )[ 0 ];

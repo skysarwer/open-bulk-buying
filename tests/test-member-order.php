@@ -321,6 +321,40 @@ class Test_OPENBB_Member_Order extends OPENBB_TestCase {
 		$this->assertEqualSets( array( $this->oats->id, $this->jars->id ), wp_list_pluck( $sections[3]['products'], 'id' ) );
 	}
 
+	public function test_member_basket_cannot_overwrite_a_staff_credit(): void {
+		$lines = array( $this->line( $this->jars, 1, true ) );
+		$order = $this->save( array( 'lines' => $lines ) );
+		$order = OPENBB_Order_Editor::apply( $order, array( 'extra_container_credit' => 350 ), $this->coordinator );
+		$this->assertSame( 550, $order->total );
+
+		rest_get_server();
+		$request = new WP_REST_Request( 'POST', '/openbb/v1/order' );
+		$request->set_body_params( array( 'cycle_id' => $this->cycle->id, 'lines' => $lines, 'extra_container_credit' => 900 ) );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 550, $response->get_data()['total'] );
+		$this->assertSame( 350, OPENBB_Orders::get( $order->id )->extra_container_credit );
+	}
+
+	public function test_food_aid_and_container_waiver_match_server_rendered_member_totals(): void {
+		$order = $this->save( array( 'lines' => array( $this->line( $this->jars, 1 ) ) ) );
+		$order->aid_approved = 1000;
+		$this->assertTrue( $order->save() );
+		$this->assertSame( 900, $order->aid_approved );
+		$this->assertSame( 100, $order->total );
+		OPENBB_Order_Form_View::render();
+		$state = wp_interactivity_state( 'openbb/order' );
+		$this->assertSame( openbb_format_money( -900 ), $state['aidText'] );
+		$this->assertSame( openbb_format_money( 100 ), $state['totalText'] );
+		$order = OPENBB_Order_Editor::apply( $order, array( 'extra_container_credit' => 100 ), $this->coordinator );
+		$this->assertInstanceOf( OPENBB_Order::class, $order );
+		OPENBB_Order_Form_View::render();
+		$state = wp_interactivity_state( 'openbb/order' );
+		$this->assertSame( openbb_format_money( -900 ), $state['aidText'] );
+		$this->assertSame( openbb_format_money( -100 ), $state['extraCreditText'] );
+		$this->assertSame( openbb_format_money( 0 ), $state['totalText'] );
+	}
+
 	public function test_rest_route_saves_and_reads_the_members_own_order(): void {
 		rest_get_server();
 

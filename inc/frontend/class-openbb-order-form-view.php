@@ -219,6 +219,7 @@ final class OPENBB_Order_Form_View {
 		$totals  = array(
 			'count'    => 0,
 			'subtotal' => 0,
+			'food'     => 0,
 			'credit'   => 0,
 			'savings'  => 0,
 			'units'    => 0,
@@ -230,13 +231,17 @@ final class OPENBB_Order_Form_View {
 			);
 			$totals['count']    += $item['qty'];
 			$totals['subtotal'] += $item['qty'] * ( $price['price'] + $price['charge'] );
+			$totals['food']     += $item['qty'] * $price['price'];
 			$totals['credit']   += $item['own'] ? $item['qty'] * $price['charge'] : 0;
 			if ( $price['charge'] > 0 && ! $item['own'] ) {
 				$totals['savings'] += $item['qty'] * $price['charge'];
 				$totals['units']   += $item['qty'];
 			}
 		}
-		$goods = max( 0, $totals['subtotal'] - $totals['credit'] - $order_state['aid_approved'] );
+		$settled = in_array( $order_state['status'], array( OPENBB_Order::STATUS_PREPAID, OPENBB_Order::STATUS_FULFILLED ), true );
+		$aid = min( $order_state['aid_approved'], $settled ? $totals['subtotal'] - $totals['credit'] : $totals['food'] );
+		$goods = max( 0, $totals['subtotal'] - $totals['credit'] - $aid );
+		$extra_credit = min( $goods, $order_state['extra_container_credit'] );
 		$count = sprintf( _n( '%d item', '%d items', $totals['count'], 'open-bulk-buying' ), $totals['count'] );
 
 		wp_interactivity_state(
@@ -257,6 +262,7 @@ final class OPENBB_Order_Form_View {
 				'aidStatus'      => $order_state['aid_status'],
 				'aidApproved'    => $order_state['aid_approved'],
 				'donation'       => $order_state['donation'],
+				'extraCredit'    => $order_state['extra_container_credit'],
 				'membershipFee'  => $order_state['membership_fee'],
 				'membershipPending' => $order_state['membership_pending'],
 				'products'       => (object) $products,
@@ -332,13 +338,15 @@ final class OPENBB_Order_Form_View {
 				'containerTip'   => sprintf( $messages['containerTip'], $money( $totals['savings'] ), $totals['units'] ),
 				'hasCredit'      => $totals['credit'] > 0,
 				'creditText'     => $money( -$totals['credit'] ),
+				'hasExtraCredit' => $extra_credit > 0,
+				'extraCreditText' => $money( -$extra_credit ),
 				'hasAidApproved' => $order_state['aid_approved'] > 0,
-				'aidText'        => $money( -min( $order_state['aid_approved'], $totals['subtotal'] - $totals['credit'] ) ),
+				'aidText'        => $money( -$aid ),
 				'hasDonation'    => $order_state['donation'] > 0,
 				'donationText'   => $money( $order_state['donation'] ),
 				'hasMembershipFee' => $order_state['membership_fee'] > 0 && $totals['count'] > 0,
 				'membershipFeeText' => $money( $order_state['membership_fee'] ),
-				'totalText'      => $money( $goods + $order_state['donation'] + ( $totals['count'] > 0 ? $order_state['membership_fee'] : 0 ) ),
+				'totalText'      => $money( $goods - $extra_credit + $order_state['donation'] + ( $totals['count'] > 0 ? $order_state['membership_fee'] : 0 ) ),
 				'isSubmitted'    => OPENBB_Order::STATUS_SUBMITTED === $order_state['status'],
 				'locked'         => ! $order_state['editable'],
 				'canFinalize'    => $order_state['editable'] && $totals['count'] > 0,
@@ -485,7 +493,7 @@ final class OPENBB_Order_Form_View {
 			'aid'         => array(
 				'name'      => 'aid',
 				'label'     => __( 'I would like to request financial aid for this order', 'open-bulk-buying' ),
-				'help'      => __( 'Requests are confidential. The amount depends on the donations available and is taken off your total if approved. We may ask you to verify your financial situation.', 'open-bulk-buying' ),
+				'help'      => __( 'Requests are confidential. Aid depends on available donations and covers food only, not container charges, membership fees or donations. We may ask you to verify your financial situation.', 'open-bulk-buying' ),
 				'kind'      => 'checkbox',
 				'value'     => OPENBB_Order::AID_NONE !== $order_state['aid_status'],
 				'id_prefix' => $prefix,

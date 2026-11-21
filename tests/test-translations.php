@@ -41,8 +41,8 @@ class Test_OPENBB_Translations extends WP_UnitTestCase {
 				$original = $index ? $source->plural : $source->singular;
 				$this->assertNotSame( '', $translation, $key );
 				$this->assertSame(
-					$this->token_matches( '/%(?:\d+\$)?[-+0 #]*(?:\d+|\*)?(?:\.\d+)?[bcdeEfFgGiosuxX]/', $original ),
-					$this->token_matches( '/%(?:\d+\$)?[-+0 #]*(?:\d+|\*)?(?:\.\d+)?[bcdeEfFgGiosuxX]/', $translation ),
+					$this->token_matches( '/%(?:\d+\$)?[-+0 #]*(?:\d+|\*)?(?:\.\d+)?[bcdeEfFgGiosuxX]/', str_replace( '%%', '', $original ) ),
+					$this->token_matches( '/%(?:\d+\$)?[-+0 #]*(?:\d+|\*)?(?:\.\d+)?[bcdeEfFgGiosuxX]/', str_replace( '%%', '', $translation ) ),
 					$key
 				);
 				$this->assertSame(

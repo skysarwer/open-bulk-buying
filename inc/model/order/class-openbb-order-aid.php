@@ -117,17 +117,11 @@ class OPENBB_Order_Aid {
 	}
 
 	/**
-	 * The part of an order that aid may reduce: goods after container credit.
-	 * Membership fees and donations are never covered.
+	 * Food prices only. Container charges and both kinds of container credit have
+	 * no effect on eligibility. Membership fees and donations are never covered.
 	 */
 	public static function eligible_amount( OPENBB_Order $order ): int {
-		$eligible = 0;
-		foreach ( $order->get_lines() as $line ) {
-			if ( ! $line->is_membership_fee() ) {
-				$eligible += $line->calculate_total() - $line->calculate_container_credit();
-			}
-		}
-		return max( 0, $eligible );
+		return $order->food_subtotal();
 	}
 
 	/**

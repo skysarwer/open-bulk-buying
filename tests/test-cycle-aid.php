@@ -220,6 +220,33 @@ class Test_OPENBB_Cycle_Aid extends OPENBB_TestCase {
 		$this->assertSame( 409, $this->api( 'POST', "/cycles/{$this->cycle_id}/aid/distribute", array( 'confirmed' => true ) )->get_status() );
 	}
 
+	public function test_food_aid_is_identical_regardless_of_container_charges_and_credits(): void {
+		$orders = array();
+		foreach ( array( array( 300, false, 2000 ), array( 700, true, 0 ) ) as $container ) {
+			$order = new OPENBB_Order( array(
+				'cycle_id' => $this->cycle_id, 'user_id' => $this->make_user( 'member' ),
+				'status' => 'submitted', 'aid_status' => 'approved', 'extra_container_credit' => $container[2],
+			) );
+			$this->assertTrue( $order->save_with_lines( array(
+				new OPENBB_Order_Line( array( 'unit_price' => 1000, 'container_charge' => $container[0], 'own_container' => $container[1], 'qty_requested' => 1 ) ),
+				new OPENBB_Order_Line( array( 'line_type' => 'membership_fee', 'unit_price' => 400, 'qty_requested' => 1 ) ),
+			) ) );
+			$orders[] = $order;
+		}
+		$donor = OPENBB_Orders::get( $this->order_id );
+		$donor->donation = 1000;
+		$this->assertTrue( $donor->save() );
+		$plan = OPENBB_Order_Aid::distribute( $this->cycle_id, $this->reviewer );
+		$this->assertNotWPError( $plan );
+		$this->assertSame( 2000, $plan['eligible'] );
+		$this->assertSame( 50.0, $plan['percent'] );
+		foreach ( $orders as $order ) {
+			$this->assertSame( 500, OPENBB_Orders::get( $order->id )->aid_approved );
+		}
+		$this->assertSame( 400, OPENBB_Orders::get( $orders[0]->id )->total );
+		$this->assertSame( 900, OPENBB_Orders::get( $orders[1]->id )->total );
+	}
+
 	public function test_members_non_reviewers_and_request_owners_cannot_decide(): void {
 		$owner = OPENBB_Orders::get( $this->order_id )->user_id;
 		add_user_meta( $owner, openbb_member_meta_key( 'roles' ), 'aid_reviewer' );

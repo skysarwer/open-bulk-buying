@@ -24,6 +24,7 @@ class OPENBB_Orders {
 				currency char(3) NOT NULL default '',
 				subtotal bigint(20) NOT NULL default 0,
 				container_credit bigint(20) NOT NULL default 0,
+				extra_container_credit bigint(20) NOT NULL default 0,
 				donation bigint(20) NOT NULL default 0,
 				aid_status varchar(20) NOT NULL default 'none',
 				aid_reason text NULL,

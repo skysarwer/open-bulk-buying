@@ -34,6 +34,7 @@ class OPENBB_Order extends OPENBB_Entity {
 	public $currency         = '';
 	public $subtotal         = 0;
 	public $container_credit = 0;
+	public $extra_container_credit = 0;
 	public $donation         = 0;
 	public $aid_status       = self::AID_NONE;
 	public $aid_reason       = '';
@@ -65,6 +66,7 @@ class OPENBB_Order extends OPENBB_Entity {
 		$this->language         = (string) $this->language;
 		$this->subtotal         = (int) $this->subtotal;
 		$this->container_credit = (int) $this->container_credit;
+		$this->extra_container_credit = (int) $this->extra_container_credit;
 		$this->donation         = (int) $this->donation;
 		$this->aid_reason       = (string) $this->aid_reason;
 		$this->aid_requested    = (int) $this->aid_requested;
@@ -169,6 +171,7 @@ class OPENBB_Order extends OPENBB_Entity {
 				'currency'         => $this->currency,
 				'subtotal'         => $this->subtotal,
 				'container_credit' => $this->container_credit,
+				'extra_container_credit' => $this->extra_container_credit,
 				'donation'         => $this->donation,
 				'aid_status'       => $this->aid_status,
 				'aid_reason'       => $this->aid_reason,
@@ -191,7 +194,7 @@ class OPENBB_Order extends OPENBB_Entity {
 				'revision'         => $this->revision,
 			),
 			array(
-				'%d', '%d', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%d',
+				'%d', '%d', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%s', '%s', '%d',
 				'%d', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%s', '%d', '%d', '%s', '%s', '%s', '%d',
 			)
 		);
@@ -214,9 +217,12 @@ class OPENBB_Order extends OPENBB_Entity {
 			return false;
 		}
 
-		$was_new     = empty( $this->id );
-		$this->lines = null;
-		$saved       = $this->save();
+		$was_new       = empty( $this->id );
+		$this->lines   = null;
+		$allocated_aid = $this->aid_approved;
+		$saved         = $this->save();
+		// Cap the allocation against the resulting basket, not the previous lines.
+		$this->aid_approved = $allocated_aid;
 		foreach ( $lines as $line ) {
 			if ( ! $saved ) {
 				break;
@@ -319,16 +325,18 @@ class OPENBB_Order extends OPENBB_Entity {
 
 	/**
 	 * Recomputes subtotal, container_credit and total from the lines; call before
-	 * every save so the stored amounts never drift from the lines. Approved aid can
-	 * reduce the amount owed for goods to zero but not below, and never offsets fees or donations.
+	 * every save so the stored amounts never drift from the lines. Unpaid aid is
+	 * capped to food prices alone, releasing excess allocation back to the pool.
+	 * Settled orders retain their historical allocation.
 	 *
 	 * @param OPENBB_Order_Line[]|null $lines Defaults to the saved lines.
 	 */
 	public function recalculate_totals( ?array $lines = null ): void {
+		$lines            = $lines ?? $this->get_lines();
 		$subtotal         = 0;
 		$container_credit = 0;
 		$membership_fee   = 0;
-		foreach ( $lines ?? $this->get_lines() as $line ) {
+		foreach ( $lines as $line ) {
 			$subtotal         += $line->calculate_total();
 			$container_credit += $line->calculate_container_credit();
 			if ( $line->is_membership_fee() ) {
@@ -338,7 +346,31 @@ class OPENBB_Order extends OPENBB_Entity {
 
 		$this->subtotal         = $subtotal;
 		$this->container_credit = $container_credit;
-		$this->total            = max( 0, $subtotal - $container_credit - $membership_fee - $this->aid_approved ) + $membership_fee + $this->donation;
+		if ( ! $this->paid_at && ! $this->is_collected()
+			&& in_array( $this->status, array( self::STATUS_DRAFT, self::STATUS_SUBMITTED ), true ) ) {
+			$this->aid_approved = min( $this->aid_approved, $this->food_subtotal( $lines ) );
+		}
+		$this->total            = max( 0, $this->goods_due( $membership_fee ) - $this->extra_container_credit ) + $membership_fee + $this->donation;
+	}
+
+	/** Product prices only; neither container charges nor credits affect food aid. */
+	public function food_subtotal( ?array $lines = null ): int {
+		$food = 0;
+		foreach ( $lines ?? $this->get_lines() as $line ) {
+			if ( ! $line->is_membership_fee() ) {
+				$food += (int) round( $line->get_quantity() * $line->unit_price );
+			}
+		}
+		return $food;
+	}
+
+	private function goods_due( int $membership_fee ): int {
+		return max( 0, $this->subtotal - $this->container_credit - $this->aid_approved - $membership_fee );
+	}
+
+	/** The portion of the staff-entered credit usable on this order's remaining goods. */
+	public function applied_extra_container_credit( ?int $membership_fee = null ): int {
+		return $this->extra_container_credit ? min( $this->extra_container_credit, $this->goods_due( $membership_fee ?? $this->membership_fee() ) ) : 0;
 	}
 
 	public function membership_fee(): int {

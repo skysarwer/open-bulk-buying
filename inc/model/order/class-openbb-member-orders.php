@@ -308,6 +308,7 @@ class OPENBB_Member_Orders {
 			'member_note'   => $order ? $order->member_note : '',
 			'subtotal'      => $order ? $order->subtotal : 0,
 			'credit'        => $order ? $order->container_credit : 0,
+			'extra_container_credit' => $order ? $order->extra_container_credit : 0,
 			'total'         => $order ? $order->total : 0,
 		);
 	}

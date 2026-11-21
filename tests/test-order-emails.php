@@ -92,6 +92,19 @@ class Test_OPENBB_Order_Emails extends OPENBB_TestCase {
 		$this->assertStringNotContainsString( 'Staff note', $mail['message'] );
 	}
 
+	public function test_receipt_itemizes_only_the_credit_applied_to_goods(): void {
+		update_option( OPENBB_Settings::GENERAL_OPTION, array( 'membership_fee_amount' => 2000 ) );
+		$order = $this->create_order();
+		$this->assertStringNotContainsString( 'Extra container credit', $this->mail[0]['message'] );
+		$order = OPENBB_Order_Editor::apply( $order, array( 'extra_container_credit' => 1000, 'donation' => 100 ), $this->member );
+		$this->assertInstanceOf( OPENBB_Order::class, $order );
+		$this->assertSame( 2100, $order->total );
+		$this->assertSame( 750, OPENBB_Order_Aid::eligible_amount( $order ), 'Credits never reduce food-aid eligibility.' );
+		$this->assertStringContainsString( '>Extra container credit<', $this->mail[1]['message'] );
+		$this->assertStringContainsString( esc_html( openbb_format_money( -900, $order->currency ) ), $this->mail[1]['message'] );
+		$this->assertStringNotContainsString( esc_html( openbb_format_money( -1000, $order->currency ) ), $this->mail[1]['message'] );
+	}
+
 	public function test_membership_emails_show_staff_note_only_when_enabled_and_present(): void {
 		$this->configure_membership_fee();
 		$claim = OPENBB_Membership_Fees::claim( $this->member, 'Reference' );

@@ -28,6 +28,10 @@ defined( 'ABSPATH' ) || exit;
 		<dt><?php esc_html_e( 'Donation', 'open-bulk-buying' ); ?></dt>
 		<dd data-wp-text="state.donationText"></dd>
 	</div>
+	<div class="openbb-totals__row" data-wp-bind--hidden="!state.hasExtraCredit">
+		<dt><?php esc_html_e( 'Extra container credit', 'open-bulk-buying' ); ?></dt>
+		<dd data-wp-text="state.extraCreditText"></dd>
+	</div>
 	<div class="openbb-totals__row" data-wp-bind--hidden="!state.hasMembershipFee">
 		<dt><?php esc_html_e( 'Membership fee', 'open-bulk-buying' ); ?></dt>
 		<dd data-wp-text="state.membershipFeeText"></dd>

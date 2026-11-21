@@ -152,6 +152,16 @@ order asks for a **reason** (entered above **Save order**) except while the
 cycle is in Distribution or inside the pickup window. Order quantities are
 checked against available stock on every save.
 
+**Extra container credit.** When a member returns extra containers, enter their
+combined value in **Extra container credit** (for example, `3.50` for a `1.50`
+jar and a `2.00` jar). Clear the field to remove the credit. Only staff who can
+edit order amounts can set it. The amount applied cannot exceed the remaining
+cost of goods and containers after own-container credits and allocated aid; it
+never reduces membership fees or donations. Staff may also use it to waive
+container charges, including when aid covers 100% of the food. Apply the credit
+before recording payment. It does not change aid eligibility or allocation.
+The applied credit appears on receipts and pickup slips.
+
 **Prepaid and Fulfilled** are chosen from the **Status** dropdown and ask for
 confirmation. If there are unsaved edits, they are saved first. Both are
 available for any submitted/prepaid uncollected order at every stage,
@@ -186,23 +196,33 @@ name to review the reason, status and decision date, then **Approve** or
 **Decline** (requires **Decide aid**; **View aid requests** alone is
 read-only). Decisions record who decided and when, and change no amounts.
 
-**Distribute aid** splits the pool evenly as a percentage off goods:
+**Distribute aid** splits the pool evenly as a percentage off food:
 
 ```
-percent = min( 100%, pool ÷ total approved goods )
+percent = min( 100%, pool ÷ total approved food )
 ```
 
 - **Pool** = this cycle's submitted-order donations − aid already fixed on
   paid or collected orders.
-- **Goods** = line totals after container credits. Membership fees and
-  donations are never covered.
+- **Food** = product prices times quantities, excluding container charges.
+  Neither own-container nor extra-container credits affect this amount.
+  Container charges, membership fees and donations are never covered by aid.
 - Cents are rounded down per order; leftover cents go to the largest
   remainders so the pool is used exactly.
 
 The percentage is previewed before you confirm. Distribution updates order
-totals and can be rerun as donations or approvals change; paid and fulfilled
-orders keep the aid they already received. It is unavailable in completed
-cycles.
+totals and can be rerun as food quantities, donations or approvals change; paid
+and fulfilled orders keep the aid they already received. It is unavailable in
+completed cycles.
+
+Reducing an unpaid order's food below its allocated aid automatically reduces
+that allocation and releases the excess back to the pool. Increasing the food
+later does not automatically restore aid: run **Distribute aid** to rebalance.
+Container changes never require reallocation.
+
+When upgrading to food-only aid, existing unpaid grants are capped at their
+food value; paid orders are unchanged. Run **Distribute aid** to rebalance
+existing unpaid grants under the new food-only percentage.
 
 ---
 

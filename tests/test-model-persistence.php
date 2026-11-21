@@ -7,6 +7,71 @@
 
 class Test_OPENBB_Model_Persistence extends OPENBB_TestCase {
 
+	public function test_food_aid_cap_uses_the_resulting_basket(): void {
+		$order = new OPENBB_Order( array(
+			'cycle_id' => $this->make_cycle( 'ordering' ), 'user_id' => $this->make_user( 'member' ), 'aid_approved' => 1500,
+		) );
+		$this->assertTrue( $order->save_with_lines( array(
+			new OPENBB_Order_Line( array( 'unit_price' => 1000, 'container_charge' => 300, 'qty_requested' => 1 ) ),
+		) ) );
+		$saved = OPENBB_Orders::get( $order->id );
+		$this->assertSame( 1000, $saved->aid_approved );
+		$this->assertSame( 300, $saved->total );
+	}
+
+	public function test_food_aid_upgrade_caps_unpaid_allocations_and_preserves_paid_history(): void {
+		global $wpdb;
+		$orders = array();
+		foreach ( array( 'submitted', 'prepaid' ) as $status ) {
+			$order = new OPENBB_Order( array(
+				'cycle_id' => $this->make_cycle( 'processing' ), 'user_id' => $this->make_user( 'member' ), 'currency' => 'CAD',
+			) );
+			$this->assertTrue( $order->save_with_lines( array(
+				new OPENBB_Order_Line( array( 'unit_price' => 1000, 'container_charge' => 300, 'qty_requested' => 1 ) ),
+			) ) );
+			$this->assertNotFalse( $wpdb->update( $wpdb->openbb_orders, array(
+				'status' => $status, 'aid_status' => 'approved', 'aid_approved' => 1300, 'total' => 0,
+				'paid_at' => 'prepaid' === $status ? '2026-01-01 12:00:00' : null,
+				'paid_amount' => 'prepaid' === $status ? 0 : null,
+			), array( 'id' => $order->id ) ) );
+			$orders[ $status ] = $order;
+		}
+		$this->assertTrue( OPENBB_Installer::cap_existing_food_aid() );
+		$unpaid = OPENBB_Orders::get( $orders['submitted']->id );
+		$paid = OPENBB_Orders::get( $orders['prepaid']->id );
+		$this->assertSame( 1000, $unpaid->aid_approved );
+		$this->assertSame( 300, $unpaid->total );
+		$this->assertSame( 1300, $paid->aid_approved );
+		$this->assertSame( 0, $paid->total );
+		$this->assertSame( $orders['prepaid']->revision, $paid->revision );
+		$paid->staff_note = 'Historical receipt retained';
+		$this->assertTrue( $paid->save() );
+		$this->assertSame( 1300, $paid->aid_approved );
+		$this->assertSame( 0, $paid->total );
+		$this->assertTrue( OPENBB_Installer::cap_existing_food_aid() );
+		$this->assertSame( $unpaid->revision, OPENBB_Orders::get( $unpaid->id )->revision );
+	}
+
+	public function test_food_aid_upgrade_does_not_write_after_a_failed_line_read(): void {
+		global $wpdb;
+		$order_id = $this->make_order( $this->make_cycle( 'processing' ), $this->make_user( 'member' ) );
+		$this->assertNotFalse( $wpdb->update( $wpdb->openbb_orders, array( 'aid_approved' => 1000 ), array( 'id' => $order_id ) ) );
+		$fail = static function ( $query ) use ( $wpdb ) {
+			return 0 === strpos( $query, "SELECT * FROM {$wpdb->openbb_order_lines}" )
+				? 'SELECT * FROM openbb_missing_food_aid_test_table'
+				: $query;
+		};
+		$suppress = $wpdb->suppress_errors( true );
+		add_filter( 'query', $fail );
+		try {
+			$this->assertFalse( OPENBB_Installer::cap_existing_food_aid() );
+		} finally {
+			remove_filter( 'query', $fail );
+			$wpdb->suppress_errors( $suppress );
+		}
+		$this->assertSame( 1000, OPENBB_Orders::get( $order_id )->aid_approved );
+	}
+
 	public function test_order_and_line_save_and_delete(): void {
 		$user_id = $this->make_user( 'member' );
 		$cycle   = new OPENBB_Cycle( array( 'name' => 'Persistence cycle' ) );

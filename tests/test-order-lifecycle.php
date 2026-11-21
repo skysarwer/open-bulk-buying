@@ -148,6 +148,67 @@ class Test_OPENBB_Order_Lifecycle extends OPENBB_TestCase {
 		$this->assert_stock( 8, 0 );
 	}
 
+	public function test_legacy_prepaid_container_aid_remains_fulfillable(): void {
+		global $wpdb;
+		update_post_meta( $this->product->id, OPENBB_META_PREFIX . 'container_charge', 100 );
+		$paid = $this->confirm( $this->order(), 'prepay' );
+		$this->assertInstanceOf( OPENBB_Order::class, $paid );
+		$this->assertNotFalse( $wpdb->update( $wpdb->openbb_orders, array(
+			'aid_approved' => 700, 'total' => 0, 'paid_amount' => 0,
+		), array( 'id' => $paid->id ) ) );
+		$this->assertTrue( OPENBB_Installer::cap_existing_food_aid() );
+		$done = $this->confirm( OPENBB_Orders::get( $paid->id ), 'fulfill' );
+		$this->assertInstanceOf( OPENBB_Order::class, $done );
+		$this->assertSame( 700, $done->aid_approved );
+		$this->assertSame( 0, $done->total );
+		$this->assertSame( 0, $done->paid_amount );
+		$this->assertSame( $paid->paid_at, $done->paid_at );
+		$this->assert_stock( 8, 0 );
+	}
+
+	public function test_full_food_aid_can_be_combined_with_a_manual_container_waiver(): void {
+		update_post_meta( $this->product->id, OPENBB_META_PREFIX . 'container_charge', 100 );
+		$order = $this->order();
+		$order->aid_status = 'approved';
+		$order->aid_approved = 500;
+		$this->assertTrue( $order->save() );
+		$this->assertSame( 200, $order->total );
+		$credited = OPENBB_Order_Editor::apply( $order, array( 'extra_container_credit' => 200 ), $this->actor );
+		$this->assertInstanceOf( OPENBB_Order::class, $credited );
+		$this->assertSame( 500, $credited->aid_approved );
+		$this->assertSame( 200, $credited->applied_extra_container_credit() );
+		$this->assertSame( 0, $credited->total );
+		$paid = $this->confirm( $credited, 'fulfill' );
+		$this->assertInstanceOf( OPENBB_Order::class, $paid );
+		$this->assertSame( 0, $paid->paid_amount );
+		$this->assertSame( 500, $paid->aid_approved );
+	}
+
+	public function test_food_reduction_releases_excess_aid_without_covering_containers(): void {
+		update_post_meta( $this->product->id, OPENBB_META_PREFIX . 'container_charge', 100 );
+		$order = $this->order( 4 );
+		$order->aid_status = 'approved';
+		$order->aid_approved = 1000;
+		$this->assertTrue( $order->save() );
+		$line = $order->get_lines()[0];
+		$before = OPENBB_Order_Aid::cycle_summary( $this->cycle->id );
+		$reduced = OPENBB_Order_Editor::apply( $order, array(
+			'lines' => array( array( 'id' => $line->id, 'qty' => 1 ) ),
+		), $this->actor );
+		$this->assertInstanceOf( OPENBB_Order::class, $reduced );
+		$this->assertSame( 250, $reduced->aid_approved );
+		$this->assertSame( 100, $reduced->total );
+		$after = OPENBB_Order_Aid::cycle_summary( $this->cycle->id );
+		$this->assertSame( 750, $after['available'] - $before['available'] );
+		$receipt = OPENBB_Order_Emails::totals( $reduced );
+		$this->assertSame( openbb_format_money( -250, $reduced->currency ), $receipt['Financial aid'] );
+		$restored = OPENBB_Order_Editor::apply( $reduced, array(
+			'lines' => array( array( 'id' => $line->id, 'qty' => 4 ) ),
+		), $this->actor );
+		$this->assertSame( 250, $restored->aid_approved, 'Only redistribution can grant more aid.' );
+		$this->assertSame( 1150, $restored->total );
+	}
+
 	public function test_handoff_uses_saved_prepared_quantity_and_base_conversion(): void {
 		$order = $this->order();
 		$line = $order->get_lines()[0];

@@ -112,6 +112,7 @@ const qtyOf = ( id ) => findItem( id )?.qty ?? 0;
 function totals() {
 	let count = 0;
 	let subtotal = 0;
+	let food = 0;
 	let credit = 0;
 	let savings = 0;
 	let units = 0;
@@ -119,13 +120,18 @@ function totals() {
 		const product = productOf( item.id );
 		count += item.qty;
 		subtotal += item.qty * ( product.price + product.charge );
+		food += item.qty * product.price;
 		credit += item.own ? item.qty * product.charge : 0;
 		if ( product.charge > 0 && ! item.own ) {
 			savings += item.qty * product.charge;
 			units += item.qty;
 		}
 	}
-	return { count, subtotal, credit, savings, units, goods: subtotal - credit };
+	const goods = subtotal - credit;
+	const settled = [ 'prepaid', 'fulfilled' ].includes( state.status );
+	const aid = Math.min( state.aidApproved, settled ? goods : food );
+	const extraCredit = Math.min( state.extraCredit, Math.max( 0, goods - aid ) );
+	return { count, subtotal, credit, savings, units, goods, aid, extraCredit };
 }
 
 function announce( text ) {
@@ -243,6 +249,7 @@ function applyOrder( data ) {
 	state.revision = data.revision;
 	state.editable = data.editable;
 	state.aidStatus = data.aid_status;
+	state.extraCredit = data.extra_container_credit;
 	state.aidApproved = data.aid_approved;
 	state.membershipFee = data.membership_fee;
 	state.membershipPending = data.membership_pending;
@@ -479,13 +486,17 @@ const { state } = store( 'openbb/order', {
 		get creditText() {
 			return money( -totals().credit );
 		},
+		get hasExtraCredit() {
+			return totals().extraCredit > 0;
+		},
+		get extraCreditText() {
+			return money( -totals().extraCredit );
+		},
 		get hasAidApproved() {
 			return state.aidApproved > 0;
 		},
 		get aidText() {
-			return money(
-				-Math.min( state.aidApproved, Math.max( 0, totals().goods ) )
-			);
+			return money( -totals().aid );
 		},
 		get hasDonation() {
 			return state.donation > 0;
@@ -494,10 +505,10 @@ const { state } = store( 'openbb/order', {
 			return money( state.donation );
 		},
 		get totalText() {
-			const { goods } = totals();
+			const { goods, aid, extraCredit, count } = totals();
 			return money(
-				Math.max( 0, goods - state.aidApproved ) + state.donation +
-				( totals().count > 0 ? state.membershipFee : 0 )
+				Math.max( 0, goods - aid ) - extraCredit + state.donation +
+				( count > 0 ? state.membershipFee : 0 )
 			);
 		},
 		get hasMembershipFee() {

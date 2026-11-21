@@ -11,6 +11,7 @@ defined( 'ABSPATH' ) || exit;
 
 $order = $view['order'];
 $valid_currency = (bool) preg_match( '/^[A-Z]{3}$/', $order->currency );
+$extra_credit   = $order->applied_extra_container_credit();
 ?>
 <div class="openbb openbb-order-message" id="<?php echo esc_attr( $view['id'] ); ?>">
 	<h2 class="openbb-order-message__title"><?php esc_html_e( 'Your order was cancelled', 'open-bulk-buying' ); ?></h2>
@@ -40,6 +41,9 @@ $valid_currency = (bool) preg_match( '/^[A-Z]{3}$/', $order->currency );
 			</li>
 		<?php endforeach; ?>
 	</ul>
+	<?php if ( $valid_currency && $extra_credit ) : ?>
+		<p><?php echo esc_html( __( 'Extra container credit', 'open-bulk-buying' ) . ': ' . openbb_format_money( -$extra_credit, $order->currency ) ); ?></p>
+	<?php endif; ?>
 	<p>
 		<strong><?php esc_html_e( 'Cancelled order total (not due):', 'open-bulk-buying' ); ?></strong>
 		<?php echo esc_html( $valid_currency ? openbb_format_money( $order->total, $order->currency ) : __( 'Unknown currency', 'open-bulk-buying' ) ); ?>

@@ -55,6 +55,15 @@
             "Container credit": [
                 "Cr\u00e9dit pour contenant"
             ],
+            "Extra container credit": [
+                "Cr\u00e9dit pour contenants suppl\u00e9mentaires"
+            ],
+            "Credit returned containers or waive container charges. Membership fees and donations cannot be reduced.": [
+                "Cr\u00e9ditez les contenants rapport\u00e9s ou annulez les frais de contenants. Les frais d\u2019adh\u00e9sion et les dons ne peuvent pas \u00eatre r\u00e9duits."
+            ],
+            "Enter a non-negative extra container credit.": [
+                "Saisissez un cr\u00e9dit de z\u00e9ro ou plus pour les contenants suppl\u00e9mentaires."
+            ],
             "Donation": [
                 "Don"
             ],
@@ -84,6 +93,12 @@
             ],
             "Order": [
                 "Commande"
+            ],
+            "Each approved, unpaid order gets %1$s%% off its food (%2$d orders, %3$s of %4$s). Containers, membership fees and donations are never covered.": [
+                "Chaque commande approuv\u00e9e et impay\u00e9e re\u00e7oit une r\u00e9duction de %1$s%% sur ses aliments (%2$d commandes, %3$s sur %4$s). Les contenants, les frais d\u2019adh\u00e9sion et les dons ne sont jamais couverts."
+            ],
+            "Apply a %1$s%% discount to the food on %2$d approved, unpaid orders? Their totals will change. You can run this again if food quantities, donations or approvals change; paid and fulfilled orders keep the aid they already received.": [
+                "Appliquer une r\u00e9duction de %1$s%% sur les aliments de %2$d commandes approuv\u00e9es et impay\u00e9es ? Leurs totaux changeront. Vous pouvez recommencer si les quantit\u00e9s d\u2019aliments, les dons ou les approbations changent ; les commandes pay\u00e9es et remises conservent l\u2019aide d\u00e9j\u00e0 re\u00e7ue."
             ],
             "First name": [
                 "Pr\u00e9nom"

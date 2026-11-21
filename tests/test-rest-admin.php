@@ -315,6 +315,31 @@ class Test_OPENBB_REST_Admin extends OPENBB_TestCase {
 		$this->assertSame( '0', $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->openbb_order_events} WHERE order_id = %d", $order_id ) ) );
 	}
 
+	public function test_extra_container_credit_uses_staff_amount_permissions_reasons_and_locks(): void {
+		$product = $this->make_stocked_product( 2 );
+		$order   = $this->new_order( $this->make_open_cycle() );
+		$route   = "/orders/{$order}";
+		$this->assertSame( 200, $this->submit( $order, $product, 2 )->get_status() );
+		$credit = array( 'extra_container_credit' => 150 );
+		$this->assertSame( 'openbb_reason_required', $this->api( 'PUT', $route, $credit )->get_data()['code'] );
+		$credit['reason'] = 'Returned a jar';
+		$saved = $this->api( 'PUT', $route, $credit )->get_data();
+		$this->assertSame( 150, $saved['extra_container_credit'] );
+		$this->assertSame( 350, $saved['total'] );
+		$this->assertSame( 400, $this->api( 'PUT', $route, array( 'extra_container_credit' => -1 ) )->get_status() );
+
+		wp_set_current_user( $saved['user_id'] );
+		$remove = array( 'extra_container_credit' => 0, 'reason' => 'Correction' );
+		$this->assertSame( 403, $this->api( 'PUT', $route, $remove )->get_status() );
+		wp_set_current_user( $this->coordinator );
+		$this->assertSame( 500, $this->api( 'PUT', $route, $remove )->get_data()['total'] );
+		$this->assertSame( 350, $this->api( 'PUT', $route, $credit )->get_data()['total'] );
+		$paid = OPENBB_Order_Lifecycle::confirm( $order, 'prepay', $this->coordinator );
+		$this->assertInstanceOf( OPENBB_Order::class, $paid );
+		$this->assertSame( 350, $paid->paid_amount );
+		$this->assertSame( 409, $this->api( 'PUT', $route, $remove )->get_status() );
+	}
+
 	public function test_orders_are_limited_to_available_stock(): void {
 		$product_id = $this->make_stocked_product( 5 );
 		$cycle_id   = $this->make_open_cycle();

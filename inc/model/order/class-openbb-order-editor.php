@@ -73,6 +73,7 @@ class OPENBB_Order_Editor {
 	 *                       Existing lines missing from the list are removed.
 	 *                       Staff may remove membership fees from submitted cycle orders.
 	 * - donation            Minor units.
+	 * - extra_container_credit  Staff-only amount in minor units. Zero clears it.
 	 * - staff_note          Replaces the note.
 	 * - member_note         Replaces the member's note.
 	 * - aid_request         Whether the member asks for financial aid; false withdraws it.
@@ -216,7 +217,17 @@ class OPENBB_Order_Editor {
 		if ( isset( $changes['donation'] ) ) {
 			$order->donation = max( 0, (int) $changes['donation'] );
 		}
-		$valid = OPENBB_Order_Policy::validate_content_change( $before, (bool) $lines_changed, $order->donation );
+		if ( isset( $changes['extra_container_credit'] ) ) {
+			if ( $by_member ) {
+				return new WP_Error( 'openbb_forbidden', __( 'Only staff can set the extra container credit.', 'open-bulk-buying' ), array( 'status' => 403 ) );
+			}
+			$credit = filter_var( $changes['extra_container_credit'], FILTER_VALIDATE_INT, array( 'options' => array( 'min_range' => 0 ) ) );
+			if ( false === $credit ) {
+				return self::invalid( __( 'Enter a non-negative extra container credit.', 'open-bulk-buying' ) );
+			}
+			$order->extra_container_credit = $credit;
+		}
+		$valid = OPENBB_Order_Policy::validate_content_change( $before, $lines_changed, $order->donation, $order->extra_container_credit );
 		if ( is_wp_error( $valid ) ) {
 			return $valid;
 		}
@@ -237,7 +248,8 @@ class OPENBB_Order_Editor {
 
 		$changed = $lines_changed
 			|| $new_status !== $old_status
-			|| $order->donation !== $before->donation;
+			|| $order->donation !== $before->donation
+			|| $order->extra_container_credit !== $before->extra_container_credit;
 		$reason  = trim( (string) ( $changes['reason'] ?? '' ) );
 		if ( ! $by_member && ! $is_new && $changed && OPENBB_Order_Policy::needs_reason( $before, $new_status, $cycle ) ) {
 			if ( '' === $reason ) {

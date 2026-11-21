@@ -145,11 +145,13 @@ final class OPENBB_Order_Slip extends OPENBB_Document {
 		$cycle  = $this->cycles[ $order->cycle_id ] ?? null;
 		$items  = array();
 		$extras = array();
+		$membership_fee = 0;
 		foreach ( $this->lines[ $order->id ] ?? array() as $line ) {
 			if ( $line->get_quantity() <= 0 ) {
 				continue;
 			}
 			if ( $line->is_membership_fee() ) {
+				$membership_fee += $line->calculate_total();
 				$extras[] = '' !== $line->product_name ? $line->product_name : __( 'Membership fee', 'open-bulk-buying' );
 				continue;
 			}
@@ -162,6 +164,10 @@ final class OPENBB_Order_Slip extends OPENBB_Document {
 			);
 		}
 
+		$extra = $order->applied_extra_container_credit( $membership_fee );
+		if ( $extra > 0 ) {
+			$extras[] = __( 'Extra container credit', 'open-bulk-buying' ) . ': ' . openbb_format_money( -$extra, $order->currency );
+		}
 		$paid = null !== $order->paid_at;
 
 		return array(

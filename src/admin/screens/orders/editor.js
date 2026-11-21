@@ -19,7 +19,7 @@ import { discardUnsavedChanges, useDebouncedValue, useUnsavedChanges } from '../
 import { request } from '../../utils/api';
 import { can, config } from '../../utils/config';
 import { openOrderSlips } from '../../utils/documents';
-import { formatMoney, formatQty, toMajor, toMinor } from '../../utils/format';
+import { formatMoney, formatQty, minorFactor, toMajor, toMinor } from '../../utils/format';
 
 const EPSILON = 0.0005;
 /** Confirmation action => resulting order status. */
@@ -216,6 +216,8 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 	const [ status, setStatus ] = useState( 'draft' );
 	const [ donationInput, setDonationInput ] = useState( '' );
 	const donation = Math.max( 0, toMinor( donationInput ) );
+	const [ creditInput, setCreditInput ] = useState( '' );
+	const extraCredit = toMinor( creditInput );
 	const [ staffNote, setStaffNote ] = useState( '' );
 	const [ reason, setReason ] = useState( '' );
 	const [ error, setError ] = useState( null );
@@ -227,6 +229,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 		setLines( item.lines.map( toLine ) );
 		setStatus( item.status );
 		setDonationInput( String( toMajor( item.donation ) ) );
+		setCreditInput( item.extra_container_credit ? String( toMajor( item.extra_container_credit ) ) : '' );
 		setStaffNote( item.staff_note );
 		setReason( '' );
 		setConfirmation( null );
@@ -242,7 +245,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 	);
 	const changed =
 		order &&
-		( linesChanged || status !== order.status || donation !== order.donation );
+		( linesChanged || status !== order.status || donation !== order.donation || extraCredit !== order.extra_container_credit );
 	const noteChanged = order && staffNote !== order.staff_note;
 	const needsReason =
 		order && changed && order.reason_required_statuses.includes( status );
@@ -252,6 +255,9 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 
 	const problems = useMemo( () => {
 		const found = [];
+		if ( ! Number.isFinite( Number( creditInput ) ) || Number( creditInput ) < 0 || ! Number.isSafeInteger( extraCredit ) ) {
+			found.push( __( 'Enter a non-negative extra container credit.', 'open-bulk-buying' ) );
+		}
 		if ( status === 'cancelled' || ! ( linesChanged || status !== order?.status ) ) {
 			return found;
 		}
@@ -279,7 +285,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 			}
 		}
 		return found;
-	}, [ visibleLines, status, linesChanged, order ] );
+	}, [ visibleLines, status, linesChanged, order, creditInput, extraCredit ] );
 
 	if ( ! order ) {
 		return (
@@ -295,11 +301,17 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 	const subtotal = visibleLines.reduce( ( sum, line ) => sum + lineTotal( line ), 0 );
 	const credit = visibleLines.reduce( ( sum, line ) => sum + lineCredit( line ), 0 );
 	// Aid isn't always visible; recover it from the saved totals.
-	const aid = Math.max( 0, order.subtotal - order.container_credit - ( order.total - order.donation ) );
+	const savedAid = order.aid_approved ?? Math.max( 0, order.subtotal - order.container_credit - order.applied_extra_container_credit - ( order.total - order.donation ) );
 	const membershipFee = visibleLines
 		.filter( ( line ) => line.line_type === 'membership_fee' )
 		.reduce( ( sum, line ) => sum + lineTotal( line ), 0 );
-	const total = Math.max( 0, subtotal - credit - membershipFee - aid ) + membershipFee + donation;
+	const goods = subtotal - credit - membershipFee;
+	const food = visibleLines
+		.filter( ( line ) => line.line_type !== 'membership_fee' )
+		.reduce( ( sum, line ) => sum + Math.round( effectiveQty( line ) * line.unit_price ), 0 );
+	const aid = Math.min( savedAid, order.is_locked ? goods : food );
+	const appliedCredit = Math.min( Math.max( 0, extraCredit ), goods - aid );
+	const total = goods - aid - appliedCredit + membershipFee + donation;
 
 	// Prepaid and Fulfilled are offered in the status dropdown but go through the
 	// confirmation endpoints, since they record payment and deduct stock.
@@ -361,6 +373,7 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 		}
 		if ( order.can_edit_amounts ) {
 			data.donation = donation;
+			data.extra_container_credit = extraCredit;
 		}
 		if ( noteChanged ) {
 			data.staff_note = staffNote;
@@ -627,6 +640,13 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 								<td />
 							</tr>
 						) }
+						{ appliedCredit > 0 && (
+							<tr>
+								<th colSpan={ 3 }>{ __( 'Extra container credit', 'open-bulk-buying' ) }</th>
+								<td className="openbb-lines__total">−{ formatMoney( appliedCredit ) }</td>
+								<td />
+							</tr>
+						) }
 						{ donation > 0 && (
 							<tr>
 								<th colSpan={ 3 }>{ __( 'Donation', 'open-bulk-buying' ) }</th>
@@ -702,6 +722,17 @@ export default function OrderEditor( { orderId, onClose, onSaved } ) {
 								setConfirmation( null );
 								setStatus( value );
 							} }
+						/>
+					) }
+					{ order.can_edit_amounts && (
+						<NumberControl
+							__next40pxDefaultSize
+							label={ __( 'Extra container credit', 'open-bulk-buying' ) }
+							help={ __( 'Credit returned containers or waive container charges. Membership fees and donations cannot be reduced.', 'open-bulk-buying' ) }
+							min={ 0 }
+							step={ 1 / minorFactor() }
+							value={ creditInput }
+							onChange={ ( value ) => setCreditInput( value ?? '' ) }
 						/>
 					) }
 					{ order.can_edit_amounts && (

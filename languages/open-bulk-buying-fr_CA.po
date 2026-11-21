@@ -631,6 +631,28 @@ msgstr "Sous-total"
 msgid "Container credit"
 msgstr "Crédit pour contenant"
 
+#: inc/documents/class-openbb-order-slip.php:169
+#: inc/emails/class-openbb-order-emails.php:73
+#: inc/frontend/templates/order-cancelled.php:45
+#: inc/frontend/templates/order-totals.php:32
+#: src/admin/screens/orders/editor.js:642
+#: src/admin/screens/orders/editor.js:727
+msgid "Extra container credit"
+msgstr "Crédit pour contenants supplémentaires"
+
+#: src/admin/screens/orders/editor.js:728
+msgid "Credit returned containers or waive container charges. Membership fees and donations cannot be reduced."
+msgstr "Créditez les contenants rapportés ou annulez les frais de contenants. Les frais d’adhésion et les dons ne peuvent pas être réduits."
+
+#: inc/model/order/class-openbb-order-editor.php:222
+msgid "Only staff can set the extra container credit."
+msgstr "Seul le personnel peut saisir le crédit pour contenants supplémentaires."
+
+#: inc/model/order/class-openbb-order-editor.php:226
+#: src/admin/screens/orders/editor.js:259
+msgid "Enter a non-negative extra container credit."
+msgstr "Saisissez un crédit de zéro ou plus pour les contenants supplémentaires."
+
 #: inc/emails/class-openbb-order-emails.php:63
 #: inc/frontend/templates/order-totals.php:28
 #: src/admin/screens/orders/editor.js:570
@@ -1114,8 +1136,20 @@ msgid "I would like to request financial aid for this order"
 msgstr "Je souhaite demander une aide financière pour cette commande"
 
 #: inc/frontend/class-openbb-order-form-view.php:488
-msgid "Requests are confidential. The amount depends on the donations available and is taken off your total if approved. We may ask you to verify your financial situation."
-msgstr "Les demandes sont confidentielles. Le montant dépend des dons disponibles et est déduit de votre total si la demande est approuvée. Nous pourrions vous demander de confirmer votre situation financière."
+msgid "Requests are confidential. Aid depends on available donations and covers food only, not container charges, membership fees or donations. We may ask you to verify your financial situation."
+msgstr "Les demandes sont confidentielles. L’aide dépend des dons disponibles et couvre uniquement les aliments, pas les frais de contenants, les frais d’adhésion ni les dons. Nous pourrions vous demander de confirmer votre situation financière."
+
+#. translators: 1: percentage, 2: number of orders, 3: amount distributed, 4: eligible food total.
+#: src/admin/screens/cycles/financial-aid.js:269
+#, js-format
+msgid "Each approved, unpaid order gets %1$s%% off its food (%2$d orders, %3$s of %4$s). Containers, membership fees and donations are never covered."
+msgstr "Chaque commande approuvée et impayée reçoit une réduction de %1$s%% sur ses aliments (%2$d commandes, %3$s sur %4$s). Les contenants, les frais d’adhésion et les dons ne sont jamais couverts."
+
+#. translators: 1: percentage, 2: number of orders.
+#: src/admin/screens/cycles/financial-aid.js:301
+#, js-format
+msgid "Apply a %1$s%% discount to the food on %2$d approved, unpaid orders? Their totals will change. You can run this again if food quantities, donations or approvals change; paid and fulfilled orders keep the aid they already received."
+msgstr "Appliquer une réduction de %1$s%% sur les aliments de %2$d commandes approuvées et impayées ? Leurs totaux changeront. Vous pouvez recommencer si les quantités d’aliments, les dons ou les approbations changent ; les commandes payées et remises conservent l’aide déjà reçue."
 
 #: inc/frontend/class-openbb-order-form-view.php:495
 msgid "Why are you asking for aid?"

@@ -264,9 +264,9 @@ function AidDistribution( { cycle, summary, onDistributed } ) {
 			<p>
 				{ plan.recipients > 0
 					? sprintf(
-							/* translators: 1: percentage, 2: number of orders, 3: amount distributed, 4: eligible goods total. */
+							/* translators: 1: percentage, 2: number of orders, 3: amount distributed, 4: eligible food total. */
 							__(
-								'Each approved, unpaid order gets %1$s%% off its goods (%2$d orders, %3$s of %4$s). Membership fees and donations are never covered.',
+								'Each approved, unpaid order gets %1$s%% off its food (%2$d orders, %3$s of %4$s). Containers, membership fees and donations are never covered.',
 								'open-bulk-buying'
 							),
 							plan.percent,
@@ -298,7 +298,7 @@ function AidDistribution( { cycle, summary, onDistributed } ) {
 						message={ sprintf(
 							/* translators: 1: percentage, 2: number of orders. */
 							__(
-								'Apply a %1$s%% discount to the goods on %2$d approved, unpaid orders? Their totals will change. You can run this again if donations or approvals change; paid and fulfilled orders keep the aid they already received.',
+								'Apply a %1$s%% discount to the food on %2$d approved, unpaid orders? Their totals will change. You can run this again if food quantities, donations or approvals change; paid and fulfilled orders keep the aid they already received.',
 								'open-bulk-buying'
 							),
 							plan.percent,

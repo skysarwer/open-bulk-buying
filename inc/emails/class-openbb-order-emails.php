@@ -63,10 +63,16 @@ final class OPENBB_Order_Emails {
 	}
 
 	/** @return array<string, string> */
-	public static function totals( OPENBB_Order $order ): array {
-		return array(
+	public static function totals( OPENBB_Order $order, bool $include_zero_credit = false ): array {
+		$totals = array(
 			__( 'Subtotal', 'open-bulk-buying' )         => openbb_format_money( $order->subtotal, $order->currency ),
 			__( 'Container credit', 'open-bulk-buying' ) => openbb_format_money( -$order->container_credit, $order->currency ),
+		);
+		$extra = $order->applied_extra_container_credit();
+		if ( $extra || $include_zero_credit ) {
+			$totals[ __( 'Extra container credit', 'open-bulk-buying' ) ] = openbb_format_money( -$extra, $order->currency );
+		}
+		return $totals + array(
 			__( 'Donation', 'open-bulk-buying' )         => openbb_format_money( $order->donation, $order->currency ),
 			__( 'Financial aid', 'open-bulk-buying' )    => openbb_format_money( -$order->aid_approved, $order->currency ),
 			__( 'Total', 'open-bulk-buying' )            => openbb_format_money( $order->total, $order->currency ),
@@ -112,8 +118,8 @@ final class OPENBB_Order_Emails {
 				$changes[] = array( trim( $line->product_name . ' ' . $line->brand ), $from, $to );
 			}
 		}
-		$old_fields = self::totals( $before );
-		$new_fields = self::totals( $order );
+		$old_fields = self::totals( $before, true );
+		$new_fields = self::totals( $order, true );
 		$note_label = __( 'Member note', 'open-bulk-buying' );
 		$aid_label  = __( 'Financial aid request', 'open-bulk-buying' );
 		$old_fields[ $note_label ] = $before->member_note;

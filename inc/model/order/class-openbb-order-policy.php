@@ -131,7 +131,7 @@ class OPENBB_Order_Policy {
 	/** @return true|WP_Error */
 	public static function validate_edit( OPENBB_Order $order, ?OPENBB_Cycle $cycle, array $changes ) {
 		$status = isset( $changes['status'] ) ? (string) $changes['status'] : $order->status;
-		$writes = isset( $changes['lines'] ) || $status !== $order->status || isset( $changes['donation'] );
+		$writes = isset( $changes['lines'] ) || $status !== $order->status || isset( $changes['donation'] ) || isset( $changes['extra_container_credit'] );
 		if ( ! empty( $changes['reopen'] ) && OPENBB_Order::STATUS_DRAFT === $status ) {
 			return self::validate_reopen( $order, $cycle );
 		}
@@ -160,8 +160,9 @@ class OPENBB_Order_Policy {
 	}
 
 	/** @return true|WP_Error */
-	public static function validate_content_change( OPENBB_Order $order, bool $lines_changed, int $donation ) {
-		if ( OPENBB_Order::STATUS_PREPAID === $order->status && ( $lines_changed || $donation !== $order->donation ) ) {
+	public static function validate_content_change( OPENBB_Order $order, bool $lines_changed, int $donation, ?int $extra_container_credit = null ) {
+		$credit_changed = null !== $extra_container_credit && $extra_container_credit !== $order->extra_container_credit;
+		if ( OPENBB_Order::STATUS_PREPAID === $order->status && ( $lines_changed || $donation !== $order->donation || $credit_changed ) ) {
 			return new WP_Error( 'openbb_order_prepaid', __( 'Paid order quantities and amounts cannot be changed until payment adjustments are supported.', 'open-bulk-buying' ), array( 'status' => 409 ) );
 		}
 		return true;

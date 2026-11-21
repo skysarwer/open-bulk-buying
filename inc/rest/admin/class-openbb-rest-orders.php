@@ -318,6 +318,10 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				'type'    => 'integer',
 				'minimum' => 0,
 			),
+			'extra_container_credit' => array(
+				'type'    => 'integer',
+				'minimum' => 0,
+			),
 			'staff_note'          => array(
 				'type'              => 'string',
 				'sanitize_callback' => 'sanitize_textarea_field',
@@ -515,7 +519,7 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 	private function save( WP_REST_Request $request, OPENBB_Order $order ) {
 		$is_new  = ! $order->id;
 		$changes = array( 'reason' => (string) $request['reason'] );
-		foreach ( array( 'status', 'lines', 'donation', 'staff_note' ) as $key ) {
+		foreach ( array( 'status', 'lines', 'donation', 'extra_container_credit', 'staff_note' ) as $key ) {
 			if ( $request->has_param( $key ) ) {
 				$changes[ $key ] = $request[ $key ];
 			}
@@ -598,6 +602,8 @@ class OPENBB_REST_Orders extends OPENBB_REST_Controller {
 				'subtotal'         => $order->subtotal,
 				'membership_fee'   => $order->membership_fee(),
 				'container_credit' => $order->container_credit,
+				'extra_container_credit' => $order->extra_container_credit,
+				'applied_extra_container_credit' => $order->applied_extra_container_credit(),
 				'donation'         => $order->donation,
 				'total'            => $order->total,
 				'total_formatted'  => preg_match( '/^[A-Z]{3}$/', $order->currency )

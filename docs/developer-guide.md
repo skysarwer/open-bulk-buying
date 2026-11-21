@@ -93,7 +93,7 @@ multisite `switch_to_blog()` re-prefixes them.
 |---|---|---|
 | `openbb_cycles` | ordering cycle | `status` (setup / ordering / processing / distribution / complete), `opens_at`, `closes_at`, `pickup_opens_at`, `pickup_closes_at`, `pickup_location`, `pickup_instructions`, `finalized_at/by`, `unpaid_hold_until`, `prepaid_hold_until`, `cleanup_locked_at` |
 | `openbb_cycle_products` | product pre-ordered in a cycle | `cycle_id`, `product_id` (unique pair), `prep_method` (station / basket), `prepared_qty`, `prepared_at/by` |
-| `openbb_orders` | order (cycle or membership-only) | `cycle_id` (NULL for membership-only), `user_id` (unique per cycle), `status` (draft / submitted / prepaid / fulfilled / cancelled), `language`, `currency`, `subtotal`, `container_credit`, `donation`, `aid_status`, `aid_reason`, `aid_requested`, `aid_approved`, `aid_decided_by/at`, `total`, `member_note`, `staff_note`, `submitted_at`, `collected_at/by`, `paid_at/by/amount/currency`, `revision` |
+| `openbb_orders` | order (cycle or membership-only) | `cycle_id` (NULL for membership-only), `user_id` (unique per cycle), `status` (draft / submitted / prepaid / fulfilled / cancelled), `language`, `currency`, `subtotal`, `container_credit` (from lines), `extra_container_credit` (entered by staff), `donation`, `aid_status`, `aid_reason`, `aid_requested`, `aid_approved`, `aid_decided_by/at`, `total`, `member_note`, `staff_note`, `submitted_at`, `collected_at/by`, `paid_at/by/amount/currency`, `revision` |
 | `openbb_order_lines` | line on an order | `order_id`, `product_id`, `source` (member / staff), `line_type` (product / membership_fee), product snapshot (`product_name`, `brand`, `unit_amount`, `unit_type`, `base_per_unit`, `unit_price`, `container_charge`, `own_container`), `qty_requested`, `qty_prepared`, `qty_final`, `line_total` |
 | `openbb_order_events` | audit event on an order | `order_id`, `actor_id`, `event_type`, `from_status`, `to_status`, `reason`, `details` (JSON) |
 | `openbb_stock_moves` | stock ledger entry | `product_id`, signed `quantity`, `unit_amount`, `unit_type`, `reason`, optional `cycle_id`, `order_id`, `user_id`, `request_key` (unique, idempotency), `note` |
@@ -139,6 +139,10 @@ Key invariants:
   history.
 - Orders keep **price snapshots**; later product edits never change existing
   lines. Membership-fee lines are system-managed (`line_type = membership_fee`).
+- Aid eligibility is product price times effective quantity, excluding all
+  container charges and credits. Saving unpaid orders caps `aid_approved` to
+  this food subtotal, releasing excess allocation; settled allocations are
+  historical and are not recapped.
 - `revision` on orders guards against stale writes from the editor and aid
   decisions.
 - `cleanup_locked_at` on a cycle, once set, is never cleared.

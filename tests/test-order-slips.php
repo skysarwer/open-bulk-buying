@@ -74,6 +74,8 @@ class Test_OPENBB_Order_Slips extends OPENBB_TestCase {
 			$order_id,
 			array(
 				'currency'    => 'CAD',
+				'subtotal'    => 4471,
+				'extra_container_credit' => 150,
 				'total'       => 4321,
 				'member_note' => "<b>Ring</b> the bell\nThanks",
 				'staff_note'  => 'SECRET-STAFF-NOTE',
@@ -109,6 +111,7 @@ class Test_OPENBB_Order_Slips extends OPENBB_TestCase {
 		$this->assertStringContainsString( 'Also on this order:', $html );
 		$this->assertStringContainsString( '&lt;b&gt;Ring&lt;/b&gt; the bell<br />', $html );
 		$this->assertStringContainsString( 'Amount due', $html );
+		$this->assertStringContainsString( 'Extra container credit: ' . esc_html( openbb_format_money( -150, 'CAD' ) ), $html );
 		$this->assertStringContainsString( esc_html( openbb_format_money( 4321, 'CAD' ) ), $html );
 
 		foreach ( array( 'SECRET-STAFF-NOTE', 'SECRET-AID-REASON', $user->user_email, '555-0199', esc_html( openbb_format_money( 1234, 'CAD' ) ), esc_html( openbb_format_money( 2500, 'CAD' ) ) ) as $private ) {
