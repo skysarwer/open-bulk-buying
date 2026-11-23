@@ -7,6 +7,10 @@
  * custom field can't overwrite co-op access data. Options fields store one meta row per
  * selected option so they can be filtered with meta_query.
  *
+ * What a field definition is and how a value is checked against it comes from
+ * OPENBB_Field_Schema, shared with poll questions. This class adds what is specific to
+ * profiles: who sees a field, who may change it, and the user meta storage.
+ *
  * @package Open_Bulk_Buying
  */
 
@@ -19,13 +23,13 @@ class OPENBB_Profile_Fields {
 	const OPTION         = 'openbb_profile_fields';
 	const FORMAT_VERSION = 1;
 
-	const TYPE_TEXT    = 'text';
-	const TYPE_BOOLEAN = 'boolean';
-	const TYPE_OPTIONS = 'options';
-	const TYPES        = array( self::TYPE_TEXT, self::TYPE_BOOLEAN, self::TYPE_OPTIONS );
+	const TYPE_TEXT    = OPENBB_Field_Schema::TYPE_TEXT;
+	const TYPE_BOOLEAN = OPENBB_Field_Schema::TYPE_BOOLEAN;
+	const TYPE_OPTIONS = OPENBB_Field_Schema::TYPE_OPTIONS;
+	const TYPES        = OPENBB_Field_Schema::TYPES;
 
-	const STYLE_SELECT = 'select';
-	const STYLE_CHIPS  = 'chips';
+	const STYLE_SELECT = OPENBB_Field_Schema::STYLE_SELECT;
+	const STYLE_CHIPS  = OPENBB_Field_Schema::STYLE_CHIPS;
 	const STYLES       = array( self::STYLE_SELECT, self::STYLE_CHIPS );
 
 	const VISIBILITY_MEMBER = 'member';
@@ -41,9 +45,9 @@ class OPENBB_Profile_Fields {
 	const CONTEXT_STAFF = 'staff';
 	const CONTEXTS      = array( self::CONTEXT_SIGNUP, self::CONTEXT_SELF, self::CONTEXT_STAFF_CREATE, self::CONTEXT_STAFF );
 
-	const KEY_PATTERN        = '/^[a-z][a-z0-9_]{0,39}$/';
-	const DEFAULT_MAX_LENGTH = 200;
-	const MAX_MAX_LENGTH     = 5000;
+	const KEY_PATTERN        = OPENBB_Field_Schema::KEY_PATTERN;
+	const DEFAULT_MAX_LENGTH = OPENBB_Field_Schema::DEFAULT_MAX_LENGTH;
+	const MAX_MAX_LENGTH     = OPENBB_Field_Schema::MAX_MAX_LENGTH;
 
 	/**
 	 * Keys that would be confused with built-in member or account fields.
@@ -150,8 +154,19 @@ class OPENBB_Profile_Fields {
 		return self::CONTEXT_STAFF !== $context;
 	}
 
+	/**
+	 * The rules profile fields give the shared field engine.
+	 */
+	private static function schema_config(): array {
+		return array(
+			'error_code'    => 'openbb_invalid_profile_fields',
+			'reserved_keys' => self::reserved_keys(),
+			'styles'        => self::STYLES,
+		);
+	}
+
 	public static function is_valid_key( string $key ): bool {
-		return (bool) preg_match( self::KEY_PATTERN, $key );
+		return OPENBB_Field_Schema::is_valid_key( $key );
 	}
 
 	/**
@@ -159,72 +174,28 @@ class OPENBB_Profile_Fields {
 	 * Returns '' when nothing usable is left (callers pick a fallback).
 	 */
 	public static function key_from_label( string $label ): string {
-		$key = strtolower( remove_accents( $label ) );
-		$key = trim( (string) preg_replace( '/[^a-z0-9]+/', '_', $key ), '_' );
-		$key = ltrim( $key, '0123456789_' );
-
-		return substr( $key, 0, 40 );
+		return OPENBB_Field_Schema::key_from_label( $label );
 	}
 
 	/**
 	 * Coerces a submitted definition into the stored shape. Doesn't validate.
 	 */
 	public static function normalize_field( array $input ): array {
-		$type = in_array( $input['type'] ?? '', self::TYPES, true ) ? $input['type'] : '';
+		$base = OPENBB_Field_Schema::normalize_field( $input, self::schema_config() );
 
 		$field = array(
-			'key'             => is_string( $input['key'] ?? null ) ? $input['key'] : '',
-			'label'           => openbb_sanitize_localized_text( $input['label'] ?? '' ),
+			'key'             => $base['key'],
+			'label'           => $base['label'],
 			'admin_label'     => openbb_sanitize_localized_text( $input['admin_label'] ?? '' ),
-			'help'            => openbb_sanitize_localized_text( $input['help'] ?? '' ),
-			'type'            => $type,
-			'required'        => ! empty( $input['required'] ),
+			'help'            => $base['help'],
+			'type'            => $base['type'],
+			'required'        => $base['required'],
 			'visibility'      => self::VISIBILITY_STAFF === ( $input['visibility'] ?? '' ) ? self::VISIBILITY_STAFF : self::VISIBILITY_MEMBER,
 			'member_editable' => ! array_key_exists( 'member_editable', $input ) || ! empty( $input['member_editable'] ),
-			'archived'        => ! empty( $input['archived'] ),
+			'archived'        => $base['archived'],
 		);
 
-		if ( self::TYPE_TEXT === $type ) {
-			$text          = is_array( $input['text'] ?? null ) ? $input['text'] : array();
-			$field['text'] = array(
-				'multiline'  => ! empty( $text['multiline'] ),
-				'max_length' => isset( $text['max_length'] ) && is_numeric( $text['max_length'] ) ? (int) $text['max_length'] : self::DEFAULT_MAX_LENGTH,
-			);
-		}
-
-		if ( self::TYPE_OPTIONS === $type ) {
-			$options = is_array( $input['options'] ?? null ) ? $input['options'] : array();
-			$groups  = array();
-			foreach ( (array) ( $options['groups'] ?? array() ) as $group ) {
-				if ( ! is_array( $group ) ) {
-					continue;
-				}
-				$group_key = is_string( $group['key'] ?? null ) ? $group['key'] : '';
-				$choices   = array();
-				foreach ( (array) ( $group['options'] ?? array() ) as $option ) {
-					if ( is_array( $option ) ) {
-						$choices[] = array(
-							'key'      => is_string( $option['key'] ?? null ) ? $option['key'] : '',
-							'label'    => openbb_sanitize_localized_text( $option['label'] ?? '' ),
-							'archived' => ! empty( $option['archived'] ),
-						);
-					}
-				}
-				$groups[] = array(
-					'key'     => $group_key,
-					'label'   => '' === $group_key ? null : openbb_sanitize_localized_text( $group['label'] ?? '' ),
-					'options' => $choices,
-				);
-			}
-
-			$field['options'] = array(
-				'style'    => in_array( $options['style'] ?? '', self::STYLES, true ) ? $options['style'] : self::STYLE_SELECT,
-				'multiple' => ! empty( $options['multiple'] ),
-				'groups'   => $groups,
-			);
-		}
-
-		return $field;
+		return $field + array_intersect_key( $base, array_flip( array( 'text', 'options' ) ) );
 	}
 
 	/**
@@ -233,123 +204,7 @@ class OPENBB_Profile_Fields {
 	 * @return true|WP_Error
 	 */
 	public static function validate_field( array $field ) {
-		$name = '' !== $field['label']['default'] ? $field['label']['default'] : $field['key'];
-
-		if ( ! self::is_valid_key( $field['key'] ) ) {
-			return self::error(
-				/* translators: %s: field key. */
-				sprintf( __( '"%s" is not a valid field key. Use lowercase letters, numbers and underscores, starting with a letter (at most 40 characters).', 'open-bulk-buying' ), $field['key'] ),
-				$field['key']
-			);
-		}
-		if ( in_array( $field['key'], self::reserved_keys(), true ) ) {
-			return self::error(
-				/* translators: %s: field key. */
-				sprintf( __( 'The key "%s" is reserved. Choose another key.', 'open-bulk-buying' ), $field['key'] ),
-				$field['key']
-			);
-		}
-		if ( '' === trim( $field['label']['default'] ) ) {
-			return self::error(
-				/* translators: %s: field key. */
-				sprintf( __( 'The field "%s" needs a label.', 'open-bulk-buying' ), $field['key'] ),
-				$field['key']
-			);
-		}
-		if ( '' === $field['type'] ) {
-			return self::error(
-				/* translators: %s: field label. */
-				sprintf( __( 'Choose a type for "%s".', 'open-bulk-buying' ), $name ),
-				$field['key']
-			);
-		}
-
-		if ( self::TYPE_TEXT === $field['type'] && ( $field['text']['max_length'] < 1 || $field['text']['max_length'] > self::MAX_MAX_LENGTH ) ) {
-			return self::error(
-				/* translators: 1: field label, 2: largest allowed maximum length. */
-				sprintf( __( 'The maximum length of "%1$s" must be between 1 and %2$d.', 'open-bulk-buying' ), $name, self::MAX_MAX_LENGTH ),
-				$field['key']
-			);
-		}
-
-		if ( self::TYPE_OPTIONS === $field['type'] ) {
-			return self::validate_options( $field, $name );
-		}
-
-		return true;
-	}
-
-	/**
-	 * @return true|WP_Error
-	 */
-	private static function validate_options( array $field, string $name ) {
-		$options = $field['options'];
-
-		if ( self::STYLE_SELECT === $options['style'] && $options['multiple'] ) {
-			return self::error(
-				/* translators: %s: field label. */
-				sprintf( __( '"%s" allows several choices, so it must use the chips style.', 'open-bulk-buying' ), $name ),
-				$field['key']
-			);
-		}
-
-		$group_keys  = array();
-		$option_keys = array();
-		foreach ( $options['groups'] as $index => $group ) {
-			if ( '' === $group['key'] ) {
-				if ( 0 !== $index ) {
-					return self::error(
-						/* translators: %s: field label. */
-						sprintf( __( 'Every option group of "%s" after the first needs a key.', 'open-bulk-buying' ), $name ),
-						$field['key']
-					);
-				}
-			} else {
-				if ( ! self::is_valid_key( $group['key'] ) || isset( $group_keys[ $group['key'] ] ) ) {
-					return self::error(
-						/* translators: 1: group key, 2: field label. */
-						sprintf( __( 'The group key "%1$s" in "%2$s" is invalid or used twice.', 'open-bulk-buying' ), $group['key'], $name ),
-						$field['key']
-					);
-				}
-				if ( '' === trim( $group['label']['default'] ) ) {
-					return self::error(
-						/* translators: %s: field label. */
-						sprintf( __( 'Every option group of "%s" needs a label.', 'open-bulk-buying' ), $name ),
-						$field['key']
-					);
-				}
-				$group_keys[ $group['key'] ] = true;
-			}
-
-			foreach ( $group['options'] as $option ) {
-				if ( ! self::is_valid_key( $option['key'] ) || isset( $option_keys[ $option['key'] ] ) ) {
-					return self::error(
-						/* translators: 1: option key, 2: field label. */
-						sprintf( __( 'The option key "%1$s" in "%2$s" is invalid or used twice.', 'open-bulk-buying' ), $option['key'], $name ),
-						$field['key']
-					);
-				}
-				if ( '' === trim( $option['label']['default'] ) ) {
-					return self::error(
-						/* translators: %s: field label. */
-						sprintf( __( 'Every option of "%s" needs a label.', 'open-bulk-buying' ), $name ),
-						$field['key']
-					);
-				}
-				$option_keys[ $option['key'] ] = true;
-			}
-		}
-
-		if ( ! $option_keys ) {
-			return self::error(
-				/* translators: %s: field label. */
-				sprintf( __( '"%s" needs at least one option.', 'open-bulk-buying' ), $name ),
-				$field['key']
-			);
-		}
-
-		return true;
+		return OPENBB_Field_Schema::validate_field( $field, self::schema_config() );
 	}
 
 	/**
@@ -359,16 +214,7 @@ class OPENBB_Profile_Fields {
 	 * @return string[]
 	 */
 	public static function option_keys( array $field, bool $active_only = false ): array {
-		$keys = array();
-		foreach ( $field['options']['groups'] ?? array() as $group ) {
-			foreach ( $group['options'] as $option ) {
-				if ( ! $active_only || ! $option['archived'] ) {
-					$keys[] = $option['key'];
-				}
-			}
-		}
-
-		return $keys;
+		return OPENBB_Field_Schema::option_keys( $field, $active_only );
 	}
 
 	/**
@@ -380,66 +226,7 @@ class OPENBB_Profile_Fields {
 	 * @return true|WP_Error
 	 */
 	public static function validate_schema( array $fields, array $old_schema ) {
-		$old_fields = array_column( $old_schema['fields'], null, 'key' );
-		$seen       = array();
-
-		foreach ( $fields as $field ) {
-			$valid = self::validate_field( $field );
-			if ( is_wp_error( $valid ) ) {
-				return $valid;
-			}
-
-			$key = $field['key'];
-			if ( isset( $seen[ $key ] ) ) {
-				return self::error(
-					/* translators: %s: field key. */
-					sprintf( __( 'The key "%s" is used by more than one field.', 'open-bulk-buying' ), $key ),
-					$key
-				);
-			}
-			$seen[ $key ] = true;
-
-			if ( in_array( $key, $old_schema['retired_keys'], true ) ) {
-				return self::error(
-					/* translators: %s: field key. */
-					sprintf( __( 'The key "%s" belonged to a deleted field and can\'t be reused.', 'open-bulk-buying' ), $key ),
-					$key
-				);
-			}
-
-			$old = $old_fields[ $key ] ?? null;
-			if ( ! $old ) {
-				continue;
-			}
-			if ( $old['type'] !== $field['type'] ) {
-				return self::error(
-					/* translators: %s: field label. */
-					sprintf( __( 'The type of "%s" can\'t change once it is saved. Archive it and add a new field instead.', 'open-bulk-buying' ), $field['label']['default'] ),
-					$key
-				);
-			}
-			if ( self::TYPE_OPTIONS === $field['type'] ) {
-				$missing = array_diff( self::option_keys( $old ), self::option_keys( $field ) );
-				if ( $missing ) {
-					return self::error(
-						/* translators: 1: option key, 2: field label. */
-						sprintf( __( 'The saved option "%1$s" of "%2$s" can\'t be removed. Archive it instead.', 'open-bulk-buying' ), reset( $missing ), $field['label']['default'] ),
-						$key
-					);
-				}
-			}
-		}
-
-		$removed = array_diff( array_keys( $old_fields ), array_keys( $seen ) );
-		if ( $removed ) {
-			return self::error(
-				/* translators: %s: field key. */
-				sprintf( __( 'The saved field "%s" can\'t be removed. Archive it instead.', 'open-bulk-buying' ), reset( $removed ) ),
-				reset( $removed )
-			);
-		}
-
-		return true;
+		return OPENBB_Field_Schema::validate_fields( $fields, $old_schema['fields'], $old_schema['retired_keys'], self::schema_config() );
 	}
 
 	/**
@@ -640,57 +427,18 @@ class OPENBB_Profile_Fields {
 	}
 
 	private static function is_empty_value( $value ): bool {
-		return null === $value || '' === $value || false === $value || array() === $value;
+		return OPENBB_Field_Schema::is_empty_value( $value );
 	}
 
 	/**
+	 * Archived options stay valid for members who already chose them.
+	 *
 	 * @return mixed|WP_Error
 	 */
 	private static function sanitize_value( array $field, $value, int $user_id ) {
-		switch ( $field['type'] ) {
-			case self::TYPE_BOOLEAN:
-				if ( ! is_bool( $value ) && ! in_array( $value, array( 0, 1, '0', '1', 'true', 'false', '' ), true ) ) {
-					return new WP_Error( 'openbb_invalid', __( 'Choose yes or no.', 'open-bulk-buying' ) );
-				}
-				return rest_sanitize_boolean( $value );
+		$kept = self::TYPE_OPTIONS === $field['type'] && $user_id ? self::read_value( $user_id, $field ) : array();
 
-			case self::TYPE_OPTIONS:
-				if ( null === $value || '' === $value ) {
-					$value = array();
-				}
-				if ( is_string( $value ) ) {
-					$value = array( $value );
-				}
-				if ( ! is_array( $value ) || count( array_filter( $value, 'is_string' ) ) !== count( $value ) ) {
-					return new WP_Error( 'openbb_invalid', __( 'Choose from the listed options.', 'open-bulk-buying' ) );
-				}
-				$value = array_values( array_unique( $value ) );
-
-				// Archived options stay valid for members who already chose them.
-				$allowed = array_merge( self::option_keys( $field, true ), $user_id ? self::read_value( $user_id, $field ) : array() );
-				if ( array_diff( $value, $allowed ) ) {
-					return new WP_Error( 'openbb_invalid', __( 'Choose from the listed options.', 'open-bulk-buying' ) );
-				}
-				if ( ! $field['options']['multiple'] && count( $value ) > 1 ) {
-					return new WP_Error( 'openbb_invalid', __( 'Choose only one option.', 'open-bulk-buying' ) );
-				}
-				return $value;
-
-			default:
-				if ( ! is_scalar( $value ) && null !== $value ) {
-					return new WP_Error( 'openbb_invalid', __( 'Enter text.', 'open-bulk-buying' ) );
-				}
-				$value = $field['text']['multiline'] ? sanitize_textarea_field( (string) $value ) : sanitize_text_field( (string) $value );
-				$value = trim( $value );
-				if ( mb_strlen( $value ) > $field['text']['max_length'] ) {
-					return new WP_Error(
-						'openbb_invalid',
-						/* translators: %d: maximum number of characters. */
-						sprintf( __( 'Use at most %d characters.', 'open-bulk-buying' ), $field['text']['max_length'] )
-					);
-				}
-				return $value;
-		}
+		return OPENBB_Field_Schema::sanitize_value( $field, $value, $kept );
 	}
 
 	/**
@@ -826,13 +574,6 @@ class OPENBB_Profile_Fields {
 	}
 
 	private static function error( string $message, string $field_key = '' ): WP_Error {
-		return new WP_Error(
-			'openbb_invalid_profile_fields',
-			$message,
-			array(
-				'status' => 400,
-				'field'  => $field_key,
-			)
-		);
+		return OPENBB_Field_Schema::error( $message, $field_key, self::schema_config() );
 	}
 }

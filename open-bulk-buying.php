@@ -38,6 +38,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/class-openbb-captcha.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/class-openbb-entity.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/user-meta.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-member.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/model/fields/class-openbb-field-schema.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-profile-fields.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/member/class-openbb-email-code.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/emails/class-openbb-emails.php';
