@@ -17,6 +17,9 @@ class OPENBB_Cycle extends OPENBB_Entity {
 	const STATUS_DISTRIBUTION = 'distribution';
 	const STATUS_COMPLETE     = 'complete';
 
+	/** Every stage, in lifecycle order. */
+	const STATUSES = array( self::STATUS_SETUP, self::STATUS_ORDERING, self::STATUS_PROCESSING, self::STATUS_DISTRIBUTION, self::STATUS_COMPLETE );
+
 	/**
 	 * Stages reserving committed orders before hold deadlines are frozen at completion.
 	 * Staff can submit orders in setup; several cycles may be active at once.
@@ -110,6 +113,7 @@ class OPENBB_Cycle extends OPENBB_Entity {
 			return new WP_Error( 'openbb_cycle_delete_failed', __( 'The cycle could not be deleted.', 'open-bulk-buying' ) );
 		}
 		$wpdb->delete( $wpdb->openbb_cycle_products, array( 'cycle_id' => $this->id ), array( '%d' ) );
+		OPENBB_Polls::delete_for_cycle( $this->id );
 
 		return true;
 	}
@@ -146,7 +150,8 @@ class OPENBB_Cycle extends OPENBB_Entity {
 			);
 			$orders_deleted = $lines_deleted && false !== $wpdb->delete( $wpdb->openbb_orders, array( 'cycle_id' => $this->id ), array( '%d' ) );
 			$prep_deleted   = $orders_deleted && false !== $wpdb->delete( $wpdb->openbb_cycle_products, array( 'cycle_id' => $this->id ), array( '%d' ) );
-			$cycle_deleted  = $prep_deleted && 1 === $wpdb->delete( $wpdb->openbb_cycles, array( 'id' => $this->id ), array( '%d' ) );
+			$polls_deleted  = $prep_deleted && OPENBB_Polls::delete_for_cycle( $this->id );
+			$cycle_deleted  = $polls_deleted && 1 === $wpdb->delete( $wpdb->openbb_cycles, array( 'id' => $this->id ), array( '%d' ) );
 			if ( ! $cycle_deleted ) {
 				$wpdb->query( 'ROLLBACK' );
 				return new WP_Error( 'openbb_cycle_delete_failed', __( 'The cycle could not be deleted.', 'open-bulk-buying' ) );
@@ -176,8 +181,7 @@ class OPENBB_Cycle extends OPENBB_Entity {
 		if ( '' === trim( $this->name ) ) {
 			return self::invalid( __( 'Enter a cycle name.', 'open-bulk-buying' ) );
 		}
-		$statuses = array( self::STATUS_SETUP, self::STATUS_ORDERING, self::STATUS_PROCESSING, self::STATUS_DISTRIBUTION, self::STATUS_COMPLETE );
-		if ( ! in_array( $this->status, $statuses, true ) ) {
+		if ( ! in_array( $this->status, self::STATUSES, true ) ) {
 			return self::invalid( __( 'Choose a valid cycle status.', 'open-bulk-buying' ) );
 		}
 		if ( $this->opens_at && $this->closes_at && strtotime( $this->closes_at ) <= strtotime( $this->opens_at ) ) {
@@ -233,6 +237,17 @@ class OPENBB_Cycle extends OPENBB_Entity {
 
 	public function is_active(): bool {
 		return in_array( $this->status, self::ACTIVE_STATUSES, true );
+	}
+
+	/**
+	 * Whether the cycle is at or past $stage. A cycle moved back to an earlier stage
+	 * no longer counts as having reached the later ones.
+	 */
+	public function has_reached( string $stage ): bool {
+		$target  = array_search( $stage, self::STATUSES, true );
+		$current = array_search( $this->status, self::STATUSES, true );
+
+		return false !== $target && false !== $current && $current >= $target;
 	}
 
 	public function allows_preparation_cleanup(): bool {
