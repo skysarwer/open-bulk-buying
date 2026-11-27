@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class OPENBB_Installer {
 
-	const DB_VERSION        = '8';
+	const DB_VERSION        = '9';
 	const DB_VERSION_OPTION = 'openbb_db_version';
 
 	public static function maybe_upgrade(): void {
@@ -58,6 +58,9 @@ class OPENBB_Installer {
 		}
 
 		if ( ! $wpdb->get_var( "SHOW COLUMNS FROM {$wpdb->openbb_cycles} LIKE 'cleanup_locked_at'" ) ) {
+			return false;
+		}
+		if ( ! $wpdb->get_var( "SHOW COLUMNS FROM {$wpdb->openbb_cycles} LIKE 'notices'" ) ) {
 			return false;
 		}
 		if ( version_compare( (string) get_option( self::DB_VERSION_OPTION, '0' ), '3', '<' )

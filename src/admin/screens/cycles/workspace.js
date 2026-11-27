@@ -9,6 +9,7 @@ import { can, config } from '../../utils/config';
 import { CycleDetails, CycleSummary, StageReminder } from './list';
 import CycleOrders from './orders';
 import FinancialAid from './financial-aid';
+import Notices from './notices';
 import Polls from './polls';
 import Preparation from './preparation';
 
@@ -40,6 +41,12 @@ const sections = [
 		title: __( 'Polls', 'open-bulk-buying' ),
 		isVisible: () => can( 'openbb_manage_polls' ),
 		Component: Polls,
+	},
+	{
+		name: 'notices',
+		title: __( 'Notices', 'open-bulk-buying' ),
+		isVisible: () => can( 'openbb_manage_cycles' ),
+		Component: Notices,
 	},
 ];
 

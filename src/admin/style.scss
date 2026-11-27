@@ -989,24 +989,47 @@ $openbb-wide-sidebar-width: 640px;
 
 .openbb-badge {
 
-	&--poll-open {
+	&--poll-open,
+	&--notice-open {
 		background: #edfaef;
 		color: $openbb-success;
 	}
 
-	&--poll-draft {
+	&--poll-draft,
+	&--notice-draft {
 		background: #fcf9e8;
 		color: #8a6100;
 	}
 
-	&--poll-scheduled {
+	&--poll-scheduled,
+	&--notice-scheduled {
 		background: #f0f6fc;
 		color: #2271b1;
 	}
 
 	&--poll-ended,
-	&--poll-closed {
+	&--poll-closed,
+	&--notice-ended {
 		color: $openbb-gray;
+	}
+}
+
+// Cycle workspace: Notices tab (screens/cycles/notices), a list beside the open
+// notice's panel.
+.openbb-notice-status p {
+	margin: 0;
+}
+
+.openbb-notice-preview {
+	display: grid;
+	gap: 4px;
+
+	.components-notice {
+		margin: 0;
+	}
+
+	.components-notice__content {
+		white-space: pre-line;
 	}
 }
 

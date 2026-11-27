@@ -9,6 +9,8 @@
 	--openbb-error: #b32d2e;
 	--openbb-success: #1e6f3a;
 	--openbb-info: #2a5d8f;
+	// Yellow notices; green and red stay reserved for success and error.
+	--openbb-alert: #996800;
 	--openbb-radius: 6px;
 	--openbb-gap: 1rem;
 	--openbb-focus: 0 0 0 2px var(--openbb-accent-contrast), 0 0 0 4px var(--openbb-accent);
@@ -119,6 +121,11 @@
 	border-left: 4px solid var(--openbb-info);
 	border-radius: var(--openbb-radius);
 	background: color-mix(in srgb, var(--openbb-info) 8%, transparent);
+
+	&--alert {
+		border-left-color: var(--openbb-alert);
+		background: color-mix(in srgb, var(--openbb-alert) 12%, transparent);
+	}
 
 	&--error {
 		border-left-color: var(--openbb-error);

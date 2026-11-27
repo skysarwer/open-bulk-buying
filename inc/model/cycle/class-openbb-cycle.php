@@ -42,12 +42,15 @@ class OPENBB_Cycle extends OPENBB_Entity {
 	public $unpaid_hold_until   = null;
 	public $prepaid_hold_until  = null;
 	public $cleanup_locked_at   = null;
+	/** Read-only here: save() never writes it, so stale cycle objects can't undo notice edits. See OPENBB_Cycle_Notices. */
+	public $notices = array();
 
 	protected function cast(): void {
 		$this->id                  = (int) $this->id;
 		$this->finalized_by        = self::nullable_int( $this->finalized_by );
 		$this->pickup_location     = (string) $this->pickup_location;
 		$this->pickup_instructions = openbb_normalize_localized( self::decode_json( $this->pickup_instructions ) );
+		$this->notices             = OPENBB_Cycle_Notices::decode( $this->notices );
 	}
 
 	public function save(): bool {

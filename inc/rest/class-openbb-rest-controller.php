@@ -34,6 +34,7 @@ abstract class OPENBB_REST_Controller {
 				$controllers = array(
 					new OPENBB_REST_Products(),
 					new OPENBB_REST_Cycles(),
+					new OPENBB_REST_Cycle_Notices(),
 					new OPENBB_REST_Polls(),
 					new OPENBB_REST_Members(),
 					new OPENBB_REST_Orders(),

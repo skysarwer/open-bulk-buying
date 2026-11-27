@@ -16,7 +16,9 @@ function Heading( { children } ) {
 }
 
 /**
- * When the poll opens or closes: a rule, plus the stage or date it needs.
+ * When something opens or closes: a rule, plus the stage or date it needs.
+ * Reads and writes `{side}_rule`, `{side}_stage` and `{side}_at` of the draft.
+ * Shared with the cycle notices.
  *
  * @param {Object}   props
  * @param {string}   props.side     'open' or 'close'.
@@ -25,7 +27,7 @@ function Heading( { children } ) {
  * @param {Object}   props.draft
  * @param {Function} props.onChange Receives the changed settings.
  */
-function RuleControl( { side, label, rules, draft, onChange } ) {
+export function RuleControl( { side, label, rules, draft, onChange } ) {
 	const rule = draft[ `${ side }_rule` ];
 
 	return (

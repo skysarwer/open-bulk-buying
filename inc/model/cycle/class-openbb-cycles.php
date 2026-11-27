@@ -32,6 +32,7 @@ class OPENBB_Cycles {
 				unpaid_hold_until datetime NULL default NULL,
 				prepaid_hold_until datetime NULL default NULL,
 				cleanup_locked_at datetime NULL default NULL,
+				notices longtext NULL,
 				PRIMARY KEY  (id),
 				KEY status (status),
 				KEY ordering_window (opens_at,closes_at)

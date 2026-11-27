@@ -51,6 +51,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/model/product/class-openbb-product.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/product/class-openbb-catalog.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/cycle/class-openbb-cycle.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/cycle/class-openbb-cycles.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/model/cycle/class-openbb-cycle-notices.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-line.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-orders.php';
@@ -85,6 +86,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/admin/class-openbb-admin.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/class-openbb-rest-controller.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-products.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-cycles.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-cycle-notices.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-polls.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-members.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-orders.php';
@@ -100,6 +102,7 @@ require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-signup-view.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-login-view.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-order-form-view.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-polls-view.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-cycle-notices-view.php';
 
 register_activation_hook( __FILE__, array( 'OPENBB_Installer', 'install' ) );
 add_action(

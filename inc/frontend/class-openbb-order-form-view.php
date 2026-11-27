@@ -93,7 +93,7 @@ final class OPENBB_Order_Form_View {
 					/* translators: %s: date and time. */
 					? sprintf( __( 'The next ordering period opens %s.', 'open-bulk-buying' ), self::local_datetime( $next->opens_at ) )
 					: __( 'There is no ordering period open right now. Check back soon.', 'open-bulk-buying' )
-			) . OPENBB_Polls_View::cards( $user_id );
+			) . OPENBB_Cycle_Notices_View::for_active_cycles() . OPENBB_Polls_View::cards( $user_id );
 		}
 
 		$cycle = $cycles[0];
@@ -156,7 +156,7 @@ final class OPENBB_Order_Form_View {
 					'cycle_name' => $cycle->name,
 					'cycles'     => count( $cycles ) > 1 ? self::cycle_links( $cycles, $cycle ) : array(),
 				)
-			) . OPENBB_Polls_View::cards( $member->user_id );
+			) . OPENBB_Cycle_Notices_View::for_cycle( $cycle ) . OPENBB_Polls_View::cards( $member->user_id );
 		}
 		OPENBB_Frontend::enqueue( array( OPENBB_Frontend::MODULE_ORDER ) );
 		OPENBB_Frontend::forms_state();
@@ -226,6 +226,7 @@ final class OPENBB_Order_Form_View {
 						: '',
 					'notice'       => self::status_notice( $order, $order_state, $cycle ),
 					'receipt_url'  => self::has_receipt( $order ) ? self::order_url( $cycle->id, true ) : '',
+					'cycle_notices' => OPENBB_Cycle_Notices_View::for_cycle( $cycle ),
 					'polls'        => OPENBB_Polls_View::cards( $member->user_id ),
 					'sections'    => self::sections( $sections ),
 					'basket'      => array(

@@ -1,0 +1,42 @@
+// Staff notices for a cycle on the order page: .openbb-notice (info or alert)
+// with an optional call-to-action button.
+.openbb-cycle-notices {
+	margin-bottom: var(--openbb-gap);
+
+	.openbb-order & {
+		max-width: none;
+	}
+
+	.openbb-notice {
+		margin-bottom: 0.75rem;
+	}
+}
+
+.openbb-cycle-notice {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem 1rem;
+
+	&__text {
+		flex: 1 1 14rem;
+		min-width: 0;
+	}
+
+	&__cycle {
+		display: block;
+		margin: 0 0 0.15rem;
+		font-size: 0.875em;
+		font-weight: 600;
+	}
+
+	&__content {
+		margin: 0;
+		overflow-wrap: anywhere;
+	}
+
+	&__cta {
+		flex: none;
+	}
+}
