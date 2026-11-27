@@ -32,6 +32,10 @@
 
 		&.has-sidebar &__layout {
 			grid-template-columns: minmax(0, 1fr) var(--openbb-order-sidebar-width);
+
+			&.is-finalizing {
+				grid-template-columns: minmax(0, 1fr) clamp(var(--openbb-order-sidebar-width), 60%, 40rem);
+			}
 		}
 	}
 }
