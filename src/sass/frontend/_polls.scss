@@ -22,6 +22,16 @@
 	&__title {
 		margin: 0;
 		font-size: 1.25em;
+
+		// Focused when the member goes back to their answers.
+		&:focus {
+			outline: none;
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--openbb-accent);
+			outline-offset: 4px;
+		}
 	}
 
 	&__cycle {
@@ -69,6 +79,25 @@
 		margin: 0;
 		color: var(--openbb-success);
 		font-weight: 600;
+	}
+
+	// Replaces the intro and form once saved, on the polls view.
+	&__confirmation {
+		display: grid;
+		gap: 1.25rem;
+
+		.openbb-notice {
+			margin: 0;
+
+			&:focus {
+				outline: none;
+			}
+
+			&:focus-visible {
+				outline: 2px solid var(--openbb-accent);
+				outline-offset: 4px;
+			}
+		}
 	}
 }
 

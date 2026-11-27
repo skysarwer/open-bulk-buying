@@ -9,9 +9,11 @@
  * Surfaces, all showing the same polls with the same answers:
  * - The polls view: every open poll as a form. With ?poll=ID, that poll alone. Rendered by
  *   the shortcode, and by the order form for ?poll=ID so a poll can be answered from the
- *   order page whether or not ordering is open.
+ *   order page whether or not ordering is open. Once saved, a poll's form gives way to a
+ *   confirmation leading back to the answers and, from the order form, to the order page.
  * - Cards on the order page linking to a poll (placement "card").
- * - Independent poll forms on the order thank-you page (placement "thank_you").
+ * - Independent poll forms on the order thank-you page (placement "thank_you"), which
+ *   confirm a save under the form.
  *
  * Templates: polls (the view), poll (one poll's form), poll-cards.
  * Store: assets/js/polls.js (`openbb/polls`). Styles: src/sass/frontend/_polls.scss.
@@ -73,6 +75,7 @@ final class OPENBB_Polls_View {
 	 * When that poll can't be answered, says why and lists the others.
 	 *
 	 * @param array $back Optional link out of the view: url, label (e.g. back to the order form).
+	 *                    Each poll's confirmation also offers it as the main action.
 	 */
 	public static function polls( int $user_id, int $poll_id = 0, array $back = array() ): string {
 		OPENBB_Frontend::no_cache();
@@ -106,7 +109,7 @@ final class OPENBB_Polls_View {
 					'id'     => self::ID,
 					'notice' => $notice,
 					'back'   => $back,
-					'polls'  => self::forms( $open, $user_id, self::ID ),
+					'polls'  => self::forms( $open, $user_id, self::ID, true, $back ),
 					'empty'  => $poll_id && $notice
 						? __( 'There are no other polls to answer right now.', 'open-bulk-buying' )
 						: __( 'There are no polls to answer right now.', 'open-bulk-buying' ),
@@ -117,8 +120,12 @@ final class OPENBB_Polls_View {
 
 	/**
 	 * The same answer forms and poll store serve the polls page and the order confirmation.
+	 *
+	 * @param bool  $confirmation Whether saving swaps a form for a confirmation, rather than
+	 *                            confirming under the form.
+	 * @param array $back         The confirmation's main action: url, label, or empty.
 	 */
-	private static function forms( array $open, int $user_id, string $prefix ): array {
+	private static function forms( array $open, int $user_id, string $prefix, bool $confirmation, array $back = array() ): array {
 		if ( ! $open ) {
 			return array();
 		}
@@ -128,12 +135,12 @@ final class OPENBB_Polls_View {
 
 		$forms = array();
 		foreach ( $open as $entry ) {
-			$forms[] = self::poll_view( $entry['poll'], $entry['cycle'], $user_id, $prefix . '-' . $entry['poll']->id );
+			$forms[] = self::poll_view( $entry['poll'], $entry['cycle'], $user_id, $prefix . '-' . $entry['poll']->id, $confirmation, $back );
 		}
 		return $forms;
 	}
 
-	private static function poll_view( OPENBB_Poll $poll, OPENBB_Cycle $cycle, int $user_id, string $id ): array {
+	private static function poll_view( OPENBB_Poll $poll, OPENBB_Cycle $cycle, int $user_id, string $id, bool $confirmation, array $back ): array {
 		$answers = OPENBB_Poll_Responses::get_answers( $poll, $user_id );
 		$fields  = array();
 		$values  = array();
@@ -149,12 +156,16 @@ final class OPENBB_Polls_View {
 			'intro'        => $poll->get_intro(),
 			'cycle_name'   => $cycle->name,
 			'fields'       => $fields,
+			'confirmation' => $confirmation,
+			'back'         => $back,
 			'context'      => array(
-				'pollId'    => $poll->id,
-				'responded' => (bool) $answers,
-				'busy'      => false,
-				'notice'    => '',
-				'status'    => '',
+				'pollId'       => $poll->id,
+				'responded'    => (bool) $answers,
+				'busy'         => false,
+				'notice'       => '',
+				'status'       => '',
+				'confirmation' => $confirmation,
+				'confirmed'    => false,
 			),
 			'form_context' => array(
 				'values' => $values,
@@ -223,7 +234,7 @@ final class OPENBB_Polls_View {
 	 * Evaluate eligibility after the order is saved: placing it can qualify the member.
 	 */
 	public static function thank_you_polls( int $user_id ): array {
-		return self::forms( self::placed( $user_id, OPENBB_Poll::PLACEMENT_THANK_YOU ), $user_id, 'openbb-thank-you-poll' );
+		return self::forms( self::placed( $user_id, OPENBB_Poll::PLACEMENT_THANK_YOU ), $user_id, 'openbb-thank-you-poll', false );
 	}
 
 	private static function placed( int $user_id, string $placement ): array {

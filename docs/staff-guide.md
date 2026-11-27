@@ -214,6 +214,12 @@ them. You can tick the poll's own cycle: members then qualify once they order.
   to the member, and adding `?poll=ID` to the address of that page or the order
   page opens one poll directly, for links in emails.
 
+Submitting a poll from its own page (opened from a card, a link or the
+shortcode page) replaces it with a confirmation and a **View or change your
+answers** button. On the order page, the confirmation's main button is **Back
+to the order page**. On the thank-you page, the poll stays as it is and
+confirms the save under its submit button.
+
 ### Results
 
 **Results** on a poll shows how many members responded, a count for each

@@ -760,6 +760,12 @@ class Test_OPENBB_Polls extends OPENBB_TestCase {
 		$this->assertStringContainsString( '<p>Second line</p>', $empty );
 		$this->assertStringContainsString( 'Co-op staff can see your answers.', $empty );
 		$this->assertSame( 0, preg_match( '/<input[^>]*\schecked/', $empty ) );
+		// Saving swaps the form for a confirmation, hidden until then. The polls page has
+		// no order page to go back to.
+		$this->assertMatchesRegularExpression( '/<div class="openbb-poll__confirmation"[^>]*\shidden/', $empty );
+		$this->assertDoesNotMatchRegularExpression( '/<form class="openbb-poll__form"[^>]*\shidden/', $empty );
+		$this->assertStringContainsString( 'View or change your answers', $empty );
+		$this->assertStringNotContainsString( 'Back to the order page', $empty );
 
 		OPENBB_Poll_Responses::save( $poll, $member, array( 'rating' => '2', 'happy' => '0', 'note' => 'Thanks' ) );
 		$answered = OPENBB_Polls_View::polls( $member, $poll->id );
@@ -805,6 +811,8 @@ class Test_OPENBB_Polls extends OPENBB_TestCase {
 		$this->assertStringContainsString( 'openbb-poll__form', $single );
 		$this->assertStringContainsString( 'Back to the order page', $single );
 		$this->assertStringNotContainsString( 'openbb-catalog', $single );
+		// Once saved, the poll's confirmation leads back to the order page first.
+		$this->assertMatchesRegularExpression( '/openbb-poll__confirmation.+<a class="openbb-button openbb-button--primary" href="[^"]*#openbb-order">Back to the order page<\/a>/s', $single );
 
 		// With ordering closed the page still leads to open polls.
 		$this->move_cycle( $cycle_id, 'setup' );
@@ -849,6 +857,9 @@ class Test_OPENBB_Polls extends OPENBB_TestCase {
 			$this->assertStringContainsString( 'data-wp-interactive="openbb/polls"', $html );
 			$this->assertStringContainsString( 'More oats please', $html );
 			$this->assertStringContainsString( 'Answering is optional.', $html );
+			// The thank-you page confirms a save under the form instead.
+			$this->assertStringContainsString( 'openbb-poll__status', $html );
+			$this->assertStringNotContainsString( 'openbb-poll__confirmation', $html );
 			$this->assertStringNotContainsString( 'Card poll', $html );
 			$this->assertStringNotContainsString( 'Link only poll', $html );
 		} finally {

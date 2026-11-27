@@ -2,16 +2,20 @@
  * Store `openbb/polls`: poll forms rendered by OPENBB_Polls_View (no build step).
  *
  * Each poll is an element with its own context ({ pollId, responded, busy, notice,
- * status }) holding a form whose fields use the `openbb/forms` context. Submitting sends
- * the whole form: answers replace the member's earlier ones, and an empty answer is
- * "not answered". Nothing is required.
+ * status, confirmation, confirmed }) holding a form whose fields use the `openbb/forms`
+ * context. Submitting sends the whole form: answers replace the member's earlier ones,
+ * and an empty answer is "not answered". Nothing is required.
+ *
+ * Once saved, a poll with a `confirmation` (the polls view) shows it in place of the
+ * form until the member goes back to their answers. Others (the order thank-you page)
+ * show the status under the form.
  *
  * REST: POST openbb/v1/poll/{id}.
  */
 import * as interactivity from '@wordpress/interactivity';
-import { focusField, setErrors } from '@open-bulk-buying/forms';
+import { afterRender, focusField, setErrors } from '@open-bulk-buying/forms';
 
-const { store, getContext } = interactivity;
+const { store, getContext, getElement } = interactivity;
 // Added in WordPress 6.8; on older versions handlers already run synchronously.
 const withSyncEvent = interactivity.withSyncEvent || ( ( fn ) => fn );
 
@@ -61,6 +65,17 @@ export async function saveAnswers( api, pollId, answers ) {
 	return { ok: response.ok, network: false, data };
 }
 
+/**
+ * Moves focus to `selector` inside a poll once it's rendered.
+ *
+ * @param {Element|null} poll
+ * @param {string}       selector
+ */
+async function focusIn( poll, selector ) {
+	await afterRender();
+	poll?.querySelector( selector )?.focus();
+}
+
 const { state } = store( 'openbb/polls', {
 	actions: {
 		// A changed answer isn't saved yet, so "saved" no longer describes the form.
@@ -97,6 +112,13 @@ const { state } = store( 'openbb/polls', {
 				setErrors( formCtx, {} );
 				ctx.responded = !! result.data.responded;
 				ctx.status = ctx.responded ? messages.saved : messages.cleared;
+				if ( ctx.confirmation ) {
+					ctx.confirmed = true;
+					yield focusIn(
+						form.closest( '.openbb-poll' ),
+						'.openbb-poll__confirmation .openbb-notice'
+					);
+				}
 				return;
 			}
 
@@ -111,5 +133,12 @@ const { state } = store( 'openbb/polls', {
 				? messages.network
 				: result.data?.message || messages.network;
 		} ),
+		// Back from the confirmation to the form, which still holds the saved answers.
+		*edit() {
+			const ctx = getContext();
+			const poll = getElement().ref.closest( '.openbb-poll' );
+			ctx.confirmed = false;
+			yield focusIn( poll, '.openbb-poll__title' );
+		},
 	},
 } );
