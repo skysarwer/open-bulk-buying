@@ -37,11 +37,12 @@ ob_start();
 <?php if ( 'updated' === $event && $changes ) : ?>
 	<?php foreach ( $changes as list( $label, $from, $to ) ) : ?>
 		<?php
-		$added   = '' === $from;
-		$removed = '' === $to;
-		$label   = '<b>' . nl2br( esc_html( $label ) ) . '</b>';
-		$from    = '<b>' . nl2br( esc_html( $from ) ) . '</b>';
-		$to      = '<b>' . nl2br( esc_html( $to ) ) . '</b>';
+		$added      = '' === $from;
+		$removed    = '' === $to;
+		$after_from = false !== strpos( $from, "\n" ) ? '<br />' : '';
+		$label      = '<b>' . nl2br( esc_html( $label ) ) . '</b>';
+		$from       = '<b>' . nl2br( esc_html( $from ) ) . '</b>';
+		$to         = '<b>' . nl2br( esc_html( $to ) ) . '</b>';
 		if ( $added ) {
 			/* translators: 1: change name, 2: added value. Values are bold. */
 			$summary = sprintf( esc_html__( '%1$s added: %2$s.', 'open-bulk-buying' ), $label, $to );
@@ -50,7 +51,7 @@ ob_start();
 			$summary = sprintf( esc_html__( '%1$s removed: %2$s.', 'open-bulk-buying' ), $label, $from );
 		} else {
 			/* translators: 1: change name, 2: old value, 3: new value. Values are bold. */
-			$summary = sprintf( esc_html__( '%1$s changed from %2$s to %3$s.', 'open-bulk-buying' ), $label, $from, $to );
+			$summary = sprintf( esc_html__( '%1$s changed from %2$s to %3$s.', 'open-bulk-buying' ), $label, $from . $after_from, $to );
 		}
 		?>
 		<p><?php echo $summary; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Values are escaped above. ?></p>

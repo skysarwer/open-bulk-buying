@@ -84,7 +84,7 @@ final class OPENBB_Order_Emails {
 			return openbb_format_money( $line->calculate_total(), $currency );
 		}
 		return implode(
-			'; ',
+			"\n",
 			array(
 				number_format_i18n( $line->get_quantity(), floor( $line->get_quantity() ) === $line->get_quantity() ? 0 : 3 ) . ' x ' . $line->get_unit_label(),
 				__( 'Unit price', 'open-bulk-buying' ) . ': ' . openbb_format_money( $line->unit_price + $line->container_charge, $currency ),

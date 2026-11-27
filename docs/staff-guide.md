@@ -463,6 +463,10 @@ danger zone to delete co-op data, Administrators only).
 | Order submitted / updated / prepaid / cancelled / fulfilled | Order owner | Product table, totals, member-visible fields; staff note if enabled. |
 | Membership payment recorded | Member | Fee amount only. |
 
+In order-update emails, each changed product's quantity, unit price, container
+choice, container credit and line total appear on separate lines so members
+can compare the old and new values.
+
 Not sent: draft autosaves, unchanged saves, staff-note-only edits, repeated
 payment/fulfilment confirmations. Internal aid explanations are never emailed.
 Emails use the order's language when a translation exists and end with

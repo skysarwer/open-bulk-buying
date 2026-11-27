@@ -156,8 +156,11 @@ class Test_OPENBB_Order_Emails extends OPENBB_TestCase {
 			$this->assertStringContainsString( $text, $mail['message'] );
 		}
 		$this->assertStringContainsString( '<b>Apples alert(1)</b> changed from <b>2 x', $mail['message'] );
-		$this->assertStringContainsString( '</b> to <b>3 x', $mail['message'] );
+		$this->assertStringContainsString( '</b><br /> to <b>3 x', $mail['message'] );
 		$this->assertStringContainsString( '<b>Added beans</b> added: <b>1 x', $mail['message'] );
+		foreach ( array( 'Unit price', 'Own container', 'Container credit', 'Line total' ) as $field ) {
+			$this->assertSame( 3, substr_count( $mail['message'], "<br />\n$field: " ), "$field should start a new line for the old, new, and added item details." );
+		}
 		$this->assertStringContainsString( '<b>Donation</b> changed from <b>' . esc_html( openbb_format_money( 0, $order->currency ) ) . '</b> to <b>' . esc_html( openbb_format_money( 100, $order->currency ) ) . '</b>', $mail['message'] );
 		$this->assertStringNotContainsString( '<th scope="col" style="border:1px solid #cccccc;padding:8px;text-align:left;vertical-align:top;">Before</th>', $mail['message'] );
 		$this->assertStringNotContainsString( '<script', $mail['message'] );
