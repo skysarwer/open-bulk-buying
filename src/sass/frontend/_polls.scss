@@ -1,5 +1,5 @@
 // Polls (OPENBB_Polls_View): the polls view ([openbb_polls]), one poll's form, and the
-// poll surfaces of the order form (cards above the catalog, questions in Finalize).
+// poll surfaces of the order form (cards above the catalog, questions on the thank-you page).
 
 .openbb-polls {
 	display: grid;
@@ -7,16 +7,6 @@
 
 	> .openbb-notice {
 		margin: 0;
-	}
-
-	&__back {
-		margin: 0;
-
-		a {
-			display: inline-flex;
-			align-items: center;
-			gap: 0.25em;
-		}
 	}
 }
 
@@ -136,23 +126,4 @@
 	&__link {
 		flex: none;
 	}
-}
-
-// A poll's questions inside the order form's Finalize step.
-.openbb-finalize__poll {
-	padding: 0.75rem;
-	border: 1px solid var(--openbb-border);
-	border-radius: var(--openbb-radius);
-
-	.openbb-poll__intro {
-		margin-bottom: 0;
-	}
-}
-
-.openbb-finalize__poll-title {
-	font-size: 1.05em;
-}
-
-.openbb-done__polls {
-	margin-top: var(--openbb-gap);
 }

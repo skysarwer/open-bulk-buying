@@ -14,12 +14,7 @@ defined( 'ABSPATH' ) || exit;
 ?>
 <div class="openbb openbb-polls" id="<?php echo esc_attr( $view['id'] ); ?>"<?php echo $view['polls'] ? ' data-wp-interactive="openbb/polls"' : ''; ?>>
 	<?php if ( $view['back'] ) : ?>
-		<p class="openbb-polls__back">
-			<a href="<?php echo esc_url( $view['back']['url'] ); ?>">
-				<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="16" height="16"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-				<?php echo esc_html( $view['back']['label'] ); ?>
-			</a>
-		</p>
+		<?php echo OPENBB_Frontend::template( 'view-back', $view['back'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Template. ?>
 	<?php endif; ?>
 
 	<?php if ( '' !== $view['notice'] ) : ?>

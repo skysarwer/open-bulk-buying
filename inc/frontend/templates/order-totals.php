@@ -1,6 +1,6 @@
 <?php
 /**
- * Order totals, shown under the basket, in the Finalize step and after submitting.
+ * Live order totals, shown under the basket and in the Finalize step.
  * Approved aid comes off the goods; a pending request is only noted.
  *
  * @var array $view Unused.

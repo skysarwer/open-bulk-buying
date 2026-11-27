@@ -14,7 +14,7 @@
  * - @open-bulk-buying/auth    Store `openbb/auth`: switches between the login and signup panels.
  * - @open-bulk-buying/captcha Bot protection widgets: renders Turnstile, collects and resets responses.
  * - @open-bulk-buying/order   Store `openbb/order`: the member order form (basket, autosave, finalize).
- * - @open-bulk-buying/polls   Store `openbb/polls`: poll forms; also saves the polls in the order form's Finalize step.
+ * - @open-bulk-buying/polls   Store `openbb/polls`: poll forms on the polls and order thank-you pages.
  *
  * @package Open_Bulk_Buying
  */
@@ -55,7 +55,7 @@ final class OPENBB_Frontend {
 			self::MODULE_LOGIN   => array( 'login.js', array( '@wordpress/interactivity', self::MODULE_FORMS, self::MODULE_CAPTCHA ) ),
 			self::MODULE_AUTH    => array( 'auth.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
 			self::MODULE_POLLS   => array( 'polls.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
-			self::MODULE_ORDER   => array( 'order.js', array( '@wordpress/interactivity', self::MODULE_FORMS, self::MODULE_POLLS ) ),
+			self::MODULE_ORDER   => array( 'order.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
 		);
 		foreach ( $modules as $id => list( $file, $deps ) ) {
 			wp_register_script_module( $id, OPENBB_PLUGIN_URL . 'assets/js/' . $file, $deps, self::version( 'assets/js/' . $file ) );

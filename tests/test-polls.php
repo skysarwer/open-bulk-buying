@@ -597,7 +597,7 @@ class Test_OPENBB_Polls extends OPENBB_TestCase {
 				'intro'      => array( 'default' => "Line one\nLine two" ),
 				'close_rule' => 'date',
 				'close_at'   => '2030-01-02T10:00:00+00:00',
-				'placements' => array( 'finalize' ),
+				'placements' => array( 'thank_you' ),
 				'questions'  => array( $this->question( 'happy' ) ),
 			)
 		);
@@ -605,7 +605,7 @@ class Test_OPENBB_Polls extends OPENBB_TestCase {
 		$poll = $created->get_data();
 		$this->assertSame( array( 'default' => 'Feedback', 'fr' => 'Avis' ), $poll['title'] );
 		$this->assertSame( "Line one\nLine two", $poll['intro']['default'] );
-		$this->assertSame( array( 'finalize' ), $poll['placements'] );
+		$this->assertSame( array( 'thank_you' ), $poll['placements'] );
 		$this->assertSame( 'draft', $poll['phase'] );
 		$this->assertSame( strtotime( '2030-01-02 10:00:00 UTC' ), strtotime( $poll['close_at'] ) );
 
@@ -788,18 +788,16 @@ class Test_OPENBB_Polls extends OPENBB_TestCase {
 			),
 			array( 'id' => $cycle_id )
 		);
-		$card     = $this->poll( $cycle_id, array( 'title' => array( 'default' => 'Card poll' ) ) );
-		$finalize = $this->poll( $cycle_id, array( 'title' => array( 'default' => 'Finalize poll' ), 'placements' => array( OPENBB_Poll::PLACEMENT_FINALIZE ) ) );
-		$member   = $this->make_user( 'member' );
+		$card   = $this->poll( $cycle_id, array( 'title' => array( 'default' => 'Card poll' ) ) );
+		$this->poll( $cycle_id, array( 'title' => array( 'default' => 'Post-order feedback' ), 'placements' => array( OPENBB_Poll::PLACEMENT_THANK_YOU ) ) );
+		$member = $this->make_user( 'member' );
 		wp_set_current_user( $member );
 
 		$form = OPENBB_Order_Form_View::render();
 		$this->assertStringContainsString( 'openbb-catalog', $form );
 		$this->assertStringContainsString( 'Card poll', $form );
-		$this->assertStringContainsString( 'name="poll_' . $finalize->id . '__happy"', $form );
-		$this->assertStringContainsString( 'Answering is optional.', $form );
-		// Poll questions are never marked required, so they can't hold up the order.
-		$this->assertSame( 0, preg_match( '/data-name="poll_[^"]*"[^>]*data-required/', $form ) );
+		$this->assertStringNotContainsString( 'Post-order feedback', $form );
+		$this->assertStringNotContainsString( 'openbb-poll__form', $form );
 
 		$_GET['poll'] = (string) $card->id;
 		$single       = OPENBB_Order_Form_View::render();
@@ -820,32 +818,62 @@ class Test_OPENBB_Polls extends OPENBB_TestCase {
 	public function test_order_page_surfaces_follow_each_polls_placement(): void {
 		$cycle_id = $this->make_cycle( 'ordering' );
 		$card     = $this->poll( $cycle_id, array( 'title' => array( 'default' => 'Card poll' ) ) );
-		$finalize = $this->poll( $cycle_id, array( 'title' => array( 'default' => 'Finalize poll' ), 'placements' => array( OPENBB_Poll::PLACEMENT_FINALIZE ) ) );
+		$survey   = $this->poll(
+			$cycle_id,
+			array(
+				'title'           => array( 'default' => 'After ordering' ),
+				'placements'      => array( OPENBB_Poll::PLACEMENT_THANK_YOU ),
+				'audience'        => OPENBB_Poll::AUDIENCE_ORDERED,
+				'audience_cycles' => array( $cycle_id ),
+				'questions'       => array( $this->question( 'feedback', 'text' ) ),
+			)
+		);
 		$this->poll( $cycle_id, array( 'title' => array( 'default' => 'Link only poll' ), 'placements' => array() ) );
 		$member = $this->make_user( 'member' );
+		wp_set_current_user( $member );
 
-		$cards = OPENBB_Polls_View::cards( $member, true );
+		$this->assertSame( array(), OPENBB_Polls_View::thank_you_polls( $member ) );
+		$this->make_order( $cycle_id, $member );
+		$cards = OPENBB_Polls_View::cards( $member );
 		$this->assertStringContainsString( 'Card poll', $cards );
 		$this->assertStringContainsString( 'poll=' . $card->id, $cards );
-		$this->assertStringNotContainsString( 'Finalize poll', $cards );
+		$this->assertStringNotContainsString( 'After ordering', $cards );
 		$this->assertStringNotContainsString( 'Link only poll', $cards );
 
-		// With no Finalize step to show it in, a Finalize poll gets a card instead.
-		$this->assertStringContainsString( 'Finalize poll', OPENBB_Polls_View::cards( $member, false ) );
-
-		$in_form = OPENBB_Polls_View::finalize_polls( $member, 'openbb-order' );
-		$name    = 'poll_' . $finalize->id . '__happy';
-		$this->assertSame( array( $finalize->id ), wp_list_pluck( $in_form, 'id' ) );
-		$this->assertSame( array( $name => '' ), $in_form[0]['values'] );
-		$this->assertSame( array( 'happy' => $name ), $in_form[0]['client']['fields'] );
-		$this->assertFalse( $in_form[0]['client']['responded'] );
+		OPENBB_Poll_Responses::save( $survey, $member, array( 'feedback' => 'More oats please' ) );
+		$_GET['cycle']      = (string) $cycle_id;
+		$_GET['order_view'] = 'thank-you';
+		try {
+			$html = OPENBB_Order_Form_View::render();
+			$this->assertStringContainsString( 'After ordering', $html );
+			$this->assertStringContainsString( 'data-wp-interactive="openbb/polls"', $html );
+			$this->assertStringContainsString( 'More oats please', $html );
+			$this->assertStringContainsString( 'Answering is optional.', $html );
+			$this->assertStringNotContainsString( 'Card poll', $html );
+			$this->assertStringNotContainsString( 'Link only poll', $html );
+		} finally {
+			unset( $_GET['cycle'], $_GET['order_view'] );
+		}
 
 		// Once answered, the invitation becomes a link to change the answers.
 		OPENBB_Poll_Responses::save( $card, $member, array( 'happy' => true ) );
-		$answered = OPENBB_Polls_View::cards( $member, true );
+		$answered = OPENBB_Polls_View::cards( $member );
 		$this->assertStringNotContainsString( 'openbb-poll-card__title', $answered );
 		$this->assertStringContainsString( 'Change your answers', $answered );
 
-		$this->assertSame( '', OPENBB_Polls_View::cards( $this->make_user( 'applicant' ), false ) );
+		$this->assertSame( '', OPENBB_Polls_View::cards( $this->make_user( 'applicant' ) ) );
+	}
+
+	public function test_existing_finalize_placements_move_to_thank_you_but_new_writes_cannot_select_finalize(): void {
+		global $wpdb;
+
+		$poll = $this->poll( $this->make_cycle( 'ordering' ) );
+		$wpdb->update( $wpdb->openbb_polls, array( 'placements' => '["card","finalize"]' ), array( 'id' => $poll->id ) );
+		wp_set_current_user( $this->staff );
+
+		$settings = $this->api( 'GET', '/polls/' . $poll->id )->get_data();
+		$this->assertSame( array( 'card', 'thank_you' ), $settings['placements'] );
+		$invalid = $this->api( 'PUT', '/polls/' . $poll->id, array( 'revision' => $poll->revision, 'placements' => array( 'finalize' ) ) );
+		$this->assertSame( 400, $invalid->get_status() );
 	}
 }

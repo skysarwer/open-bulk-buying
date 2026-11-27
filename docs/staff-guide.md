@@ -204,12 +204,12 @@ them. You can tick the poll's own cycle: members then qualify once they order.
 - **Card on the order page** (on by default): an invitation above the product
   list that opens the poll. It also appears when ordering is closed, so it
   works for votes before ordering opens.
-- **Questions in the Finalize step** (off by default): the questions are asked
-  right in the order form, marked optional. Answers are saved separately after
-  the order; if saving them fails, the order is still placed and the member can
-  retry. Finalize is the step where members also donate and request aid, so
-  add polls there sparingly and compare donation and aid-request rates before
-  and after.
+- **Questions on the order thank-you page** (off by default): after placing an
+  order or saving order details, the member sees their receipt and can answer
+  the poll there. Answers have their own submit button; skipping or changing
+  them does not affect the order. A poll for members who ordered in this cycle
+  can appear as soon as they place their first order. Polls previously set to
+  appear in Finalize now use this placement instead.
 - **Always**: a page with the `[openbb_polls]` shortcode lists every poll open
   to the member, and adding `?poll=ID` to the address of that page or the order
   page opens one poll directly, for links in emails.

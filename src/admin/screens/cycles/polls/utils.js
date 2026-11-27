@@ -129,8 +129,8 @@ export function placementsSummary( poll ) {
 	const places = [
 		poll.placements.includes( 'card' ) &&
 			__( 'card on the order page', 'open-bulk-buying' ),
-		poll.placements.includes( 'finalize' ) &&
-			__( 'questions in the Finalize step', 'open-bulk-buying' ),
+		poll.placements.includes( 'thank_you' ) &&
+			__( 'questions on the order thank-you page', 'open-bulk-buying' ),
 	].filter( Boolean );
 
 	return places.length

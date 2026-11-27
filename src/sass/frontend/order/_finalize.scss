@@ -1,5 +1,5 @@
 // Order form: the Finalize step (questions, donation, aid, note, commitment)
-// and the confirmation shown after submitting.
+// and the standalone confirmation after submitting.
 
 .openbb-finalize {
 
@@ -31,6 +31,45 @@
 	}
 }
 
-.openbb-done .openbb-notice {
-	margin: 0;
+.openbb-thank-you {
+	display: grid;
+	gap: var(--openbb-gap);
+
+	> * {
+		margin: 0;
+		min-width: 0;
+	}
+}
+
+.openbb-receipt {
+	padding: 0.75rem 1rem;
+	border: 1px solid var(--openbb-border);
+	border-radius: var(--openbb-radius);
+	overflow-x: auto;
+
+	summary {
+		cursor: pointer;
+		font-weight: 600;
+	}
+
+	table {
+		width: 100%;
+		margin-top: 1rem;
+		border-collapse: collapse;
+	}
+
+	caption,
+	th,
+	td {
+		padding: 0.35rem;
+		text-align: start;
+	}
+
+	td:last-child {
+		text-align: end;
+	}
+
+	tfoot {
+		border-top: 1px solid var(--openbb-border);
+	}
 }

@@ -6,9 +6,6 @@
  * the whole form: answers replace the member's earlier ones, and an empty answer is
  * "not answered". Nothing is required.
  *
- * The order form saves the polls in its Finalize step with saveAnswers() too, so every
- * surface writes answers the same way, and never as part of an order.
- *
  * REST: POST openbb/v1/poll/{id}.
  */
 import * as interactivity from '@wordpress/interactivity';

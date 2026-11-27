@@ -302,16 +302,16 @@ export default function SettingsForm( { draft, audience, missing, onChange } ) {
 			<CheckboxControl
 				__nextHasNoMarginBottom
 				label={ __(
-					'Questions in the order form’s Finalize step',
+					'Questions on the order thank-you page',
 					'open-bulk-buying'
 				) }
 				help={ __(
-					'Asked while the member finalizes their order, marked optional. Answers are saved separately and never hold up an order. Best for a few short questions.',
+					'Members can answer after placing their order. Saving answers does not change the order.',
 					'open-bulk-buying'
 				) }
-				checked={ draft.placements.includes( 'finalize' ) }
+				checked={ draft.placements.includes( 'thank_you' ) }
 				onChange={ ( isChecked ) =>
-					togglePlacement( 'finalize', isChecked )
+					togglePlacement( 'thank_you', isChecked )
 				}
 			/>
 			<p className="openbb-muted">

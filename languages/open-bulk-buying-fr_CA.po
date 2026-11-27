@@ -1109,11 +1109,19 @@ msgstr "Expliquez brièvement pourquoi vous demandez une aide financière."
 msgid "Add at least one item before submitting your order."
 msgstr "Ajoutez au moins un article avant de soumettre votre commande."
 
-#: inc/frontend/class-openbb-order-form-view.php:396
+#: inc/frontend/class-openbb-order-form-view.php:82
+msgid "Back to the order page"
+msgstr "Retour à la page de commande"
+
+#: inc/frontend/class-openbb-order-form-view.php:128
+msgid "There is no confirmed order to show for this ordering period."
+msgstr "Vous n’avez pas de commande confirmée pour cette période."
+
+#: inc/frontend/class-openbb-order-form-view.php:140
 msgid "Your order is placed. You can keep changing it until ordering closes."
 msgstr "Votre commande est passée. Vous pouvez continuer à la modifier jusqu’à la fermeture de la période de commande."
 
-#: inc/frontend/class-openbb-order-form-view.php:397
+#: inc/frontend/class-openbb-order-form-view.php:141
 msgid "Your order details are saved."
 msgstr "Les détails de votre commande sont enregistrés."
 
@@ -1446,7 +1454,7 @@ msgid "Finalize your order"
 msgstr "Finaliser votre commande"
 
 #: inc/emails/class-openbb-emails.php:36
-#: inc/frontend/templates/order-basket.php:32
+#: inc/frontend/templates/order-thank-you.php:15
 msgid "Thank you!"
 msgstr "Merci!"
 
@@ -1500,13 +1508,31 @@ msgstr "Enregistrer les modifications"
 msgid "Place order"
 msgstr "Passer la commande"
 
-#: inc/frontend/templates/order-basket.php:139
-msgid "View my basket"
-msgstr "Voir mon panier"
+#: inc/frontend/templates/order-form.php:63
+#: inc/frontend/templates/order-thank-you.php:19
+msgid "View order receipt"
+msgstr "Voir le reçu de commande"
 
-#: inc/frontend/templates/order-basket.php:140
-msgid "Keep browsing"
-msgstr "Continuer à parcourir"
+#: inc/frontend/templates/order-thank-you.php:64
+#: inc/frontend/templates/poll-cards.php:14
+msgid "Co-op polls"
+msgstr "Sondages de la coopérative"
+
+#: inc/frontend/templates/order-thank-you.php:65
+msgid "Answering is optional."
+msgstr "La participation est facultative."
+
+#: src/admin/screens/cycles/polls/settings-form.js:304
+msgid "Questions on the order thank-you page"
+msgstr "Questions sur la page de remerciement après la commande"
+
+#: src/admin/screens/cycles/polls/settings-form.js:308
+msgid "Members can answer after placing their order. Saving answers does not change the order."
+msgstr "Les membres peuvent répondre après avoir passé leur commande. L’enregistrement des réponses ne modifie pas la commande."
+
+#: src/admin/screens/cycles/polls/utils.js:133
+msgid "questions on the order thank-you page"
+msgstr "questions sur la page de remerciement après la commande"
 
 #: inc/frontend/templates/order-form.php:36
 msgid "Basket"

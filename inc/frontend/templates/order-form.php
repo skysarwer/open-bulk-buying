@@ -4,7 +4,7 @@
  * checkout bar on narrow screens. See OPENBB_Order_Form_View.
  *
  * @var array $view id, welcome, cycle_name, closes, cycles (links when several are open),
- *                  staff_notice, notice (type, text) or null, polls (HTML of the poll
+ *                  staff_notice, notice (type, text) or null, receipt_url, polls (HTML of the poll
  *                  cards), sections, basket (for order-basket).
  *
  * @package Open_Bulk_Buying
@@ -57,7 +57,12 @@ $top_level = array_values(
 			<?php endif; ?>
 
 			<?php if ( $view['notice'] ) : ?>
-				<p class="openbb-notice openbb-notice--<?php echo esc_attr( $view['notice']['type'] ); ?>"><?php echo esc_html( $view['notice']['text'] ); ?></p>
+				<p class="openbb-notice openbb-notice--<?php echo esc_attr( $view['notice']['type'] ); ?>">
+					<?php echo esc_html( $view['notice']['text'] ); ?>
+					<?php if ( $view['receipt_url'] ) : ?>
+						<a href="<?php echo esc_url( $view['receipt_url'] ); ?>"><?php esc_html_e( 'View order receipt', 'open-bulk-buying' ); ?></a>
+					<?php endif; ?>
+				</p>
 			<?php endif; ?>
 
 			<?php echo $view['polls']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The poll-cards template. ?>

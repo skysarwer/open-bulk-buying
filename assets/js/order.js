@@ -15,9 +15,7 @@
  *
  * REST: GET/POST openbb/v1/order.
  *
- * Polls placed in the Finalize step (`state.polls`) are not part of the order: their
- * answers are sent to the poll route after the order is saved, and a failure there
- * leaves the order as saved.
+ * Explicitly submitting or updating order details opens the saved receipt.
  */
 import * as interactivity from '@wordpress/interactivity';
 import {
@@ -26,7 +24,6 @@ import {
 	setErrors,
 	validate,
 } from '@open-bulk-buying/forms';
-import { isBlank, saveAnswers } from '@open-bulk-buying/polls';
 
 const { store, getContext, getElement } = interactivity;
 // Added in WordPress 6.8; on older versions handlers already run synchronously.
@@ -358,61 +355,6 @@ async function flush() {
 	return false;
 }
 
-/* Polls ------------------------------------------------------------------ */
-
-// Answers that didn't save, kept for "Try again": [ { poll, answers } ].
-let pendingPolls = [];
-
-/**
- * The answers to send for the polls in the Finalize step. A poll the member left
- * untouched is skipped; one they answered before is sent even when empty, which
- * takes their answers back.
- *
- * @param {Object} values The Finalize form's values.
- * @return {Array} [ { poll, answers } ]
- */
-function pollAnswers( values ) {
-	return ( state.polls || [] )
-		.map( ( poll ) => {
-			const answers = {};
-			for ( const [ key, name ] of Object.entries( poll.fields ) ) {
-				answers[ key ] = values[ name ];
-			}
-			return { poll, answers };
-		} )
-		.filter(
-			( { poll, answers } ) =>
-				poll.responded || ! Object.values( answers ).every( isBlank )
-		);
-}
-
-/**
- * Saves poll answers through the poll route, after the order. Failures are reported
- * in `state.pollNotice` and can be retried; they never undo the order.
- *
- * @param {Array} entries From pollAnswers().
- */
-async function savePolls( entries ) {
-	const api = { restUrl: state.pollUrl, nonce: state.nonce };
-	const failed = [];
-	let reason = '';
-	for ( const entry of entries ) {
-		const result = await saveAnswers( api, entry.poll.id, entry.answers );
-		if ( result.ok && result.data ) {
-			entry.poll.responded = !! result.data.responded;
-		} else {
-			failed.push( entry );
-			reason =
-				( ! result.network && result.data?.message ) ||
-				state.messages.network;
-		}
-	}
-	pendingPolls = failed;
-	state.pollNotice = failed.length
-		? sprintf( state.messages.pollFailed, reason )
-		: '';
-}
-
 /* Panel ------------------------------------------------------------------ */
 
 function setPanel( open ) {
@@ -423,9 +365,6 @@ function setPanel( open ) {
 		} catch ( e ) {}
 	} else {
 		state.drawerOpen = open;
-	}
-	if ( ! open && state.step === 'done' ) {
-		state.step = 'basket';
 	}
 }
 
@@ -603,9 +542,6 @@ const { state } = store( 'openbb/order', {
 		get isFinalizeStep() {
 			return state.step === 'finalize';
 		},
-		get isDoneStep() {
-			return state.step === 'done';
-		},
 		get saveText() {
 			switch ( state.saveStatus ) {
 				case 'saving':
@@ -762,12 +698,11 @@ const { state } = store( 'openbb/order', {
 				return;
 			}
 
-			const wasSubmitted = state.isSubmitted;
 			const body = {
 				...linesBody(),
 				donation: donation ?? 0,
 				member_note: String( values.member_note ?? '' ),
-				submit: ! wasSubmitted,
+				submit: ! state.isSubmitted,
 				commit: !! values.commit,
 			};
 			if ( aidOpen ) {
@@ -782,14 +717,7 @@ const { state } = store( 'openbb/order', {
 				saved = copyItems( state.items );
 				state.donation = result.data.donation;
 				state.saveStatus = 'saved';
-				state.doneText = wasSubmitted
-					? messages.doneUpdated
-					: messages.doneSubmitted;
-				// The order is in; the polls are separate and can't undo it.
-				yield savePolls( pollAnswers( values ) );
-				state.busy = false;
-				state.step = 'done';
-				yield focusTitle();
+				window.location.assign( state.thankYouUrl );
 				return;
 			}
 			state.busy = false;
@@ -846,14 +774,6 @@ const { state } = store( 'openbb/order', {
 			dirty = true;
 			flush();
 		},
-		*retryPolls() {
-			if ( state.busy ) {
-				return;
-			}
-			state.busy = true;
-			yield savePolls( pendingPolls );
-			state.busy = false;
-		},
 	},
 
 	callbacks: {
@@ -869,6 +789,13 @@ const { state } = store( 'openbb/order', {
 				state.sidebarOpen =
 					window.localStorage.getItem( SIDEBAR_KEY ) !== '0';
 			} catch ( e ) {}
+
+			// Browser Back can restore the pre-submission form, including its submit lock.
+			window.addEventListener( 'pageshow', ( event ) => {
+				if ( event.persisted && state.busy ) {
+					window.location.reload();
+				}
+			} );
 
 			// Leaving with unsaved changes: send them along with the page unload.
 			window.addEventListener( 'pagehide', () => {

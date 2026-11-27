@@ -11,7 +11,7 @@
  *   the shortcode, and by the order form for ?poll=ID so a poll can be answered from the
  *   order page whether or not ordering is open.
  * - Cards on the order page linking to a poll (placement "card").
- * - The questions inside the order form's Finalize step (placement "finalize").
+ * - Independent poll forms on the order thank-you page (placement "thank_you").
  *
  * Templates: polls (the view), poll (one poll's form), poll-cards.
  * Store: assets/js/polls.js (`openbb/polls`). Styles: src/sass/frontend/_polls.scss.
@@ -27,9 +27,6 @@ final class OPENBB_Polls_View {
 
 	/** Query argument naming one poll to show. */
 	const QUERY_ARG = 'poll';
-
-	/** Separates the poll id from the question key in Finalize field names. */
-	const FIELD_SEPARATOR = '__';
 
 	/**
 	 * auth: which form a logged-out visitor sees first, login or signup (they can switch).
@@ -100,18 +97,7 @@ final class OPENBB_Polls_View {
 			}
 		}
 
-		if ( $open ) {
-			OPENBB_Frontend::enqueue( array( OPENBB_Frontend::MODULE_POLLS ) );
-			OPENBB_Frontend::forms_state();
-			self::state();
-		} else {
-			OPENBB_Frontend::enqueue_style();
-		}
-
-		$polls = array();
-		foreach ( $open as $entry ) {
-			$polls[] = self::poll_view( $entry['poll'], $entry['cycle'], $user_id );
-		}
+		OPENBB_Frontend::enqueue_style();
 
 		return OPENBB_Frontend::process(
 			OPENBB_Frontend::template(
@@ -120,7 +106,7 @@ final class OPENBB_Polls_View {
 					'id'     => self::ID,
 					'notice' => $notice,
 					'back'   => $back,
-					'polls'  => $polls,
+					'polls'  => self::forms( $open, $user_id, self::ID ),
 					'empty'  => $poll_id && $notice
 						? __( 'There are no other polls to answer right now.', 'open-bulk-buying' )
 						: __( 'There are no polls to answer right now.', 'open-bulk-buying' ),
@@ -130,20 +116,35 @@ final class OPENBB_Polls_View {
 	}
 
 	/**
-	 * What the poll template needs for one poll.
+	 * The same answer forms and poll store serve the polls page and the order confirmation.
 	 */
-	private static function poll_view( OPENBB_Poll $poll, OPENBB_Cycle $cycle, int $user_id ): array {
+	private static function forms( array $open, int $user_id, string $prefix ): array {
+		if ( ! $open ) {
+			return array();
+		}
+		OPENBB_Frontend::enqueue( array( OPENBB_Frontend::MODULE_POLLS ) );
+		OPENBB_Frontend::forms_state();
+		self::state();
+
+		$forms = array();
+		foreach ( $open as $entry ) {
+			$forms[] = self::poll_view( $entry['poll'], $entry['cycle'], $user_id, $prefix . '-' . $entry['poll']->id );
+		}
+		return $forms;
+	}
+
+	private static function poll_view( OPENBB_Poll $poll, OPENBB_Cycle $cycle, int $user_id, string $id ): array {
 		$answers = OPENBB_Poll_Responses::get_answers( $poll, $user_id );
 		$fields  = array();
 		$values  = array();
 		foreach ( $poll->active_questions() as $key => $question ) {
-			$field                    = openbb_poll_field_input( $question, $answers[ $key ] ?? null, array( 'id_prefix' => self::ID . '-' . $poll->id ) );
+			$field                    = openbb_poll_field_input( $question, $answers[ $key ] ?? null, array( 'id_prefix' => $id ) );
 			$fields[]                 = $field;
 			$values[ $field['name'] ] = $field['value'];
 		}
 
 		return array(
-			'id'           => self::ID . '-' . $poll->id,
+			'id'           => $id,
 			'title'        => $poll->get_title(),
 			'intro'        => $poll->get_intro(),
 			'cycle_name'   => $cycle->name,
@@ -185,20 +186,9 @@ final class OPENBB_Polls_View {
 	/**
 	 * Cards for the order page: an invitation to each open poll the member hasn't
 	 * answered, and a quieter link to change the ones they have. '' when there are none.
-	 *
-	 * Polls placed in the Finalize step get a card too when the member has no Finalize
-	 * step to see them in ($finalize_shown false: ordering is closed or their order is locked).
 	 */
-	public static function cards( int $user_id, bool $finalize_shown ): string {
-		$open = array_values(
-			array_filter(
-				OPENBB_Polls::open_for( $user_id ),
-				static function ( array $entry ) use ( $finalize_shown ): bool {
-					return $entry['poll']->has_placement( OPENBB_Poll::PLACEMENT_CARD )
-						|| ( ! $finalize_shown && $entry['poll']->has_placement( OPENBB_Poll::PLACEMENT_FINALIZE ) );
-				}
-			)
-		);
+	public static function cards( int $user_id ): string {
+		$open = self::placed( $user_id, OPENBB_Poll::PLACEMENT_CARD );
 		if ( ! $open ) {
 			return '';
 		}
@@ -230,58 +220,19 @@ final class OPENBB_Polls_View {
 	}
 
 	/**
-	 * The polls to ask in the order form's Finalize step: their fields for
-	 * openbb_render_field() (named "poll_{id}__{question}", unique within the order form)
-	 * and what the `openbb/order` store needs to save the answers through the poll route.
-	 *
-	 * @return array[] Each: id, title, intro, fields, values (field name => value),
-	 *                 client (id, responded, fields: question key => field name).
+	 * Evaluate eligibility after the order is saved: placing it can qualify the member.
 	 */
-	public static function finalize_polls( int $user_id, string $id_prefix ): array {
-		$polls = array();
-		foreach ( OPENBB_Polls::open_for( $user_id ) as $entry ) {
-			$poll = $entry['poll'];
-			if ( ! $poll->has_placement( OPENBB_Poll::PLACEMENT_FINALIZE ) ) {
-				continue;
-			}
+	public static function thank_you_polls( int $user_id ): array {
+		return self::forms( self::placed( $user_id, OPENBB_Poll::PLACEMENT_THANK_YOU ), $user_id, 'openbb-thank-you-poll' );
+	}
 
-			$answers = OPENBB_Poll_Responses::get_answers( $poll, $user_id );
-			$fields  = array();
-			$values  = array();
-			$names   = array();
-			foreach ( $poll->active_questions() as $key => $question ) {
-				$name            = 'poll_' . $poll->id . self::FIELD_SEPARATOR . $key;
-				$field           = openbb_poll_field_input(
-					$question,
-					$answers[ $key ] ?? null,
-					array(
-						'name'      => $name,
-						'id_prefix' => $id_prefix,
-					)
-				);
-				$fields[]        = $field;
-				$values[ $name ] = $field['value'];
-				$names[ $key ]   = $name;
+	private static function placed( int $user_id, string $placement ): array {
+		return array_filter(
+			OPENBB_Polls::open_for( $user_id ),
+			static function ( array $entry ) use ( $placement ): bool {
+				return $entry['poll']->has_placement( $placement );
 			}
-			if ( ! $fields ) {
-				continue;
-			}
-
-			$polls[] = array(
-				'id'     => $poll->id,
-				'title'  => $poll->get_title(),
-				'intro'  => $poll->get_intro(),
-				'fields' => $fields,
-				'values' => $values,
-				'client' => array(
-					'id'        => $poll->id,
-					'responded' => (bool) $answers,
-					'fields'    => $names,
-				),
-			);
-		}
-
-		return $polls;
+		);
 	}
 
 	/**

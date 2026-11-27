@@ -13,13 +13,13 @@
  * it's a modal sheet opened from the top bar or the checkout bar at the bottom.
  *
  * Templates: order-form (shell), order-product (catalog row), order-stepper (quantity
- * control), order-basket (panel), order-message (when there's nothing to order).
+ * control), order-basket (panel), order-thank-you (confirmation and saved receipt),
+ * order-message (when there's nothing to order).
  * Store: assets/js/order.js (`openbb/order`). Styles: src/sass/frontend/order/.
  *
  * Polls (OPENBB_Polls_View) appear here without being part of the order: as cards above
  * the catalog linking to a poll, shown on this page for ?poll=ID whether or not ordering
- * is open, and, for polls placed there, as questions in the Finalize step. Their answers
- * are saved through the poll route after the order, and never hold up an order.
+ * is open, and, for polls placed there, as independent forms on the thank-you page.
  *
  * Extension point: the `openbb_order_form_questions` action prints extra questions
  * into the Finalize step.
@@ -51,8 +51,17 @@ final class OPENBB_Order_Form_View {
 		OPENBB_Frontend::no_cache();
 		OPENBB_Frontend::enqueue_style();
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only choice of cycle.
+		$requested = isset( $_GET['cycle'] ) && is_scalar( $_GET['cycle'] ) ? absint( $_GET['cycle'] ) : 0;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only choice of view.
+		$thank_you = isset( $_GET['order_view'] ) && 'thank-you' === $_GET['order_view'];
+		$poll_id   = OPENBB_Polls_View::requested();
+
 		if ( ! is_user_logged_in() ) {
-			return self::auth( 'signup' === $args['auth'] ? 'signup' : 'login' );
+			$redirect = $poll_id
+				? add_query_arg( OPENBB_Polls_View::QUERY_ARG, $poll_id, OPENBB_Frontend::current_url() ) . '#' . OPENBB_Polls_View::ID
+				: self::order_url( $requested, $thank_you );
+			return self::auth( 'signup' === $args['auth'] ? 'signup' : 'login', $redirect );
 		}
 
 		$user_id = get_current_user_id();
@@ -66,17 +75,13 @@ final class OPENBB_Order_Form_View {
 			);
 		}
 
-		// A poll can be answered from this page whether or not ordering is open.
-		$poll_id = OPENBB_Polls_View::requested();
-		if ( $poll_id ) {
-			return OPENBB_Polls_View::polls(
-				$user_id,
-				$poll_id,
-				array(
-					'url'   => OPENBB_Frontend::current_url() . '#' . self::ID,
-					'label' => __( 'Back to the order page', 'open-bulk-buying' ),
-				)
+		// Neither answering a poll nor reading a saved receipt requires an open cycle.
+		if ( $poll_id || $thank_you ) {
+			$back = array(
+				'url'   => self::order_url( $requested ),
+				'label' => __( 'Back to the order page', 'open-bulk-buying' ),
 			);
+			return $poll_id ? OPENBB_Polls_View::polls( $user_id, $poll_id, $back ) : self::thank_you( $requested, $user_id, $back );
 		}
 
 		$cycles = OPENBB_Member_Orders::open_cycles();
@@ -88,12 +93,10 @@ final class OPENBB_Order_Form_View {
 					/* translators: %s: date and time. */
 					? sprintf( __( 'The next ordering period opens %s.', 'open-bulk-buying' ), self::local_datetime( $next->opens_at ) )
 					: __( 'There is no ordering period open right now. Check back soon.', 'open-bulk-buying' )
-			) . OPENBB_Polls_View::cards( $user_id, false );
+			) . OPENBB_Polls_View::cards( $user_id );
 		}
 
 		$cycle = $cycles[0];
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only choice of which open cycle to show.
-		$requested = isset( $_GET['cycle'] ) ? absint( $_GET['cycle'] ) : 0;
 		foreach ( $cycles as $open ) {
 			if ( $open->id === $requested ) {
 				$cycle = $open;
@@ -101,6 +104,46 @@ final class OPENBB_Order_Form_View {
 		}
 
 		return self::form( $cycle, $cycles, $member, OPENBB_Orders::get_for_member( $cycle->id, $user_id ) );
+	}
+
+	private static function order_url( int $cycle_id, bool $thank_you = false ): string {
+		$url = OPENBB_Frontend::current_url();
+		if ( $cycle_id ) {
+			$url = add_query_arg( 'cycle', $cycle_id, $url );
+		}
+		if ( $thank_you ) {
+			$url = add_query_arg( 'order_view', 'thank-you', $url );
+		}
+		return $url . '#' . self::ID;
+	}
+
+	private static function has_receipt( ?OPENBB_Order $order ): bool {
+		return $order && in_array( $order->status, array( OPENBB_Order::STATUS_SUBMITTED, OPENBB_Order::STATUS_PREPAID, OPENBB_Order::STATUS_FULFILLED ), true );
+	}
+
+	private static function thank_you( int $cycle_id, int $user_id, array $back ): string {
+		$order = $cycle_id ? OPENBB_Orders::get_for_member( $cycle_id, $user_id ) : null;
+		$cycle = self::has_receipt( $order ) ? OPENBB_Cycles::get( $cycle_id ) : null;
+		if ( ! $cycle ) {
+			return self::message( __( 'Order', 'open-bulk-buying' ), __( 'There is no confirmed order to show for this ordering period.', 'open-bulk-buying' ), $back );
+		}
+
+		return OPENBB_Frontend::process(
+			OPENBB_Frontend::template(
+				'order-thank-you',
+				array(
+					'id'         => self::ID,
+					'back'       => $back,
+					'order'      => $order,
+					'cycle_name' => $cycle->name,
+					'notice'     => OPENBB_Member_Orders::can_edit( $order, $cycle )
+						? __( 'Your order is placed. You can keep changing it until ordering closes.', 'open-bulk-buying' )
+						: __( 'Your order details are saved.', 'open-bulk-buying' ),
+					'totals'     => OPENBB_Order_Emails::totals( $order ),
+					'polls'      => OPENBB_Polls_View::thank_you_polls( $user_id ),
+				)
+			)
+		);
 	}
 
 	private static function form( OPENBB_Cycle $cycle, array $cycles, OPENBB_Member $member, ?OPENBB_Order $order ): string {
@@ -113,14 +156,12 @@ final class OPENBB_Order_Form_View {
 					'cycle_name' => $cycle->name,
 					'cycles'     => count( $cycles ) > 1 ? self::cycle_links( $cycles, $cycle ) : array(),
 				)
-			) . OPENBB_Polls_View::cards( $member->user_id, false );
+			) . OPENBB_Polls_View::cards( $member->user_id );
 		}
 		OPENBB_Frontend::enqueue( array( OPENBB_Frontend::MODULE_ORDER ) );
 		OPENBB_Frontend::forms_state();
 
 		$order_state = OPENBB_Member_Orders::state( $order, $cycle );
-		// Without a Finalize step to show them in (a locked order), these polls become cards.
-		$polls = $order_state['editable'] ? OPENBB_Polls_View::finalize_polls( $member->user_id, self::ID ) : array();
 		$sections    = OPENBB_Catalog::sections();
 
 		$catalog = array();
@@ -160,7 +201,7 @@ final class OPENBB_Order_Form_View {
 			);
 		}
 
-		self::state( $cycle, $order_state, $products, $items, array_column( $polls, 'client' ) );
+		self::state( $cycle, $order_state, $products, $items );
 
 		$submitted = OPENBB_Order::STATUS_SUBMITTED === $order_state['status'];
 		$digits    = openbb_currency_digits();
@@ -184,24 +225,21 @@ final class OPENBB_Order_Form_View {
 						? __( 'Staff preview: your role lets you place and edit orders during Setup, before ordering opens to members.', 'open-bulk-buying' )
 						: '',
 					'notice'       => self::status_notice( $order, $order_state, $cycle ),
-					'polls'        => OPENBB_Polls_View::cards( $member->user_id, $order_state['editable'] ),
+					'receipt_url'  => self::has_receipt( $order ) ? self::order_url( $cycle->id, true ) : '',
+					'polls'        => OPENBB_Polls_View::cards( $member->user_id ),
 					'sections'    => self::sections( $sections ),
 					'basket'      => array(
 						'id'        => self::ID . '-basket',
 						'submitted' => $submitted,
 						'aid'       => $order_state['aid_status'],
-						'polls'     => $polls,
 						'questions' => self::questions( $cycle, $order ),
 						'fields'    => self::finalize_fields( $order_state, $submitted, $digits, $pickup ),
-						'values'    => array_merge(
-							array(
-								'donation'    => self::money_input( $order_state['donation'], $digits ),
-								'aid'         => OPENBB_Order::AID_NONE !== $order_state['aid_status'],
-								'aid_reason'  => $order_state['aid_reason'],
-								'member_note' => $order_state['member_note'],
-								'commit'      => false,
-							),
-							...array_column( $polls, 'values' )
+						'values'    => array(
+							'donation'    => self::money_input( $order_state['donation'], $digits ),
+							'aid'         => OPENBB_Order::AID_NONE !== $order_state['aid_status'],
+							'aid_reason'  => $order_state['aid_reason'],
+							'member_note' => $order_state['member_note'],
+							'commit'      => false,
 						),
 					),
 				)
@@ -213,7 +251,7 @@ final class OPENBB_Order_Form_View {
 	 * Client state for `openbb/order`. Closures are derived state evaluated during
 	 * server rendering; assets/js/order.js defines the same getters.
 	 */
-	private static function state( OPENBB_Cycle $cycle, array $order_state, array $products, array $items, array $polls ): void {
+	private static function state( OPENBB_Cycle $cycle, array $order_state, array $products, array $items ): void {
 		$basket = array();
 		foreach ( $items as $item ) {
 			$basket[ $item['id'] ] = $item;
@@ -273,10 +311,7 @@ final class OPENBB_Order_Form_View {
 			'openbb/order',
 			array(
 				'restUrl'        => rest_url( OPENBB_REST_Controller::API_NAMESPACE . '/order' ),
-				// Polls in the Finalize step: { id, responded, fields: question key => field name }.
-				'pollUrl'        => rest_url( OPENBB_REST_Controller::API_NAMESPACE . '/poll' ),
-				'polls'          => $polls,
-				'pollNotice'     => '',
+				'thankYouUrl'     => self::order_url( $cycle->id, true ),
 				'nonce'          => wp_create_nonce( 'wp_rest' ),
 				'cycleId'        => $cycle->id,
 				'panelId'        => self::ID . '-basket',
@@ -383,11 +418,9 @@ final class OPENBB_Order_Form_View {
 				'sidebarShown'   => true,
 				'isBasketStep'   => true,
 				'isFinalizeStep' => false,
-				'isDoneStep'     => false,
 				'saveText'       => '',
 				'busy'           => false,
 				'canRetry'       => false,
-				'doneText'       => '',
 				'hasAidPending'  => OPENBB_Order::AID_PENDING === $order_state['aid_status'],
 			)
 		);
@@ -430,10 +463,6 @@ final class OPENBB_Order_Form_View {
 			'donation'      => __( 'Enter an amount, like 5 or 5.50.', 'open-bulk-buying' ),
 			'aidReason'     => __( 'Tell us briefly why you are asking for financial aid.', 'open-bulk-buying' ),
 			'emptyBasket'   => __( 'Add at least one item before submitting your order.', 'open-bulk-buying' ),
-			'doneSubmitted' => __( 'Your order is placed. You can keep changing it until ordering closes.', 'open-bulk-buying' ),
-			'doneUpdated'   => __( 'Your order details are saved.', 'open-bulk-buying' ),
-			/* translators: %s: why the poll answers could not be saved. */
-			'pollFailed'    => __( 'Your order is saved, but your poll answers were not: %s', 'open-bulk-buying' ),
 		);
 	}
 
@@ -566,7 +595,7 @@ final class OPENBB_Order_Form_View {
 	private static function questions( OPENBB_Cycle $cycle, ?OPENBB_Order $order ): string {
 		ob_start();
 		/**
-		 * Prints extra questions (e.g. polls) into the order form's Finalize step.
+		 * Prints extra order-specific questions into the order form's Finalize step.
 		 *
 		 * @param OPENBB_Cycle      $cycle The cycle being ordered from.
 		 * @param OPENBB_Order|null $order The member's order, if saved.
@@ -650,12 +679,8 @@ final class OPENBB_Order_Form_View {
 	 *
 	 * @param string $first login or signup.
 	 */
-	private static function auth( string $first ): string {
-		// Someone following a link to a poll lands on it after logging in.
-		$poll_id  = OPENBB_Polls_View::requested();
-		$page     = OPENBB_Frontend::current_url();
-		$redirect = ( $poll_id ? add_query_arg( OPENBB_Polls_View::QUERY_ARG, $poll_id, $page ) : $page ) . '#' . self::ID;
-		$open     = OPENBB_Signup::is_open();
+	private static function auth( string $first, string $redirect ): string {
+		$open = OPENBB_Signup::is_open();
 
 		$panels = array( 'login' => OPENBB_Login_View::panel( array( 'login_redirect' => $redirect ), $open ) );
 		if ( $open ) {
@@ -670,13 +695,14 @@ final class OPENBB_Order_Form_View {
 		) . OPENBB_Login_View::auth( $first, $panels );
 	}
 
-	private static function message( string $title, string $text ): string {
+	private static function message( string $title, string $text, array $back = array() ): string {
 		return OPENBB_Frontend::template(
 			'order-message',
 			array(
 				'id'    => self::ID,
 				'title' => $title,
 				'text'  => $text,
+				'back'  => $back,
 			)
 		);
 	}

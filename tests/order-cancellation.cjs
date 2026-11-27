@@ -23,6 +23,8 @@ function loadOrder( errorCode ) {
 		products: { 1: { max: 10 } },
 		orderId: 1,
 		cycleId: 1,
+		restUrl: '/order',
+		thankYouUrl: '/?cycle=1&order_view=thank-you#openbb-order',
 		revision: 1,
 		editable: true,
 		conflict: false,
@@ -31,11 +33,13 @@ function loadOrder( errorCode ) {
 	let definition;
 	let requests = 0;
 	let reloads = 0;
+	const destinations = [];
 	runInNewContext( code, {
 		exports: {},
 		require: ( name ) => {
 			if ( name === '@wordpress/interactivity' ) {
 				return {
+					getContext: () => ( { values: { commit: true } } ),
 					store: ( namespace, value ) => {
 						assert.equal( namespace, 'openbb/order' );
 						definition = value;
@@ -44,29 +48,34 @@ function loadOrder( errorCode ) {
 					},
 				};
 			}
-			assert.ok(
-				[ '@open-bulk-buying/forms', '@open-bulk-buying/polls' ].includes(
-					name
-				),
-				name
-			);
-			return {};
+			assert.equal( name, '@open-bulk-buying/forms' );
+			return { validate: () => ( {} ), setErrors: () => {} };
 		},
 		clearTimeout,
-		fetch: async () => {
+		fetch: async ( url ) => {
+			assert.equal( url, state.restUrl );
 			requests++;
 			return {
-				ok: false,
-				json: async () => ( { code: errorCode, message: 'Order changed on the server.' } ),
+				ok: ! errorCode,
+				json: async () =>
+					errorCode
+						? { code: errorCode, message: 'Order changed on the server.' }
+						: { id: 1, revision: 2, status: 'submitted', editable: true },
 			};
 		},
-		window: { location: { reload: () => reloads++ } },
+		window: {
+			location: {
+				reload: () => reloads++,
+				assign: ( url ) => destinations.push( url ),
+			},
+		},
 	} );
 	return {
 		state,
 		actions: definition.actions,
 		requests: () => requests,
 		reloads: () => reloads,
+		destinations,
 	};
 }
 
@@ -96,4 +105,23 @@ test( 'revision conflicts still expose reload without resaving a stale basket', 
 	order.actions.retry();
 	await new Promise( setImmediate );
 	assert.equal( order.requests(), 1 );
+} );
+
+test( 'placing or updating an order opens its thank-you page only on success', async () => {
+	for ( const [ status, error ] of [
+		[ 'draft', null ],
+		[ 'submitted', null ],
+		[ 'submitted', 'openbb_order_changed' ],
+	] ) {
+		const order = loadOrder( error );
+		order.state.status = status;
+		const action = order.actions.submit( { preventDefault() {}, target: {} } );
+		let step = action.next();
+		while ( ! step.done ) {
+			step = action.next( await step.value );
+		}
+		assert.equal( order.requests(), 1 );
+		assert.deepEqual( order.destinations, error ? [] : [ order.state.thankYouUrl ] );
+		assert.equal( order.state.busy, ! error, 'Prevent a second submission while leaving the order page.' );
+	}
 } );

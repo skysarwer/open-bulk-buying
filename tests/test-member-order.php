@@ -210,6 +210,62 @@ class Test_OPENBB_Member_Order extends OPENBB_TestCase {
 		$this->assertSame( array( $this->jars->id => 4 ), array_intersect_key( OPENBB_Member_Orders::limits( array( $this->jars ), null ), array( $this->jars->id => true ) ) );
 	}
 
+	public function test_thank_you_shows_the_saved_receipt_and_links_back_to_the_same_cycle(): void {
+		$order = $this->save(
+			array(
+				'lines'    => array( $this->line( $this->jars, 2, true ) ),
+				'donation' => 300,
+				'submit'   => true,
+				'commit'   => true,
+			)
+		);
+		$this->assertInstanceOf( OPENBB_Order::class, $order );
+		wp_update_post( array( 'ID' => $this->jars->id, 'post_title' => 'New catalogue name' ) );
+
+		$form = OPENBB_Order_Form_View::render();
+		$url  = wp_interactivity_state( 'openbb/order' )['thankYouUrl'];
+		$this->assertStringContainsString( 'href="' . esc_url( $url ) . '"', $form );
+		parse_str( wp_parse_url( $url, PHP_URL_QUERY ), $query );
+		$_GET['cycle']      = $query['cycle'];
+		$_GET['order_view'] = $query['order_view'];
+		try {
+			$html = OPENBB_Order_Form_View::render();
+			$this->assertStringContainsString( 'Thank you!', $html );
+			$this->assertStringContainsString( '<details', $html );
+			$this->assertStringContainsString( 'Order #' . $order->id, $html );
+			$this->assertStringContainsString( 'Honey', $html );
+			$this->assertStringNotContainsString( 'New catalogue name', $html );
+			$this->assertStringContainsString( esc_html( openbb_format_money( -200, $order->currency ) ), $html );
+			$this->assertStringContainsString( esc_html( openbb_format_money( 2100, $order->currency ) ), $html );
+			$this->assertStringNotContainsString( 'openbb-basket', $html );
+			$this->assertStringNotContainsString( 'openbb-poll__form', $html );
+			$back = add_query_arg( 'cycle', $this->cycle->id, OPENBB_Frontend::current_url() ) . '#openbb-order';
+			$this->assertStringContainsString( 'href="' . esc_url( $back ) . '"', $html );
+
+			wp_set_current_user( $this->coordinator );
+			$this->assertStringNotContainsString( '<details', OPENBB_Order_Form_View::render(), 'Even staff cannot see another member’s receipt here.' );
+		} finally {
+			unset( $_GET['cycle'], $_GET['order_view'] );
+		}
+	}
+
+	public function test_drafts_and_cancelled_orders_have_no_confirmation(): void {
+		$order              = $this->save( array( 'lines' => array( $this->line( $this->oats, 1 ) ) ) );
+		$_GET['cycle']      = (string) $this->cycle->id;
+		$_GET['order_view'] = 'thank-you';
+		try {
+			foreach ( array( OPENBB_Order::STATUS_DRAFT, OPENBB_Order::STATUS_CANCELLED ) as $status ) {
+				$order->status = $status;
+				$this->assertTrue( $order->save() );
+				$html = OPENBB_Order_Form_View::render();
+				$this->assertStringContainsString( 'no confirmed order', $html );
+				$this->assertStringNotContainsString( '<details', $html );
+			}
+		} finally {
+			unset( $_GET['cycle'], $_GET['order_view'] );
+		}
+	}
+
 	public function test_only_active_members_in_an_open_cycle_can_save(): void {
 		$this->assert_error( 'openbb_not_member', $this->save( array( 'lines' => array( $this->line( $this->oats, 1 ) ) ), $this->make_user( 'applicant' ) ) );
 

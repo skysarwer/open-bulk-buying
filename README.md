@@ -35,7 +35,9 @@ expire after 15 minutes and work only in the browser that requested them.
 **Ordering.** While a cycle is open for ordering, the order form shows the
 catalogue grouped by category. Quantities are limited by stock on hand. Your
 order is a **draft** until you submit it; you can change a submitted order
-until ordering closes. Submitting reserves the stock for you.
+until ordering closes. Submitting reserves the stock for you and opens a
+thank-you page. Expand **View order receipt** for the items and totals, answer
+any optional polls, or use **Back to the order page** to return to your basket.
 
 **Membership fee.** If the co-op charges one, it appears as a separate line
 on your first order (and every *n*th order for recurring fees). Staff can

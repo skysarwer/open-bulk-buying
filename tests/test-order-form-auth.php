@@ -82,6 +82,19 @@ class Test_OPENBB_Order_Form_Auth extends OPENBB_TestCase {
 		$this->assertSame( '', $this->context( $html, 'openbb/signup' )['continueTo'] );
 	}
 
+	public function test_login_keeps_the_receipt_destination_without_showing_it_to_visitors(): void {
+		$_GET['cycle']      = '42';
+		$_GET['order_view'] = 'thank-you';
+		try {
+			$html = OPENBB_Order_Form_View::render();
+			$url  = add_query_arg( array( 'cycle' => 42, 'order_view' => 'thank-you' ), OPENBB_Frontend::current_url() ) . '#openbb-order';
+			$this->assertSame( $url, $this->context( $html, 'openbb/login' )['redirect'] );
+			$this->assertStringNotContainsString( 'openbb-receipt', $html );
+		} finally {
+			unset( $_GET['cycle'], $_GET['order_view'] );
+		}
+	}
+
 	public function test_only_login_while_signups_are_closed(): void {
 		$this->general( array( 'allow_signups' => false ) );
 

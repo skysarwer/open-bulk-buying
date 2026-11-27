@@ -43,9 +43,9 @@ class OPENBB_Poll extends OPENBB_Entity {
 
 	/** A card on the order page inviting the member to answer. */
 	const PLACEMENT_CARD = 'card';
-	/** The questions themselves in the order form's Finalize step. */
-	const PLACEMENT_FINALIZE = 'finalize';
-	const PLACEMENTS         = array( self::PLACEMENT_CARD, self::PLACEMENT_FINALIZE );
+	/** The questions themselves on the order thank-you page. */
+	const PLACEMENT_THANK_YOU = 'thank_you';
+	const PLACEMENTS          = array( self::PLACEMENT_CARD, self::PLACEMENT_THANK_YOU );
 
 	const PHASE_DRAFT     = 'draft';
 	const PHASE_SCHEDULED = 'scheduled';
@@ -84,7 +84,13 @@ class OPENBB_Poll extends OPENBB_Entity {
 		$this->closed_by  = self::nullable_int( $this->closed_by );
 		$this->title      = self::localized_field( $this->title );
 		$this->intro      = self::localized_field( $this->intro );
-		$this->placements = array_values( array_intersect( self::PLACEMENTS, array_map( 'strval', self::decode_json( $this->placements ) ) ) );
+
+		// Carry existing Finalize placements forward; the next save writes the new key.
+		$placements = self::decode_json( $this->placements );
+		if ( in_array( 'finalize', $placements, true ) ) {
+			$placements[] = self::PLACEMENT_THANK_YOU;
+		}
+		$this->placements = array_values( array_intersect( self::PLACEMENTS, array_filter( $placements, 'is_string' ) ) );
 
 		$this->audience_cycles = array_values( array_unique( array_filter( array_map( 'absint', self::decode_json( $this->audience_cycles ) ) ) ) );
 

@@ -709,7 +709,7 @@ msgid "[%s] We received your membership application"
 msgstr ""
 
 #: inc/emails/class-openbb-emails.php:36
-#: inc/frontend/templates/order-basket.php:32
+#: inc/frontend/templates/order-thank-you.php:15
 msgid "Thank you!"
 msgstr ""
 
@@ -1236,11 +1236,19 @@ msgstr ""
 msgid "Add at least one item before submitting your order."
 msgstr ""
 
-#: inc/frontend/class-openbb-order-form-view.php:396
+#: inc/frontend/class-openbb-order-form-view.php:82
+msgid "Back to the order page"
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:128
+msgid "There is no confirmed order to show for this ordering period."
+msgstr ""
+
+#: inc/frontend/class-openbb-order-form-view.php:140
 msgid "Your order is placed. You can keep changing it until ordering closes."
 msgstr ""
 
-#: inc/frontend/class-openbb-order-form-view.php:397
+#: inc/frontend/class-openbb-order-form-view.php:141
 msgid "Your order details are saved."
 msgstr ""
 
@@ -1617,12 +1625,30 @@ msgstr ""
 msgid "Place order"
 msgstr ""
 
-#: inc/frontend/templates/order-basket.php:139
-msgid "View my basket"
+#: inc/frontend/templates/order-form.php:63
+#: inc/frontend/templates/order-thank-you.php:19
+msgid "View order receipt"
 msgstr ""
 
-#: inc/frontend/templates/order-basket.php:140
-msgid "Keep browsing"
+#: inc/frontend/templates/order-thank-you.php:64
+#: inc/frontend/templates/poll-cards.php:14
+msgid "Co-op polls"
+msgstr ""
+
+#: inc/frontend/templates/order-thank-you.php:65
+msgid "Answering is optional."
+msgstr ""
+
+#: src/admin/screens/cycles/polls/settings-form.js:304
+msgid "Questions on the order thank-you page"
+msgstr ""
+
+#: src/admin/screens/cycles/polls/settings-form.js:308
+msgid "Members can answer after placing their order. Saving answers does not change the order."
+msgstr ""
+
+#: src/admin/screens/cycles/polls/utils.js:133
+msgid "questions on the order thank-you page"
 msgstr ""
 
 #: inc/frontend/templates/order-cancelled.php:16
