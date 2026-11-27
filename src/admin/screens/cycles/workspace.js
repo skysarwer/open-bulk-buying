@@ -9,6 +9,7 @@ import { can, config } from '../../utils/config';
 import { CycleDetails, CycleSummary, StageReminder } from './list';
 import CycleOrders from './orders';
 import FinancialAid from './financial-aid';
+import Polls from './polls';
 import Preparation from './preparation';
 
 const canProcess = () =>
@@ -33,6 +34,12 @@ const sections = [
 		title: __( 'Financial Aid', 'open-bulk-buying' ),
 		isVisible: () => can( 'openbb_view_aid' ),
 		Component: FinancialAid,
+	},
+	{
+		name: 'polls',
+		title: __( 'Polls', 'open-bulk-buying' ),
+		isVisible: () => can( 'openbb_manage_polls' ),
+		Component: Polls,
 	},
 ];
 

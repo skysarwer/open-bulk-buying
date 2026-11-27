@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class OPENBB_Installer {
 
-	const DB_VERSION        = '7';
+	const DB_VERSION        = '8';
 	const DB_VERSION_OPTION = 'openbb_db_version';
 
 	public static function maybe_upgrade(): void {
@@ -33,7 +33,8 @@ class OPENBB_Installer {
 			OPENBB_Cycle_Preparation::schema(),
 			OPENBB_Orders::schema(),
 			OPENBB_Inventory::schema(),
-			OPENBB_Rules::schema()
+			OPENBB_Rules::schema(),
+			OPENBB_Polls::schema()
 		);
 	}
 

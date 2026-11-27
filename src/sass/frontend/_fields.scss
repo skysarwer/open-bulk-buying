@@ -234,6 +234,105 @@ textarea.openbb-input {
 	}
 }
 
+// Single-choice fields that may stay unanswered: a button that takes the answer back.
+.openbb-field__clear {
+	align-self: flex-start;
+	min-height: 0;
+	margin-top: 0.5rem;
+	padding: 0.2em 0;
+	color: var(--openbb-muted);
+	font-size: 0.875em;
+}
+
+// Star rating: native radios in reading order, each drawn as the same icon. A star is
+// outlined until the selected rating reaches it (.is-filled, set from the field's value).
+.openbb-stars {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+
+	> legend {
+		margin-bottom: 0.35rem;
+		padding: 0;
+	}
+
+	&__options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.15rem;
+	}
+}
+
+.openbb-field--stars {
+	grid-column: 1 / -1;
+}
+
+.openbb-star {
+	position: relative;
+	display: inline-flex;
+	color: var(--openbb-muted);
+
+	&__input {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		opacity: 0;
+		cursor: pointer;
+	}
+
+	&__icon {
+		display: inline-flex;
+		padding: 0.4rem;
+		border-radius: var(--openbb-radius);
+
+		svg {
+			display: block;
+			width: 1.9rem;
+			height: 1.9rem;
+			fill: none;
+		}
+	}
+
+	&.is-filled {
+		color: var(--openbb-star, var(--openbb-accent));
+	}
+
+	&.is-filled &__icon svg {
+		fill: currentcolor;
+	}
+
+	&__input:focus-visible + &__icon {
+		box-shadow: var(--openbb-focus);
+	}
+
+	&__input:disabled {
+		cursor: not-allowed;
+	}
+
+	.has-error & {
+		color: var(--openbb-error);
+	}
+}
+
+@media (forced-colors: active) {
+
+	.openbb-star {
+		color: CanvasText;
+
+		&.is-filled {
+			color: Highlight;
+		}
+	}
+
+	.openbb-star__input:focus-visible + .openbb-star__icon {
+		outline: 2px dashed Highlight;
+		outline-offset: 2px;
+	}
+}
+
 // Bot protection widget (OPENBB_Captcha::field()), above a form's buttons.
 .openbb-captcha {
 	margin-top: var(--openbb-gap);

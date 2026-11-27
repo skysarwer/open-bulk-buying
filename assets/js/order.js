@@ -14,6 +14,10 @@
  * with showModal() as a sheet on narrow ones.
  *
  * REST: GET/POST openbb/v1/order.
+ *
+ * Polls placed in the Finalize step (`state.polls`) are not part of the order: their
+ * answers are sent to the poll route after the order is saved, and a failure there
+ * leaves the order as saved.
  */
 import * as interactivity from '@wordpress/interactivity';
 import {
@@ -22,6 +26,7 @@ import {
 	setErrors,
 	validate,
 } from '@open-bulk-buying/forms';
+import { isBlank, saveAnswers } from '@open-bulk-buying/polls';
 
 const { store, getContext, getElement } = interactivity;
 // Added in WordPress 6.8; on older versions handlers already run synchronously.
@@ -351,6 +356,61 @@ async function flush() {
 		return flush();
 	}
 	return false;
+}
+
+/* Polls ------------------------------------------------------------------ */
+
+// Answers that didn't save, kept for "Try again": [ { poll, answers } ].
+let pendingPolls = [];
+
+/**
+ * The answers to send for the polls in the Finalize step. A poll the member left
+ * untouched is skipped; one they answered before is sent even when empty, which
+ * takes their answers back.
+ *
+ * @param {Object} values The Finalize form's values.
+ * @return {Array} [ { poll, answers } ]
+ */
+function pollAnswers( values ) {
+	return ( state.polls || [] )
+		.map( ( poll ) => {
+			const answers = {};
+			for ( const [ key, name ] of Object.entries( poll.fields ) ) {
+				answers[ key ] = values[ name ];
+			}
+			return { poll, answers };
+		} )
+		.filter(
+			( { poll, answers } ) =>
+				poll.responded || ! Object.values( answers ).every( isBlank )
+		);
+}
+
+/**
+ * Saves poll answers through the poll route, after the order. Failures are reported
+ * in `state.pollNotice` and can be retried; they never undo the order.
+ *
+ * @param {Array} entries From pollAnswers().
+ */
+async function savePolls( entries ) {
+	const api = { restUrl: state.pollUrl, nonce: state.nonce };
+	const failed = [];
+	let reason = '';
+	for ( const entry of entries ) {
+		const result = await saveAnswers( api, entry.poll.id, entry.answers );
+		if ( result.ok && result.data ) {
+			entry.poll.responded = !! result.data.responded;
+		} else {
+			failed.push( entry );
+			reason =
+				( ! result.network && result.data?.message ) ||
+				state.messages.network;
+		}
+	}
+	pendingPolls = failed;
+	state.pollNotice = failed.length
+		? sprintf( state.messages.pollFailed, reason )
+		: '';
 }
 
 /* Panel ------------------------------------------------------------------ */
@@ -716,7 +776,6 @@ const { state } = store( 'openbb/order', {
 			}
 			state.saveStatus = 'saving';
 			const result = yield request( body );
-			state.busy = false;
 
 			if ( result.ok && result.data ) {
 				applyOrder( result.data );
@@ -726,10 +785,14 @@ const { state } = store( 'openbb/order', {
 				state.doneText = wasSubmitted
 					? messages.doneUpdated
 					: messages.doneSubmitted;
+				// The order is in; the polls are separate and can't undo it.
+				yield savePolls( pollAnswers( values ) );
+				state.busy = false;
 				state.step = 'done';
 				yield focusTitle();
 				return;
 			}
+			state.busy = false;
 
 			const fieldErrors = result.data?.data?.errors;
 			if ( fieldErrors && ! fieldErrors.lines ) {
@@ -782,6 +845,14 @@ const { state } = store( 'openbb/order', {
 			state.canRetry = false;
 			dirty = true;
 			flush();
+		},
+		*retryPolls() {
+			if ( state.busy ) {
+				return;
+			}
+			state.busy = true;
+			yield savePolls( pendingPolls );
+			state.busy = false;
 		},
 	},
 

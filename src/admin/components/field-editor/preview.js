@@ -4,10 +4,10 @@ import {
 } from '@wordpress/components';
 import { useInstanceId } from '@wordpress/compose';
 import { useState } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 
-import { config, languageLabel } from '../../../utils/config';
-import { localized, rowsToGroups } from './utils';
+import { config, languageLabel } from '../../utils/config';
+import { STAR_KEYS, localized, rowsToGroups } from './utils';
 
 function Label( { field, lang, htmlFor, as: Tag = 'label' } ) {
 	return (
@@ -112,29 +112,123 @@ function ChipsPreview( { draft, lang, name } ) {
 }
 
 /**
+ * Five radios in reading order, each drawn as the site's star icon. A star is
+ * filled when the selected rating is at least its own, as on the member form.
+ *
+ * @param {Object} props
+ * @param {string} props.name Radio group name.
+ */
+function StarsPreview( { name } ) {
+	const [ rating, setRating ] = useState( 0 );
+
+	return (
+		<div className="openbb-stars">
+			{ STAR_KEYS.map( ( key ) => {
+				const value = Number( key );
+				return (
+					<label
+						key={ key }
+						className={ `openbb-star${
+							rating >= value ? ' is-filled' : ''
+						}` }
+					>
+						<input
+							type="radio"
+							name={ name }
+							value={ key }
+							checked={ rating === value }
+							onChange={ () => setRating( value ) }
+						/>
+						<span
+							className="openbb-star__icon"
+							aria-hidden="true"
+							// Sanitized on the server (openbb_star_icon()).
+							dangerouslySetInnerHTML={ {
+								__html: config.starIcon,
+							} }
+						/>
+						<span className="screen-reader-text">
+							{ sprintf(
+								/* translators: 1: rating, 2: highest rating, e.g. "3 of 5 stars". */
+								_n(
+									'%1$d of %2$d star',
+									'%1$d of %2$d stars',
+									value,
+									'open-bulk-buying'
+								),
+								value,
+								STAR_KEYS.length
+							) }
+						</span>
+					</label>
+				);
+			} ) }
+		</div>
+	);
+}
+
+const YES_NO = [
+	{ key: '1', label: { default: __( 'Yes', 'open-bulk-buying' ) } },
+	{ key: '0', label: { default: __( 'No', 'open-bulk-buying' ) } },
+];
+
+/**
  * How the field will look on member forms, with native controls, so grouping
  * mistakes show up before saving. The real forms use the same markup.
  *
+ * `options` comes from the consumer's config:
+ * - yesNo     A true/false field is two choices that start unselected, not a checkbox.
+ * - clearable Single choices can be taken back (nothing is required).
+ * - note      draft => text under the control, or ''.
+ * - shownOn   draft => where the field appears.
+ *
  * @param {Object} props
  * @param {Object} props.draft
+ * @param {Object} props.options
  */
-export default function FieldPreview( { draft } ) {
+export default function FieldPreview( { draft, options = {} } ) {
 	const instanceId = useInstanceId( FieldPreview, 'openbb-preview' );
 	const [ lang, setLang ] = useState( '' );
 	const id = `${ instanceId }-input`;
 	const helpId = localized( draft.help, lang )
 		? `${ instanceId }-help`
 		: undefined;
+	const isOptions = draft.type === 'options';
+	const isSingleChoice =
+		( draft.type === 'boolean' && options.yesNo ) ||
+		( isOptions &&
+			draft.options.style !== 'select' &&
+			! draft.options.multiple );
 
 	let control;
-	if ( draft.type === 'boolean' ) {
+	if ( draft.type === 'boolean' && options.yesNo ) {
+		control = (
+			<fieldset
+				className="openbb-preview__fieldset"
+				aria-describedby={ helpId }
+			>
+				<Label field={ draft } lang={ lang } as="legend" />
+				<Chips options={ YES_NO } name={ id } type="radio" lang="" />
+			</fieldset>
+		);
+	} else if ( draft.type === 'boolean' ) {
 		control = (
 			<div className="openbb-preview__checkbox">
 				<input type="checkbox" id={ id } aria-describedby={ helpId } />
 				<Label field={ draft } lang={ lang } htmlFor={ id } />
 			</div>
 		);
-	} else if ( draft.type === 'options' && draft.options.style === 'chips' ) {
+	} else if ( isOptions && draft.options.style === 'stars' ) {
+		control = (
+			<fieldset
+				className="openbb-preview__fieldset"
+				aria-describedby={ helpId }
+			>
+				<Label field={ draft } lang={ lang } as="legend" />
+				<StarsPreview name={ id } />
+			</fieldset>
+		);
+	} else if ( isOptions && draft.options.style === 'chips' ) {
 		control = (
 			<fieldset
 				className="openbb-preview__fieldset"
@@ -144,7 +238,7 @@ export default function FieldPreview( { draft } ) {
 				<ChipsPreview draft={ draft } lang={ lang } name={ id } />
 			</fieldset>
 		);
-	} else if ( draft.type === 'options' ) {
+	} else if ( isOptions ) {
 		control = (
 			<>
 				<Label field={ draft } lang={ lang } htmlFor={ id } />
@@ -172,6 +266,9 @@ export default function FieldPreview( { draft } ) {
 		);
 	}
 
+	const note = options.note?.( draft );
+	const shownOn = options.shownOn?.( draft );
+
 	return (
 		<VStack spacing={ 3 } className="openbb-preview">
 			{ config.translationLanguages.length > 0 && (
@@ -196,27 +293,25 @@ export default function FieldPreview( { draft } ) {
 			<div className="openbb-preview__frame">
 				{ control }
 				<Help field={ draft } lang={ lang } id={ helpId } />
-				{ draft.visibility === 'staff' && (
+				{ options.clearable && isSingleChoice && (
 					<p className="openbb-preview__note">
 						{ __(
-							'Staff only: this field never appears on member forms.',
+							'Members get a “Clear answer” button once they have chosen.',
 							'open-bulk-buying'
 						) }
 					</p>
 				) }
+				{ note && <p className="openbb-preview__note">{ note }</p> }
 			</div>
-			<p className="openbb-muted">
-				{ sprintf(
-					/* translators: %s: where the field appears. */
-					__( 'Shown on: %s', 'open-bulk-buying' ),
-					draft.visibility === 'staff'
-						? __( 'the Members screen', 'open-bulk-buying' )
-						: __(
-								'signup, member account and the Members screen',
-								'open-bulk-buying'
-						  )
-				) }
-			</p>
+			{ shownOn && (
+				<p className="openbb-muted">
+					{ sprintf(
+						/* translators: %s: where the field appears. */
+						__( 'Shown on: %s', 'open-bulk-buying' ),
+						shownOn
+					) }
+				</p>
+			) }
 		</VStack>
 	);
 }

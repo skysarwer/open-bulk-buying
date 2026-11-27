@@ -21,12 +21,14 @@ import { useDiscardGuard } from '../hooks';
  * selected tab. Switching tabs asks before discarding unsaved edits. Give the
  * panel a `key` that changes with the record so its tabs and forms reset.
  *
- * Inside a panel stack (usePanelStack) that has opened this panel from another
- * record, the header shows a back button.
+ * The header shows a back button when given `onBack`, or inside a panel stack
+ * (usePanelStack) that has opened this panel from another record.
  *
  * @param {Object}            props
  * @param {string}            props.title
  * @param {Function}          props.onClose
+ * @param {Function}          props.onBack         Back to what opened this panel.
+ * @param {string}            props.backTitle      Title of what `onBack` returns to.
  * @param {Error|string}      props.error          Shown instead of the content.
  * @param {boolean}           props.isLoading
  * @param {Array}             props.tabs           { name, title }.
@@ -36,6 +38,8 @@ import { useDiscardGuard } from '../hooks';
 export default function SidePanel( {
 	title,
 	onClose,
+	onBack,
+	backTitle,
 	error,
 	isLoading = false,
 	tabs = [],
@@ -50,6 +54,12 @@ export default function SidePanel( {
 		return tabs.some( ( tab ) => tab.name === wanted ) ? wanted : tabs[ 0 ]?.name;
 	} );
 	const current = tabs.find( ( tab ) => tab.name === selected ) || tabs[ 0 ] || {};
+	let back = null;
+	if ( onBack ) {
+		back = { onClick: onBack, title: backTitle };
+	} else if ( stack?.canGoBack ) {
+		back = { onClick: stack.back, title: stack.backTitle };
+	}
 
 	const render = () =>
 		typeof children === 'function' ? children( current ) : children;
@@ -109,16 +119,16 @@ export default function SidePanel( {
 			<div className="openbb-panel">
 				<HStack className="openbb-panel__header">
 					<HStack justify="flex-start" spacing={ 1 } className="openbb-panel__heading">
-						{ stack?.canGoBack && (
+						{ back && (
 							<Button
 								icon={ isRTL() ? chevronRight : chevronLeft }
 								label={
-									stack.backTitle
+									back.title
 										? /* translators: %s: title of the previous panel. */
-										  sprintf( __( 'Back to %s', 'open-bulk-buying' ), stack.backTitle )
+										  sprintf( __( 'Back to %s', 'open-bulk-buying' ), back.title )
 										: __( 'Back', 'open-bulk-buying' )
 								}
-								onClick={ stack.back }
+								onClick={ back.onClick }
 								size="compact"
 							/>
 						) }

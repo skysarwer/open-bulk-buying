@@ -22,6 +22,8 @@ export const config = {
 	orderStatuses: boot.orderStatuses || {},
 	stockReasons: boot.stockReasons || {},
 	manualStockReasons: boot.manualStockReasons || [],
+	// Inline SVG of the rating star, sanitized by openbb_star_icon().
+	starIcon: boot.starIcon || '',
 	caps: boot.caps || {},
 	urls: boot.urls || {},
 	restNonce: boot.restNonce || '',

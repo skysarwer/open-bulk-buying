@@ -33,6 +33,17 @@ export function codeInput( event, ctx, length, busy ) {
 }
 
 const { state } = store( 'openbb/forms', {
+	state: {
+		// Per star of a rating: its own rating and field come from the star's context.
+		// OPENBB_Frontend::forms_state() defines the same getter for server rendering.
+		get isStarFilled() {
+			const ctx = getContext();
+			return (
+				Number( ctx.values?.[ ctx.starField ] || 0 ) >=
+				Number( ctx.star )
+			);
+		},
+	},
 	actions: {
 		change( event ) {
 			const wrapper = event.target.closest( FIELD );
@@ -45,6 +56,24 @@ const { state } = store( 'openbb/forms', {
 				event.target
 			);
 			delete ctx.errors[ wrapper.dataset.name ];
+		},
+		// Takes back a single choice (radios can't be unchecked by themselves).
+		clear( event ) {
+			const wrapper = event.target.closest( FIELD );
+			if ( ! wrapper ) {
+				return;
+			}
+			const ctx = getContext();
+			const inputs = [ ...wrapper.querySelectorAll( 'input' ) ];
+			for ( const input of inputs ) {
+				input.checked = false;
+			}
+			ctx.values[ wrapper.dataset.name ] = '';
+			delete ctx.errors[ wrapper.dataset.name ];
+			// The button hides itself, so focus moves back into the field.
+			inputs[ 0 ]?.focus();
+			// Lets a listening form (autosave, unsaved state) know, like any other change.
+			wrapper.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 		},
 	},
 	callbacks: {
@@ -67,7 +96,8 @@ function readValue( wrapper, target ) {
 	switch ( wrapper.dataset.kind ) {
 		case 'checkbox':
 			return target.checked;
-		case 'chips': {
+		case 'chips':
+		case 'stars': {
 			const inputs = [ ...wrapper.querySelectorAll( 'input' ) ];
 			if ( target.type === 'checkbox' ) {
 				return inputs

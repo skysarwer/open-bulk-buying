@@ -147,6 +147,6 @@ class Test_OPENBB_Privacy extends OPENBB_TestCase {
 		$providers = OPENBB_Privacy::providers();
 		remove_filter( 'openbb_privacy_providers', $filter );
 
-		$this->assertSame( array( 'profile-fields' ), array_keys( $providers ) );
+		$this->assertSame( array( 'profile-fields', 'polls' ), array_keys( $providers ) );
 	}
 }

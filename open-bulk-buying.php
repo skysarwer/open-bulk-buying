@@ -25,7 +25,7 @@ define('OPENBB_META_PREFIX', 'openbb_');
 
 // Listing tables in $wpdb->tables makes switch_to_blog() re-prefix them on multisite.
 global $wpdb;
-foreach ( array( 'openbb_cycles', 'openbb_cycle_products', 'openbb_orders', 'openbb_order_lines', 'openbb_order_events', 'openbb_stock_moves', 'openbb_rules_versions' ) as $openbb_table ) {
+foreach ( array( 'openbb_cycles', 'openbb_cycle_products', 'openbb_orders', 'openbb_order_lines', 'openbb_order_events', 'openbb_stock_moves', 'openbb_rules_versions', 'openbb_polls', 'openbb_poll_responses', 'openbb_poll_answers' ) as $openbb_table ) {
 	$wpdb->tables[]      = $openbb_table;
 	$wpdb->$openbb_table = $wpdb->prefix . $openbb_table;
 }
@@ -63,6 +63,9 @@ require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-lifecycle.p
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-order-aid.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/order/class-openbb-member-orders.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/cycle/class-openbb-cycle-preparation.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/model/poll/class-openbb-poll.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/model/poll/class-openbb-polls.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/model/poll/class-openbb-poll-responses.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/rules/class-openbb-rules-version.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/model/rules/class-openbb-rules.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/documents/class-openbb-document.php';
@@ -76,11 +79,13 @@ require_once OPENBB_PLUGIN_DIR . 'inc/class-openbb-maintenance.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/class-openbb-demo-catalog.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/privacy/class-openbb-privacy-provider.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/privacy/class-openbb-privacy-profile-fields.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/privacy/class-openbb-privacy-polls.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/privacy/class-openbb-privacy.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/admin/class-openbb-admin.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/class-openbb-rest-controller.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-products.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-cycles.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-polls.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-members.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-orders.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-settings.php';
@@ -88,11 +93,13 @@ require_once OPENBB_PLUGIN_DIR . 'inc/rest/admin/class-openbb-rest-documents.php
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/frontend/class-openbb-rest-signup.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/frontend/class-openbb-rest-login.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/rest/frontend/class-openbb-rest-order.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/rest/frontend/class-openbb-rest-poll.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-frontend.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/frontend/fields.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-signup-view.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-login-view.php';
 require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-order-form-view.php';
+require_once OPENBB_PLUGIN_DIR . 'inc/frontend/class-openbb-polls-view.php';
 
 register_activation_hook( __FILE__, array( 'OPENBB_Installer', 'install' ) );
 add_action(

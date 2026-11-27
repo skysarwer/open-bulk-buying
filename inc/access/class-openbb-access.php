@@ -100,6 +100,8 @@ class OPENBB_Access {
 		}
 		if ( self::STATUS_ACTIVE === $status ) {
 			$caps[] = 'openbb_place_orders';
+			// Separate from ordering, so answering a poll never depends on placing an order.
+			$caps[] = 'openbb_answer_polls';
 			foreach ( self::get_roles( $user_id ) as $role ) {
 				$caps = array_merge( $caps, OPENBB_Roles::role_caps( $role ) );
 			}
@@ -312,6 +314,11 @@ class OPENBB_Access {
 					}
 				}
 				return array( 'openbb_manage_settings' );
+
+			case 'openbb_manage_polls':
+				// Polls are run from the cycle they belong to. Code checks this capability, so it
+				// can become a permission of its own later without touching the callers.
+				return array( 'openbb_manage_cycles' );
 
 			case 'openbb_view_order':
 			case 'openbb_edit_own_order':

@@ -34,6 +34,7 @@ abstract class OPENBB_REST_Controller {
 				$controllers = array(
 					new OPENBB_REST_Products(),
 					new OPENBB_REST_Cycles(),
+					new OPENBB_REST_Polls(),
 					new OPENBB_REST_Members(),
 					new OPENBB_REST_Orders(),
 					new OPENBB_REST_Settings(),
@@ -41,6 +42,7 @@ abstract class OPENBB_REST_Controller {
 					new OPENBB_REST_Signup(),
 					new OPENBB_REST_Login(),
 					new OPENBB_REST_Order(),
+					new OPENBB_REST_Poll(),
 				);
 				foreach ( $controllers as $controller ) {
 					$controller->register_routes();

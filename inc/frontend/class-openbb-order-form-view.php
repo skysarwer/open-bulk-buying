@@ -16,8 +16,13 @@
  * control), order-basket (panel), order-message (when there's nothing to order).
  * Store: assets/js/order.js (`openbb/order`). Styles: src/sass/frontend/order/.
  *
+ * Polls (OPENBB_Polls_View) appear here without being part of the order: as cards above
+ * the catalog linking to a poll, shown on this page for ?poll=ID whether or not ordering
+ * is open, and, for polls placed there, as questions in the Finalize step. Their answers
+ * are saved through the poll route after the order, and never hold up an order.
+ *
  * Extension point: the `openbb_order_form_questions` action prints extra questions
- * (e.g. polls) into the Finalize step.
+ * into the Finalize step.
  *
  * @package Open_Bulk_Buying
  */
@@ -61,6 +66,19 @@ final class OPENBB_Order_Form_View {
 			);
 		}
 
+		// A poll can be answered from this page whether or not ordering is open.
+		$poll_id = OPENBB_Polls_View::requested();
+		if ( $poll_id ) {
+			return OPENBB_Polls_View::polls(
+				$user_id,
+				$poll_id,
+				array(
+					'url'   => OPENBB_Frontend::current_url() . '#' . self::ID,
+					'label' => __( 'Back to the order page', 'open-bulk-buying' ),
+				)
+			);
+		}
+
 		$cycles = OPENBB_Member_Orders::open_cycles();
 		if ( ! $cycles ) {
 			$next = OPENBB_Member_Orders::next_cycle();
@@ -70,7 +88,7 @@ final class OPENBB_Order_Form_View {
 					/* translators: %s: date and time. */
 					? sprintf( __( 'The next ordering period opens %s.', 'open-bulk-buying' ), self::local_datetime( $next->opens_at ) )
 					: __( 'There is no ordering period open right now. Check back soon.', 'open-bulk-buying' )
-			);
+			) . OPENBB_Polls_View::cards( $user_id, false );
 		}
 
 		$cycle = $cycles[0];
@@ -95,12 +113,14 @@ final class OPENBB_Order_Form_View {
 					'cycle_name' => $cycle->name,
 					'cycles'     => count( $cycles ) > 1 ? self::cycle_links( $cycles, $cycle ) : array(),
 				)
-			);
+			) . OPENBB_Polls_View::cards( $member->user_id, false );
 		}
 		OPENBB_Frontend::enqueue( array( OPENBB_Frontend::MODULE_ORDER ) );
 		OPENBB_Frontend::forms_state();
 
 		$order_state = OPENBB_Member_Orders::state( $order, $cycle );
+		// Without a Finalize step to show them in (a locked order), these polls become cards.
+		$polls = $order_state['editable'] ? OPENBB_Polls_View::finalize_polls( $member->user_id, self::ID ) : array();
 		$sections    = OPENBB_Catalog::sections();
 
 		$catalog = array();
@@ -140,7 +160,7 @@ final class OPENBB_Order_Form_View {
 			);
 		}
 
-		self::state( $cycle, $order_state, $products, $items );
+		self::state( $cycle, $order_state, $products, $items, array_column( $polls, 'client' ) );
 
 		$submitted = OPENBB_Order::STATUS_SUBMITTED === $order_state['status'];
 		$digits    = openbb_currency_digits();
@@ -164,19 +184,24 @@ final class OPENBB_Order_Form_View {
 						? __( 'Staff preview: your role lets you place and edit orders during Setup, before ordering opens to members.', 'open-bulk-buying' )
 						: '',
 					'notice'       => self::status_notice( $order, $order_state, $cycle ),
+					'polls'        => OPENBB_Polls_View::cards( $member->user_id, $order_state['editable'] ),
 					'sections'    => self::sections( $sections ),
 					'basket'      => array(
 						'id'        => self::ID . '-basket',
 						'submitted' => $submitted,
 						'aid'       => $order_state['aid_status'],
+						'polls'     => $polls,
 						'questions' => self::questions( $cycle, $order ),
 						'fields'    => self::finalize_fields( $order_state, $submitted, $digits, $pickup ),
-						'values'    => array(
-							'donation'    => self::money_input( $order_state['donation'], $digits ),
-							'aid'         => OPENBB_Order::AID_NONE !== $order_state['aid_status'],
-							'aid_reason'  => $order_state['aid_reason'],
-							'member_note' => $order_state['member_note'],
-							'commit'      => false,
+						'values'    => array_merge(
+							array(
+								'donation'    => self::money_input( $order_state['donation'], $digits ),
+								'aid'         => OPENBB_Order::AID_NONE !== $order_state['aid_status'],
+								'aid_reason'  => $order_state['aid_reason'],
+								'member_note' => $order_state['member_note'],
+								'commit'      => false,
+							),
+							...array_column( $polls, 'values' )
 						),
 					),
 				)
@@ -188,7 +213,7 @@ final class OPENBB_Order_Form_View {
 	 * Client state for `openbb/order`. Closures are derived state evaluated during
 	 * server rendering; assets/js/order.js defines the same getters.
 	 */
-	private static function state( OPENBB_Cycle $cycle, array $order_state, array $products, array $items ): void {
+	private static function state( OPENBB_Cycle $cycle, array $order_state, array $products, array $items, array $polls ): void {
 		$basket = array();
 		foreach ( $items as $item ) {
 			$basket[ $item['id'] ] = $item;
@@ -248,6 +273,10 @@ final class OPENBB_Order_Form_View {
 			'openbb/order',
 			array(
 				'restUrl'        => rest_url( OPENBB_REST_Controller::API_NAMESPACE . '/order' ),
+				// Polls in the Finalize step: { id, responded, fields: question key => field name }.
+				'pollUrl'        => rest_url( OPENBB_REST_Controller::API_NAMESPACE . '/poll' ),
+				'polls'          => $polls,
+				'pollNotice'     => '',
 				'nonce'          => wp_create_nonce( 'wp_rest' ),
 				'cycleId'        => $cycle->id,
 				'panelId'        => self::ID . '-basket',
@@ -403,6 +432,8 @@ final class OPENBB_Order_Form_View {
 			'emptyBasket'   => __( 'Add at least one item before submitting your order.', 'open-bulk-buying' ),
 			'doneSubmitted' => __( 'Your order is placed. You can keep changing it until ordering closes.', 'open-bulk-buying' ),
 			'doneUpdated'   => __( 'Your order details are saved.', 'open-bulk-buying' ),
+			/* translators: %s: why the poll answers could not be saved. */
+			'pollFailed'    => __( 'Your order is saved, but your poll answers were not: %s', 'open-bulk-buying' ),
 		);
 	}
 
@@ -620,7 +651,10 @@ final class OPENBB_Order_Form_View {
 	 * @param string $first login or signup.
 	 */
 	private static function auth( string $first ): string {
-		$redirect = OPENBB_Frontend::current_url() . '#' . self::ID;
+		// Someone following a link to a poll lands on it after logging in.
+		$poll_id  = OPENBB_Polls_View::requested();
+		$page     = OPENBB_Frontend::current_url();
+		$redirect = ( $poll_id ? add_query_arg( OPENBB_Polls_View::QUERY_ARG, $poll_id, $page ) : $page ) . '#' . self::ID;
 		$open     = OPENBB_Signup::is_open();
 
 		$panels = array( 'login' => OPENBB_Login_View::panel( array( 'login_redirect' => $redirect ), $open ) );

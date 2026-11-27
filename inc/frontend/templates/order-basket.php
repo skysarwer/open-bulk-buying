@@ -5,11 +5,14 @@
  *
  * Steps, switched in place by state.step:
  * - basket   The lines with steppers, totals and Continue.
- * - finalize Extra questions, donation, financial aid, note, the commitment and submit.
- *            Its fields use the `openbb/forms` context (inc/frontend/fields.php).
+ * - finalize Polls placed here, extra questions, donation, financial aid, note, the
+ *            commitment and submit. Its fields use the `openbb/forms` context
+ *            (inc/frontend/fields.php). Poll answers are optional and saved on their own
+ *            after the order, through the poll route.
  * - done     Confirmation after submitting or saving.
  *
- * @var array $view id, submitted, aid (aid status), questions (HTML), fields, values.
+ * @var array $view id, submitted, aid (aid status), polls (title, intro, fields),
+ *                  questions (HTML), fields, values.
  *
  * @package Open_Bulk_Buying
  */
@@ -81,6 +84,19 @@ $form_context = array(
 				<?php esc_html_e( 'Back to basket', 'open-bulk-buying' ); ?>
 			</button>
 
+			<?php foreach ( $view['polls'] as $poll ) : ?>
+				<section class="openbb-finalize__section openbb-finalize__poll">
+					<h3 class="openbb-finalize__poll-title"><?php echo esc_html( $poll['title'] ); ?></h3>
+					<?php if ( '' !== trim( $poll['intro'] ) ) : ?>
+						<div class="openbb-poll__intro"><?php echo wp_kses_post( wpautop( esc_html( $poll['intro'] ) ) ); ?></div>
+					<?php endif; ?>
+					<?php foreach ( $poll['fields'] as $field ) : ?>
+						<?php echo openbb_render_field( $field ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by openbb_render_field(). ?>
+					<?php endforeach; ?>
+					<p class="openbb-poll__privacy"><?php echo esc_html( OPENBB_Polls_View::privacy_note() . ' ' . __( 'Answering is optional.', 'open-bulk-buying' ) ); ?></p>
+				</section>
+			<?php endforeach; ?>
+
 			<?php if ( '' !== trim( $view['questions'] ) ) : ?>
 				<section class="openbb-finalize__section openbb-finalize__questions">
 					<?php echo $view['questions']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Printed by openbb_order_form_questions callbacks. ?>
@@ -134,6 +150,12 @@ $form_context = array(
 		<?php // Step 3: done. ?>
 		<div class="openbb-basket__step openbb-basket__step--done openbb-done" hidden data-wp-bind--hidden="!state.isDoneStep">
 			<p class="openbb-notice openbb-notice--success" data-wp-text="state.doneText"></p>
+			<div class="openbb-done__polls" data-wp-bind--hidden="!state.pollNotice" hidden>
+				<div class="openbb-notice openbb-notice--error" role="alert">
+					<span data-wp-text="state.pollNotice"></span>
+					<button type="button" class="openbb-button openbb-button--link" data-wp-bind--disabled="state.busy" data-wp-on--click="actions.retryPolls"><?php esc_html_e( 'Try again', 'open-bulk-buying' ); ?></button>
+				</div>
+			</div>
 			<?php echo OPENBB_Frontend::template( 'order-totals', array() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Template. ?>
 			<div class="openbb-basket__actions">
 				<button type="button" class="openbb-button openbb-button--primary" data-wp-on--click="actions.backToBasket"><?php esc_html_e( 'View my basket', 'open-bulk-buying' ); ?></button>

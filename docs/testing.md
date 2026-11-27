@@ -141,6 +141,7 @@ maps plugin transactions to MySQL savepoints**, via `nest_transaction` - a worka
 | Persistence / schema | `test-model-persistence.php` |
 | Email templates | `test-email-templates.php` |
 | Privacy exporters/erasers | `test-privacy.php` |
+| Polls (lifecycle, audience, answers, results, cleanup) | `test-polls.php` |
 | Translations (POT/PO/MO/JSON) | `test-translations.php` |
 
 When touching reservation or status logic, run `Order_Lifecycle`,

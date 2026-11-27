@@ -8,8 +8,8 @@ import { useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { plus, trash } from '@wordpress/icons';
 
-import { SortableList, moveItem } from '../../../components';
-import { localized } from '../../../utils/config';
+import SortableList, { moveItem } from '../sortable-list';
+import { localized } from '../../utils/config';
 import LocalizedTextControl from './localized-text-control';
 import {
 	cleanKeyInput,

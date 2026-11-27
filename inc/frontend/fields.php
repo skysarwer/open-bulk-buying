@@ -2,7 +2,8 @@
 /**
  * Reusable form field partials for frontend views, wired to the `openbb/forms` store
  * (assets/js/forms.js). Markup follows: <select> with <optgroup>s,
- * chips as <fieldset>/<legend> groups of native radios or checkboxes.
+ * chips as <fieldset>/<legend> groups of native radios or checkboxes, and a star rating
+ * as a <fieldset> of native radios.
  *
  * A field lives inside an element with the `openbb/forms` context:
  *
@@ -21,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  * Field kinds openbb_render_field() supports.
  */
 function openbb_field_kinds(): array {
-	return array( 'text', 'email', 'tel', 'password', 'textarea', 'select', 'chips', 'checkbox' );
+	return array( 'text', 'email', 'tel', 'password', 'textarea', 'select', 'chips', 'stars', 'checkbox' );
 }
 
 /**
@@ -35,8 +36,12 @@ function openbb_field_kinds(): array {
  *     @type bool   $required
  *     @type bool   $locked       Shown greyed out and read-only (e.g. a value the user already has).
  *     @type bool   $multiple     select and chips: several values.
- *     @type array  $groups       select and chips: list of [ 'label' => ?string, 'options' => [ [ 'value', 'label' ] ] ].
+ *     @type bool   $clearable    Single-choice chips and stars: adds a button that takes the
+ *                                answer back, for questions that may be left unanswered
+ *                                (a radio can't be unchecked by itself).
+ *     @type array  $groups       select, chips and stars: list of [ 'label' => ?string, 'options' => [ [ 'value', 'label' ] ] ].
  *                                A group without label holds ungrouped options and comes first.
+ *                                Stars take one group whose values are the ratings, lowest first.
  *     @type mixed  $value        string, list of strings (multiple) or bool (checkbox).
  *     @type string $autocomplete
  *     @type string $inputmode    Text inputs: virtual keyboard hint, e.g. decimal.
@@ -54,6 +59,7 @@ function openbb_render_field( array $field ): string {
 			'required'     => false,
 			'locked'       => false,
 			'multiple'     => false,
+			'clearable'    => false,
 			'groups'       => array(),
 			'value'        => null,
 			'autocomplete' => '',
@@ -131,6 +137,15 @@ function openbb_render_field( array $field ): string {
 				. sprintf( '<fieldset class="openbb-chips" aria-describedby="%s"><legend class="openbb-field__label">%s%s</legend>', esc_attr( implode( ' ', $described ) ), esc_html( $field['label'] ), $required_mark )
 				. $help
 				. openbb_render_chip_groups( $field, $id, $control_attrs )
+				. openbb_field_clear_button( $field )
+				. '</fieldset>' . $error . '</div>';
+
+		case 'stars':
+			return $wrapper
+				. sprintf( '<fieldset class="openbb-stars" aria-describedby="%s"><legend class="openbb-field__label">%s%s</legend>', esc_attr( implode( ' ', $described ) ), esc_html( $field['label'] ), $required_mark )
+				. $help
+				. openbb_render_stars( $field, $id, $control_attrs )
+				. openbb_field_clear_button( $field )
 				. '</fieldset>' . $error . '</div>';
 
 		case 'select':
@@ -180,10 +195,13 @@ function openbb_render_field( array $field ): string {
 }
 
 /**
- * The input for a profile field definition (OPENBB_Profile_Fields), localized.
+ * The input for a field definition (OPENBB_Field_Schema), localized.
  * Archived options are only listed when they're part of $value.
+ *
+ * @param mixed $value The stored value: a string, a bool or a list of option keys.
+ * @param array $args  Overrides for the field, e.g. locked or id_prefix.
  */
-function openbb_profile_field_input( array $definition, $value, array $args = array() ): array {
+function openbb_field_input( array $definition, $value, array $args = array() ): array {
 	$field = array_merge(
 		array(
 			'name'     => $definition['key'],
@@ -195,21 +213,21 @@ function openbb_profile_field_input( array $definition, $value, array $args = ar
 	);
 
 	switch ( $definition['type'] ) {
-		case OPENBB_Profile_Fields::TYPE_BOOLEAN:
+		case OPENBB_Field_Schema::TYPE_BOOLEAN:
 			$field['kind']  = 'checkbox';
 			$field['value'] = (bool) $value;
 			break;
 
-		case OPENBB_Profile_Fields::TYPE_OPTIONS:
+		case OPENBB_Field_Schema::TYPE_OPTIONS:
 			$multiple = (bool) $definition['options']['multiple'];
 			$selected = array_map( 'strval', (array) $value );
 			$groups   = array();
 			foreach ( $definition['options']['groups'] as $group ) {
 				$options = array();
 				foreach ( $group['options'] as $option ) {
-					if ( ! $option['archived'] || in_array( $option['key'], $selected, true ) ) {
+					if ( ! $option['archived'] || in_array( (string) $option['key'], $selected, true ) ) {
 						$options[] = array(
-							'value' => $option['key'],
+							'value' => (string) $option['key'],
 							'label' => openbb_localized( $option['label'] ),
 						);
 					}
@@ -222,7 +240,12 @@ function openbb_profile_field_input( array $definition, $value, array $args = ar
 				}
 			}
 
-			$field['kind']     = OPENBB_Profile_Fields::STYLE_CHIPS === $definition['options']['style'] ? 'chips' : 'select';
+			$kinds = array(
+				OPENBB_Field_Schema::STYLE_CHIPS => 'chips',
+				OPENBB_Field_Schema::STYLE_STARS => 'stars',
+			);
+
+			$field['kind']     = $kinds[ $definition['options']['style'] ] ?? 'select';
 			$field['multiple'] = $multiple;
 			$field['groups']   = $groups;
 			$field['value']    = $multiple ? $selected : (string) ( $selected[0] ?? '' );
@@ -235,6 +258,64 @@ function openbb_profile_field_input( array $definition, $value, array $args = ar
 	}
 
 	return $field;
+}
+
+/**
+ * The input for a profile field definition (OPENBB_Profile_Fields).
+ */
+function openbb_profile_field_input( array $definition, $value, array $args = array() ): array {
+	return openbb_field_input( $definition, $value, $args );
+}
+
+/**
+ * The input for a poll question (OPENBB_Polls). Unlike profile fields, every question may
+ * be left unanswered and "No" is an answer of its own: a yes/no question is two choices
+ * that start unselected, not a checkbox, and single choices can be taken back.
+ *
+ * @param mixed $value The member's answer (OPENBB_Poll_Responses::get_answers()), or null.
+ */
+function openbb_poll_field_input( array $question, $value, array $args = array() ): array {
+	if ( OPENBB_Field_Schema::TYPE_BOOLEAN !== $question['type'] ) {
+		$field = openbb_field_input( $question, $value, $args );
+		if ( in_array( $field['kind'], array( 'chips', 'stars' ), true ) && ! $field['multiple'] ) {
+			$field['clearable'] = true;
+		}
+
+		return $field;
+	}
+
+	$answer = '';
+	if ( is_bool( $value ) ) {
+		$answer = $value ? OPENBB_Poll_Responses::YES : OPENBB_Poll_Responses::NO;
+	}
+
+	return array_merge(
+		array(
+			'name'      => $question['key'],
+			'label'     => openbb_localized( $question['label'] ),
+			'help'      => openbb_localized( $question['help'] ),
+			'kind'      => 'chips',
+			'multiple'  => false,
+			'clearable' => true,
+			'groups'    => array(
+				array(
+					'label'   => null,
+					'options' => array(
+						array(
+							'value' => OPENBB_Poll_Responses::YES,
+							'label' => __( 'Yes', 'open-bulk-buying' ),
+						),
+						array(
+							'value' => OPENBB_Poll_Responses::NO,
+							'label' => __( 'No', 'open-bulk-buying' ),
+						),
+					),
+				),
+			),
+			'value'     => $answer,
+		),
+		$args
+	);
 }
 
 /**
@@ -323,4 +404,151 @@ function openbb_render_chip_groups( array $field, string $id, array $control_att
 	}
 
 	return $html;
+}
+
+/**
+ * A button that takes back the answer of a single-choice field, shown once there is one.
+ */
+function openbb_field_clear_button( array $field ): string {
+	if ( ! $field['clearable'] || $field['multiple'] || $field['locked'] ) {
+		return '';
+	}
+
+	return sprintf(
+		'<button type="button" class="openbb-button openbb-button--link openbb-field__clear" data-wp-on--click="openbb/forms::actions.clear" data-wp-bind--hidden="openbb/forms::!context.values.%s"%s>%s</button>',
+		esc_attr( $field['name'] ),
+		'' === (string) ( is_scalar( $field['value'] ) ? $field['value'] : '' ) ? ' hidden' : '',
+		esc_html__( 'Clear answer', 'open-bulk-buying' )
+	);
+}
+
+/**
+ * A star rating: native radios in reading order, one per rating, each showing the star
+ * icon. A star is filled when the selected rating is at least its own. That comes from
+ * the field's value (`state.isStarFilled` in the `openbb/forms` store), not from the
+ * order of the elements, so it also reads correctly right-to-left.
+ */
+function openbb_render_stars( array $field, string $id, array $control_attrs ): string {
+	$ratings  = $field['groups'][0]['options'] ?? array();
+	$selected = (int) ( is_scalar( $field['value'] ) ? $field['value'] : 0 );
+	$icon     = openbb_star_icon();
+	$html     = '';
+
+	foreach ( $ratings as $index => $option ) {
+		$rating = (int) $option['value'];
+		$attrs  = array(
+			'type'               => 'radio',
+			'class'              => 'openbb-star__input',
+			'id'                 => $id . '-' . $index,
+			'name'               => $field['name'],
+			'value'              => (string) $option['value'],
+			'checked'            => $rating === $selected,
+			'disabled'           => $field['locked'],
+			'data-wp-on--change' => 'openbb/forms::actions.change',
+			'data-wp-watch'      => $control_attrs['data-wp-watch'],
+		);
+		$html  .= sprintf(
+			'<label class="openbb-star%s" %s data-wp-class--is-filled="openbb/forms::state.isStarFilled"><input%s><span class="openbb-star__icon" aria-hidden="true">%s</span><span class="openbb-sr-only">%s</span></label>',
+			$selected >= $rating ? ' is-filled' : '',
+			wp_interactivity_data_wp_context(
+				array(
+					'star'      => $rating,
+					'starField' => $field['name'],
+				),
+				'openbb/forms'
+			),
+			openbb_field_attrs( $attrs ),
+			$icon, // Passed through wp_kses() in openbb_star_icon().
+			esc_html(
+				sprintf(
+					/* translators: 1: rating, 2: highest rating, e.g. "3 of 5 stars". */
+					_n( '%1$d of %2$d star', '%1$d of %2$d stars', $rating, 'open-bulk-buying' ),
+					$rating,
+					count( $ratings )
+				)
+			)
+		);
+	}
+
+	return '<div class="openbb-stars__options">' . $html . '</div>';
+}
+
+/**
+ * The star icon of rating questions, as inline SVG. One icon serves both states: it
+ * draws with `currentColor`, and CSS decides whether a star is filled or outlined.
+ */
+function openbb_star_icon(): string {
+	$default = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>';
+
+	/**
+	 * Filters the star icon of rating questions. Return SVG markup that draws with
+	 * `currentColor` and sets no fill on its shapes: the same icon is shown outlined
+	 * (empty) and filled. Markup outside the SVG allowlist is stripped.
+	 *
+	 * @param string $svg Inline SVG.
+	 */
+	$svg = apply_filters( 'openbb_rating_star_svg', $default );
+	// wp_kses() lowercases attribute names; SVG's viewBox is case-sensitive outside HTML parsing.
+	$svg = is_string( $svg ) ? str_replace( ' viewbox=', ' viewBox=', wp_kses( $svg, openbb_svg_allowed_html() ) ) : '';
+
+	return false !== stripos( $svg, '<svg' ) ? $svg : $default;
+}
+
+/**
+ * Elements and attributes allowed in filtered icons, for wp_kses().
+ */
+function openbb_svg_allowed_html(): array {
+	$paint = array(
+		'class'           => true,
+		'fill'            => true,
+		'fill-rule'       => true,
+		'clip-rule'       => true,
+		'opacity'         => true,
+		'stroke'          => true,
+		'stroke-width'    => true,
+		'stroke-linecap'  => true,
+		'stroke-linejoin' => true,
+		'transform'       => true,
+	);
+
+	return array(
+		'svg'      => $paint + array(
+			'xmlns'       => true,
+			'viewbox'     => true,
+			'width'       => true,
+			'height'      => true,
+			'role'        => true,
+			'aria-hidden' => true,
+			'focusable'   => true,
+		),
+		'g'        => $paint,
+		'path'     => $paint + array( 'd' => true ),
+		'circle'   => $paint + array(
+			'cx' => true,
+			'cy' => true,
+			'r'  => true,
+		),
+		'ellipse'  => $paint + array(
+			'cx' => true,
+			'cy' => true,
+			'rx' => true,
+			'ry' => true,
+		),
+		'rect'     => $paint + array(
+			'x'      => true,
+			'y'      => true,
+			'width'  => true,
+			'height' => true,
+			'rx'     => true,
+			'ry'     => true,
+		),
+		'polygon'  => $paint + array( 'points' => true ),
+		'polyline' => $paint + array( 'points' => true ),
+		'line'     => $paint + array(
+			'x1' => true,
+			'y1' => true,
+			'x2' => true,
+			'y2' => true,
+		),
+	);
 }

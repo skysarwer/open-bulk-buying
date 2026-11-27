@@ -1,8 +1,9 @@
 import {
 	TextControl,
+	TextareaControl,
 	__experimentalVStack as VStack,
 } from '@wordpress/components';
-import { config, localizedFieldLabel } from '../../../utils/config';
+import { config, localizedFieldLabel } from '../../utils/config';
 
 /**
  * Inputs for a localized text map: the default text plus one input per
@@ -16,6 +17,8 @@ import { config, localizedFieldLabel } from '../../../utils/config';
  * @param {string}   props.help
  * @param {boolean}  props.hideLabelFromVision
  * @param {string}   props.placeholder
+ * @param {boolean}  props.multiline           Several lines of plain text.
+ * @param {number}   props.maxLength
  */
 export default function LocalizedTextControl( {
 	id,
@@ -25,15 +28,19 @@ export default function LocalizedTextControl( {
 	help,
 	hideLabelFromVision = false,
 	placeholder,
+	multiline = false,
+	maxLength,
 } ) {
 	const set = ( lang, text ) => onChange( { ...value, [ lang ]: text } );
+	const Control = multiline ? TextareaControl : TextControl;
 
 	return (
 		<VStack spacing={ 2 }>
-			<TextControl
+			<Control
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 				id={ id }
+				maxLength={ maxLength }
 				label={ localizedFieldLabel( label ) }
 				hideLabelFromVision={ hideLabelFromVision }
 				placeholder={
@@ -44,10 +51,11 @@ export default function LocalizedTextControl( {
 				help={ help }
 			/>
 			{ config.translationLanguages.map( ( lang ) => (
-				<TextControl
+				<Control
 					key={ lang }
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
+					maxLength={ maxLength }
 					label={ localizedFieldLabel( label, lang ) }
 					hideLabelFromVision={ hideLabelFromVision }
 					placeholder={

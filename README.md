@@ -139,6 +139,7 @@ notice explaining how to build them.
 | `[openbb_signup]` | Signup form (links to login) | `title`, `intro`, `login_redirect` |
 | `[openbb_login]` | Login form (links to signup) | `title`, `intro`, `login_redirect` |
 | `[openbb_order_form]` | Member order form; login/signup when logged out | `auth="signup"` to show signup first |
+| `[openbb_polls]` | The polls an active member can answer now; login/signup when logged out. Optional: the order form page already invites members to open polls and shows a poll at `?poll=ID` | `auth="signup"` to show signup first |
 
 Example: `[openbb_signup title="Join the co-op" intro="We order together every month."]`
 

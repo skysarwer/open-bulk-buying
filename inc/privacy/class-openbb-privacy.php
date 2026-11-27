@@ -27,6 +27,7 @@ final class OPENBB_Privacy {
 			'openbb_privacy_providers',
 			array(
 				new OPENBB_Privacy_Profile_Fields(),
+				new OPENBB_Privacy_Polls(),
 			)
 		);
 

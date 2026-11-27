@@ -10,6 +10,7 @@ WordPress dashboard. For installation and site setup see the
 - [Products and stock](#products-and-stock)
 - [Members](#members)
 - [Cycles](#cycles)
+- [Polls](#polls)
 - [Orders](#orders)
 - [Financial aid](#financial-aid)
 - [Preparing orders](#preparing-orders)
@@ -43,7 +44,7 @@ Staff roles grant permissions. Edit roles and their permissions in
 |---|---|
 | Manage products | Create and edit products, categories, suppliers; upload images. |
 | Manage inventory | Record stock received, counted and adjusted. |
-| Manage cycles | Create cycles and move them through stages. |
+| Manage cycles | Create cycles and move them through stages; create polls and see their answers. |
 | Delete cycles and orders | Permanently delete cycles/orders with their history. |
 | View all orders | See every member's orders. |
 | Edit orders | Change, cancel or create orders for members. |
@@ -105,8 +106,8 @@ Custom profile questions are defined in **Settings → Profile fields**.
 
 A cycle is one round of ordering and pickup. In **Co-op → Cycles**, click a
 title for the quick-edit panel or **Manage cycle** for the full workspace
-(**Details**, **Orders**, **Preparation**, **Financial Aid** tabs, each with a
-bookmarkable URL).
+(**Details**, **Orders**, **Preparation**, **Financial Aid**, **Polls** tabs,
+each with a bookmarkable URL).
 
 | Stage | Members | Staff |
 |---|---|---|
@@ -129,6 +130,108 @@ while the cycle is still "clean". The first real commitment outside Setup — a
 submission, substantive change, cancellation, payment, fulfilment or aid
 decision — permanently locks the cycle, after which cleanup is unavailable.
 Note-only edits, draft autosaves and stage changes do not lock it.
+
+---
+
+## Polls
+
+A poll is a set of questions you ask members about a cycle: which supplier to
+use next, a preference while they order, feedback after pickup, or an open
+"anything to add?". Manage polls in the **Polls** tab of a cycle (needs
+**Manage cycles**). A cycle can have several.
+
+**Members answer whether or not they order.** An answer belongs to the member,
+not to an order, so it is kept if the order is cancelled and never delays or
+blocks ordering. Only **Active** members can answer.
+
+**No question is required.** A member can skip any question, change their
+answers until the poll closes, or clear them all, which removes their response.
+For something the co-op *needs* from everyone who orders, a poll is the wrong
+tool: that belongs in the order form itself.
+
+**Answers are not anonymous.** Staff who can manage the cycle see who answered
+what, and every poll form tells members so. Results are not shown to members.
+
+### Questions
+
+Questions use the same types as profile fields: text, yes/no, and options
+(dropdown or chips, one or several choices). A single-choice options question
+can also be a **star rating** from 1 to 5. Yes/no is asked as two choices that
+start unselected, so "No" is a real answer and different from skipping.
+
+While a poll is a **draft** you can change anything. Once it is **published**
+it may already have answers, so questions and options can be added, renamed,
+reordered and *archived*, but not deleted or changed to another type.
+Archiving hides a question from the form and keeps the answers already given.
+
+### When a poll is open
+
+A poll starts as a draft. **Publish** it to put it in front of members, then it
+opens and closes by its own rules, independent of the ordering dates:
+
+| | Options |
+|---|---|
+| Opens | When the cycle reaches a stage, as soon as it is published, or on a date |
+| Closes | When the cycle reaches a stage, when staff close it, or on a date |
+
+A new poll opens when its cycle reaches **Ordering** and closes when it reaches
+**Processing**, so it runs alongside ordering with nothing to configure. For a
+supplier vote before ordering, open it "as soon as it is published" while the
+cycle is still in Setup. For feedback after pickup, open it at **Distribution**
+or **Complete**.
+
+Stage rules follow the cycle's *current* stage: if you move a cycle back, its
+polls open or close again to match. **Close** on a published poll ends it at
+once and is final; a closed poll can't be reopened or edited, and its results
+stay available.
+
+### Who can answer
+
+| Audience | Who |
+|---|---|
+| All active members | Everyone with an Active membership (the default). |
+| Members who ordered in chosen cycles | Active members with a submitted, prepaid or fulfilled order in **any** of the cycles you tick. |
+
+The cycle list shows how many members ordered in each cycle. The most recent
+earlier cycle with orders is ticked as a suggestion; change it freely. The
+audience is exactly the cycles you saved and never shifts by itself. Draft and
+cancelled orders and membership-only payments don't count. If a member's
+order is cancelled later, their answers are kept but they can no longer change
+them. You can tick the poll's own cycle: members then qualify once they order.
+
+### Where members see a poll
+
+- **Card on the order page** (on by default): an invitation above the product
+  list that opens the poll. It also appears when ordering is closed, so it
+  works for votes before ordering opens.
+- **Questions in the Finalize step** (off by default): the questions are asked
+  right in the order form, marked optional. Answers are saved separately after
+  the order; if saving them fails, the order is still placed and the member can
+  retry. Finalize is the step where members also donate and request aid, so
+  add polls there sparingly and compare donation and aid-request rates before
+  and after.
+- **Always**: a page with the `[openbb_polls]` shortcode lists every poll open
+  to the member, and adding `?poll=ID` to the address of that page or the order
+  page opens one poll directly, for links in emails.
+
+### Results
+
+**Results** on a poll shows how many members responded, a count for each
+choice (and the average for star ratings), and each member's answers including
+free text. Members who have since become Inactive are labelled and still
+counted. If a member's personal data is erased through WordPress's privacy
+tools their answers are deleted, so counts can drop afterwards; record any
+decision you take from a poll yourself.
+
+### Copying and deleting
+
+**Copy** a poll into another cycle to reuse its questions. The copy is a
+separate draft: later edits to either poll don't affect the other, and no
+answers are copied. Dates are not copied (the copy uses the default stages),
+and an audience of members who ordered is suggested again for the new cycle, so
+check it before publishing.
+
+Deleting a poll deletes every answer to it. Deleting a cycle deletes its polls.
 
 ---
 
@@ -374,6 +477,6 @@ saved order or payment. There is no retry queue or PDF attachment.
 
 Staff with **Delete cycles and orders** (and Administrators) can permanently
 delete any cycle or order, including order items and event history. Deleting a
-cycle deletes all its orders. Stock-ledger entries are kept for inventory
+cycle deletes all its orders, and its polls with every answer to them. Stock-ledger entries are kept for inventory
 accuracy, with their order/cycle references cleared. This cannot be undone —
 back up first.

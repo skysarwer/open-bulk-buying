@@ -38,7 +38,12 @@ function basket( overrides = {} ) {
 					},
 				};
 			}
-			assert.equal( name, '@open-bulk-buying/forms' );
+			assert.ok(
+				[ '@open-bulk-buying/forms', '@open-bulk-buying/polls' ].includes(
+					name
+				),
+				name
+			);
 			return {};
 		},
 	} );

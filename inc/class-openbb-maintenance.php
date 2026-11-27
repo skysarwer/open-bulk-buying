@@ -168,6 +168,9 @@ class OPENBB_Maintenance {
 		}
 
 		$tables = array(
+			$wpdb->openbb_poll_answers,
+			$wpdb->openbb_poll_responses,
+			$wpdb->openbb_polls,
 			$wpdb->openbb_order_events,
 			$wpdb->openbb_order_lines,
 			$wpdb->openbb_orders,

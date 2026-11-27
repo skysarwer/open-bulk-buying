@@ -1,0 +1,158 @@
+// Polls (OPENBB_Polls_View): the polls view ([openbb_polls]), one poll's form, and the
+// poll surfaces of the order form (cards above the catalog, questions in Finalize).
+
+.openbb-polls {
+	display: grid;
+	gap: 1.5rem;
+
+	> .openbb-notice {
+		margin: 0;
+	}
+
+	&__back {
+		margin: 0;
+
+		a {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.25em;
+		}
+	}
+}
+
+.openbb-poll {
+	padding: 1.25rem;
+	border: 1px solid var(--openbb-border);
+	border-radius: var(--openbb-radius);
+
+	&__header {
+		margin-bottom: 0.75rem;
+	}
+
+	&__title {
+		margin: 0;
+		font-size: 1.25em;
+	}
+
+	&__cycle {
+		margin: 0.15rem 0 0;
+		color: var(--openbb-muted);
+		font-size: 0.875em;
+	}
+
+	&__intro {
+		margin-bottom: 1.25rem;
+
+		> :first-child {
+			margin-top: 0;
+		}
+
+		> :last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	&__form {
+		display: grid;
+		gap: 1.25rem;
+	}
+
+	// Answers are not anonymous; said wherever a poll is answered.
+	&__privacy {
+		margin: 0;
+		color: var(--openbb-muted);
+		font-size: 0.875em;
+	}
+
+	&__notice .openbb-notice {
+		margin: 0;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem 1rem;
+	}
+
+	&__status {
+		margin: 0;
+		color: var(--openbb-success);
+		font-weight: 600;
+	}
+}
+
+// Invitations on the order page. Also shown on their own when ordering is closed.
+.openbb-poll-cards {
+	display: grid;
+	gap: 0.75rem;
+	margin-bottom: var(--openbb-gap);
+
+	.openbb-order & {
+		max-width: none;
+	}
+
+	&__answered {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		color: var(--openbb-muted);
+		font-size: 0.875em;
+
+		li + li {
+			margin-top: 0.25rem;
+		}
+	}
+}
+
+.openbb-poll-card {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem 1rem;
+	padding: 0.85rem 1rem;
+	border: 1px solid var(--openbb-border);
+	border-inline-start: 4px solid var(--openbb-accent);
+	border-radius: var(--openbb-radius);
+	background: var(--openbb-surface);
+
+	&__text {
+		flex: 1 1 14rem;
+		min-width: 0;
+	}
+
+	&__title {
+		margin: 0;
+		font-weight: 600;
+	}
+
+	&__intro {
+		margin: 0.15rem 0 0;
+		color: var(--openbb-muted);
+		font-size: 0.875em;
+	}
+
+	&__link {
+		flex: none;
+	}
+}
+
+// A poll's questions inside the order form's Finalize step.
+.openbb-finalize__poll {
+	padding: 0.75rem;
+	border: 1px solid var(--openbb-border);
+	border-radius: var(--openbb-radius);
+
+	.openbb-poll__intro {
+		margin-bottom: 0;
+	}
+}
+
+.openbb-finalize__poll-title {
+	font-size: 1.05em;
+}
+
+.openbb-done__polls {
+	margin-top: var(--openbb-gap);
+}

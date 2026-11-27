@@ -14,6 +14,7 @@
  * - @open-bulk-buying/auth    Store `openbb/auth`: switches between the login and signup panels.
  * - @open-bulk-buying/captcha Bot protection widgets: renders Turnstile, collects and resets responses.
  * - @open-bulk-buying/order   Store `openbb/order`: the member order form (basket, autosave, finalize).
+ * - @open-bulk-buying/polls   Store `openbb/polls`: poll forms; also saves the polls in the order form's Finalize step.
  *
  * @package Open_Bulk_Buying
  */
@@ -30,12 +31,14 @@ final class OPENBB_Frontend {
 	const MODULE_AUTH    = '@open-bulk-buying/auth';
 	const MODULE_CAPTCHA = '@open-bulk-buying/captcha';
 	const MODULE_ORDER   = '@open-bulk-buying/order';
+	const MODULE_POLLS   = '@open-bulk-buying/polls';
 
 	/** Shortcode tag => view class with a static render( array $args ): string. */
 	const SHORTCODES = array(
 		'openbb_signup'     => 'OPENBB_Signup_View',
 		'openbb_login'      => 'OPENBB_Login_View',
 		'openbb_order_form' => 'OPENBB_Order_Form_View',
+		'openbb_polls'      => 'OPENBB_Polls_View',
 	);
 
 	public static function register_hooks(): void {
@@ -51,7 +54,8 @@ final class OPENBB_Frontend {
 			self::MODULE_SIGNUP  => array( 'signup.js', array( '@wordpress/interactivity', self::MODULE_FORMS, self::MODULE_CAPTCHA ) ),
 			self::MODULE_LOGIN   => array( 'login.js', array( '@wordpress/interactivity', self::MODULE_FORMS, self::MODULE_CAPTCHA ) ),
 			self::MODULE_AUTH    => array( 'auth.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
-			self::MODULE_ORDER   => array( 'order.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
+			self::MODULE_POLLS   => array( 'polls.js', array( '@wordpress/interactivity', self::MODULE_FORMS ) ),
+			self::MODULE_ORDER   => array( 'order.js', array( '@wordpress/interactivity', self::MODULE_FORMS, self::MODULE_POLLS ) ),
 		);
 		foreach ( $modules as $id => list( $file, $deps ) ) {
 			wp_register_script_module( $id, OPENBB_PLUGIN_URL . 'assets/js/' . $file, $deps, self::version( 'assets/js/' . $file ) );
@@ -134,20 +138,30 @@ final class OPENBB_Frontend {
 	}
 
 	/**
-	 * Validation messages for the `openbb/forms` store.
+	 * Validation messages and server-rendered derived state for the `openbb/forms` store.
 	 */
 	public static function forms_state(): void {
-		wp_interactivity_state(
-			'openbb/forms',
-			array(
-				'messages' => array(
-					'required'      => __( 'This field is required.', 'open-bulk-buying' ),
-					'requiredCheck' => __( 'This box must be checked.', 'open-bulk-buying' ),
-					'requiredOne'   => __( 'Choose an option.', 'open-bulk-buying' ),
-					'email'         => __( 'Enter a valid email address.', 'open-bulk-buying' ),
-				),
-			)
+		$state = array(
+			'messages' => array(
+				'required'      => __( 'This field is required.', 'open-bulk-buying' ),
+				'requiredCheck' => __( 'This box must be checked.', 'open-bulk-buying' ),
+				'requiredOne'   => __( 'Choose an option.', 'open-bulk-buying' ),
+				'email'         => __( 'Enter a valid email address.', 'open-bulk-buying' ),
+			),
 		);
+
+		// Twin of the getter in assets/js/forms.js, evaluated while the page renders.
+		if ( function_exists( 'wp_interactivity_get_context' ) ) {
+			$state['isStarFilled'] = static function (): bool {
+				$context = (array) wp_interactivity_get_context( 'openbb/forms' );
+				$values  = (array) ( $context['values'] ?? array() );
+				$rating  = $values[ (string) ( $context['starField'] ?? '' ) ] ?? 0;
+
+				return (int) ( is_scalar( $rating ) ? $rating : 0 ) >= (int) ( $context['star'] ?? PHP_INT_MAX );
+			};
+		}
+
+		wp_interactivity_state( 'openbb/forms', $state );
 	}
 
 	/**

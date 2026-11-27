@@ -59,20 +59,22 @@ inc/
   i18n/          Localized text helpers, currency
   model/
     cycle/       Cycle entity, repository, preparation
+    fields/      Field definitions shared by profile fields and poll questions
     inventory/   Stock ledger
     member/      Member entity, user meta, profile fields, signup, codes, fees
     order/       Order entity, lines, repository, editor, lifecycle, aid, policy
+    poll/        Poll entity, polls (lifecycle, audience), member responses
     product/     Product post type, entity, catalogue, units
     rules/       Co-op rules and versions
   privacy/       Personal-data exporter/eraser integration
   rest/
     class-openbb-rest-controller.php   Base: namespace, auth helpers
-    admin/       Products, cycles, members, orders, settings, documents
-    frontend/    Signup, login, order form
+    admin/       Products, cycles, polls, members, orders, settings, documents
+    frontend/    Signup, login, order form, polls
 src/
   admin/         React app: router, screens, components, hooks, utils
   sass/          Frontend stylesheet source
-assets/js/       Interactivity API modules (auth, signup, login, order, captcha, forms)
+assets/js/       Interactivity API modules (auth, signup, login, order, polls, captcha, forms)
 languages/       POT, fr_CA PO/MO, JS JSON catalogues
 scripts/         Build helpers (source-map cleanup, translation compiler, Node test runner)
 tests/           PHPUnit bootstrap, base test case, test-*.php, wp-tests-config-sample.php, JS tests
@@ -98,6 +100,9 @@ multisite `switch_to_blog()` re-prefixes them.
 | `openbb_order_events` | audit event on an order | `order_id`, `actor_id`, `event_type`, `from_status`, `to_status`, `reason`, `details` (JSON) |
 | `openbb_stock_moves` | stock ledger entry | `product_id`, signed `quantity`, `unit_amount`, `unit_type`, `reason`, optional `cycle_id`, `order_id`, `user_id`, `request_key` (unique, idempotency), `note` |
 | `openbb_rules_versions` | published rules version | `content` (JSON: ordered localized HTML items), `content_hash`, `requires_reacceptance`, `published_by/at` |
+| `openbb_polls` | poll on a cycle | `cycle_id`, localized `title` and `intro` (JSON), `status` (draft / published / closed), opening rule (`open_rule` stage / publish / date, `open_stage`, `open_at`), closing rule (`close_rule` stage / manual / date, `close_stage`, `close_at`), `placements` (JSON: card, finalize), `audience` (all / ordered_in_cycles), `audience_cycles` (JSON ids), `questions` (JSON field definitions), `revision`, `published_at`, `closed_at/by` |
+| `openbb_poll_responses` | member's response to a poll | `poll_id`, `user_id` (unique pair), `created_at`, `updated_at` |
+| `openbb_poll_answers` | selected option or text in a response | `response_id`, `poll_id`, `question_key`, `value_key` (option key; `1` / `0` for yes/no), `value_text` (free text) |
 
 ### WordPress-native storage
 
@@ -125,6 +130,9 @@ wp_users ─┬─< openbb_orders >─── openbb_cycles
           └── user meta: status, roles, rules_version ──> openbb_rules_versions
 
 openbb_cycles ─< openbb_cycle_products >─ openbb_product
+
+openbb_cycles ─< openbb_polls ─< openbb_poll_responses >─ wp_users
+                                        └─< openbb_poll_answers
 ```
 
 Key invariants:
@@ -146,6 +154,16 @@ Key invariants:
 - `revision` on orders guards against stale writes from the editor and aid
   decisions.
 - `cleanup_locked_at` on a cycle, once set, is never cleared.
+- **Poll responses belong to members, not orders.** Nothing links a response
+  to an order, and saving answers never changes an order or its revision.
+  Whether a poll can be answered is computed on each request from its status,
+  its rules and the cycle's *current* stage (`OPENBB_Poll::phase()`); there is
+  no scheduled job and no stored "open" flag. A response exists only while it
+  has at least one answer, and "No" is a stored answer (`value_key = 0`), so it
+  is never confused with not answering.
+- **Published poll questions keep their meaning**: keys and types can't
+  change and questions and options are archived, never removed. A draft has no
+  answers and can change freely.
 
 ---
 
@@ -178,6 +196,13 @@ Key invariants:
   and `assets/js/*.js` Interactivity stores handle behaviour by calling the
   `openbb/v1` frontend routes. Every named control inside the captcha wrapper
   is posted as the `captcha` object.
+- **Custom questions.** `OPENBB_Field_Schema` defines what a field is (text,
+  true/false, options) and checks a value against it. It stores nothing.
+  Profile fields (`OPENBB_Profile_Fields`, user meta) and poll questions
+  (`OPENBB_Polls`, the poll tables) each pass their own rules as a config:
+  polls never offer `required` and add the star-rating style. Put behaviour
+  that both need in the engine and everything about storage, visibility and
+  lifecycle in the consumer. `openbb_render_field()` renders both.
 - **Schema changes.** Edit the owning class's `schema()`, bump
   `OPENBB_Installer::DB_VERSION`, and add any non-dbDelta fix-ups (e.g.
   nullability) to `install()`. `maybe_upgrade()` runs on `plugins_loaded`
@@ -203,6 +228,12 @@ The product post type uses `capability_type => openbb_product(s)` with
 Membership status (`applicant` / `active` / `inactive` / `declined`) is
 separate from roles; only `active` members can order. Status changes go
 through `OPENBB_Access` so `openbb_member_status_changed` fires.
+
+Active members also hold `openbb_answer_polls`. It is separate from
+`openbb_place_orders` so that answering a poll never depends on ordering. Staff
+routes for polls check `openbb_manage_polls`, a meta capability that currently
+maps to `openbb_manage_cycles`; check the meta capability in new code so it can
+become a permission of its own without touching callers.
 
 ---
 
@@ -313,6 +344,8 @@ Tracked for future work; the current code intentionally omits these:
 - Shortage substitutions during preparation.
 - Configurable prepaid/unpaid hold policies and pickup exceptions.
 - Email retry queue and PDF attachments.
-- Polls, volunteer shifts and a dedicated distribution-screen launcher.
+- Volunteer shifts and a dedicated distribution-screen launcher.
+- Polls: results visible to members, anonymous responses, reminders, a
+  cross-cycle Polls screen and a shared question library.
 - Reporting and exports beyond personal-data export.
 - Other captcha providers out of the box (use the `openbb_captcha_*` filters).

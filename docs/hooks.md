@@ -11,6 +11,7 @@ Every action and filter Open Bulk Buying exposes. All names are prefixed
 - [Email](#email)
 - [Localization and currency](#localization-and-currency)
 - [Order form](#order-form)
+- [Polls](#polls)
 
 ---
 
@@ -114,7 +115,33 @@ filters. Core `login_redirect` is applied to post-login redirects.
 
 | Hook | Arguments | Fires |
 |---|---|---|
-| `openbb_order_form_questions` | `OPENBB_Cycle $cycle, ?OPENBB_Order $order` | Inside the order form's Finalize step; print extra questions (polls, pickup preferences). The plugin does not collect or store their values — the extension must submit and persist them itself. |
+| `openbb_order_form_questions` | `OPENBB_Cycle $cycle, ?OPENBB_Order $order` | Inside the order form's Finalize step; print extra questions that belong to the order (pickup preferences, information the co-op needs from everyone who orders). The plugin does not collect or store their values — the extension must submit and persist them itself. Optional questions that members may answer without ordering are [polls](#polls), which the plugin stores. |
+
+---
+
+## Polls
+
+Polls are questions staff attach to a cycle. Members answer whether or not they
+order; a response belongs to the member, not to an order.
+
+### Actions
+
+| Hook | Arguments | Fires |
+|---|---|---|
+| `openbb_poll_status_changed` | `OPENBB_Poll $poll, string $old_status, int $actor_id` | After staff publish a draft or close a published poll. Not fired when a poll opens or closes by its rules: those are read from the cycle's stage and the clock on each request, with no scheduled event. |
+| `openbb_poll_response_saved` | `OPENBB_Poll $poll, int $user_id, bool $responded` | After a member's answers are saved. `$responded` is `false` when they cleared every answer, which removes the response. |
+
+### Filters
+
+| Hook | Signature | Purpose |
+|---|---|---|
+| `openbb_poll_answer_valid` | `( bool\|WP_Error $valid, array $question, mixed $value, OPENBB_Poll $poll ) : bool\|WP_Error` | Extra validation for a sanitized answer. Return `false` or a `WP_Error` to reject it. |
+| `openbb_polls_page_url` | `( string $url, int $poll_id ) : string` | Address of the page members answer polls on (one with `[openbb_polls]` or `[openbb_order_form]`). Empty by default, because the plugin doesn't know which page holds a shortcode. When set, poll links in the admin and on the order page point there (`?poll=ID` is added). |
+| `openbb_rating_star_svg` | `( string $svg ) : string` | Inline SVG of the star in rating questions. One icon serves both states: it must draw with `currentColor` and set no fill on its shapes, because CSS shows it outlined or filled. The result is passed through `wp_kses()` with an SVG allowlist (`openbb_svg_allowed_html()`); markup outside it is stripped, and an unusable result falls back to the default icon. |
+
+Results have two readers. `OPENBB_Poll_Responses::tally()` returns counts only,
+with no member identities and no free text; `responses()` returns who answered
+what. Anything shown beyond staff must be built from `tally()` alone.
 
 ---
 

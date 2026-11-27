@@ -153,6 +153,7 @@ class OPENBB_Admin {
 				'openbb_manage_products',
 				'openbb_manage_inventory',
 				'openbb_manage_cycles',
+				'openbb_manage_polls',
 				'openbb_view_orders',
 				'openbb_edit_orders',
 				'openbb_process_orders',
@@ -217,6 +218,8 @@ class OPENBB_Admin {
 			'prepMethods'          => OPENBB_Cycle_Preparation::method_labels(),
 			'emailStaffNote'       => (bool) OPENBB_Settings::get_general()['email_staff_note'],
 			'stockReasons'         => OPENBB_Stock_Move::reason_labels(),
+			// Inline SVG of the rating star, already sanitized, for the poll question preview.
+			'starIcon'             => openbb_star_icon(),
 			'manualStockReasons'   => OPENBB_Stock_Move::MANUAL_REASONS,
 			'caps'                 => $caps,
 			'urls'                 => $urls,

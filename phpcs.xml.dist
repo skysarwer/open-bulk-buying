@@ -62,6 +62,8 @@
 				<element value="openbb_access_admin"/>
 				<element value="openbb_access_settings"/>
 				<element value="openbb_place_orders"/>
+				<element value="openbb_answer_polls"/>
+				<element value="openbb_manage_polls"/>
 				<element value="openbb_edit_order"/>
 				<element value="openbb_view_order_aid"/>
 				<element value="openbb_decide_order_aid"/>
